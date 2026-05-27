@@ -71,17 +71,14 @@ export function Alertas() {
                 {lowDonations.length} miembro(s) con donaciones bajas (menos de {Math.round(lowDonationThreshold)})
               </p>
             </div>
-            <div className="space-y-1 ml-6">
-              {lowDonations.slice(0, 10).map((m) => (
-                <div key={m.uid} className="flex items-center gap-2">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-1 ml-6">
+              {lowDonations.slice(0, 12).map((m) => (
+                <div key={m.uid} className="flex items-center gap-1.5 min-w-0">
                   <Avatar name={m.displayName} size="xs" />
-                  <span className="text-xs text-clash-text flex-1 truncate">{m.displayName}</span>
-                  <span className="text-xs text-clash-muted font-mono">{m.weeklyStats.donationsGiven}</span>
+                  <span className="text-xs text-clash-text truncate">{m.displayName}</span>
+                  <span className="text-xs text-clash-muted font-mono shrink-0">{m.weeklyStats.donationsGiven}</span>
                 </div>
               ))}
-              {lowDonations.length > 10 && (
-                <p className="text-xs text-clash-muted">...y {lowDonations.length - 10} más</p>
-              )}
             </div>
           </div>
         )}
