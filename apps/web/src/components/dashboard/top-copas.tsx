@@ -1,0 +1,42 @@
+"use client";
+
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
+import { useClanStore } from "@/lib/store";
+import { Trophy } from "lucide-react";
+
+export function TopCopas() {
+  const members = useClanStore((s) => s.members);
+  const top = [...members].sort((a, b) => b.trophies - a.trophies).slice(0, 5);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-metallic-gold bg-clip-text">Top Copas</CardTitle>
+        <Trophy size={16} className="text-metallic-gold animate-icon-shine" />
+      </CardHeader>
+      <div className="space-y-2">
+        {top.map((member, i) => (
+          <div
+            key={member.uid}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass transition-colors"
+          >
+            <span className="w-5 text-center text-sm font-bold font-mono text-clash-muted">
+              {i + 1}
+            </span>
+            <Avatar name={member.displayName} size="sm" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-clash-text">
+                {member.displayName}
+              </p>
+            </div>
+            <span className="font-mono text-sm font-semibold text-metallic-gold animate-metallic-shimmer">
+              {member.trophies.toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}

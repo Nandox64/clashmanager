@@ -1,0 +1,116 @@
+import "server-only";
+
+import { adminDb } from "./firebase-admin";
+import type { Clan, Member } from "@clashmanager/shared";
+
+const CLANS_COLLECTION = "clans";
+
+function getClanDocRef(clanTag: string) {
+  if (!adminDb) throw new Error("Firebase Admin no inicializado");
+  return adminDb.collection(CLANS_COLLECTION).doc(clanTag.replace("#", ""));
+}
+
+export async function saveClan(clan: Clan) {
+  const ref = getClanDocRef(clan.tag);
+  await ref.set(
+    {
+      ...clan,
+      updatedAt: Date.now(),
+    },
+    { merge: true }
+  );
+  return ref.id;
+}
+
+export async function saveMembers(clanTag: string, members: Member[]) {
+  const ref = getClanDocRef(clanTag);
+  const batch = adminDb!.batch();
+
+  members.forEach((member) => {
+    const memberRef = ref.collection("members").doc(member.uid);
+    batch.set(memberRef, { ...member, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getClanFromFirestore(
+  clanTag: string
+): Promise<Clan | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    return { id: snap.id, ...snap.data() } as Clan;
+  } catch {
+    return null;
+  }
+}
+
+export async function getMembersFromFirestore(
+  clanTag: string
+): Promise<Member[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("members").orderBy("trophies", "desc").get();
+    return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as Member));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveRiverRaceData(
+  clanTag: string,
+  currentRace: unknown
+) {
+  const ref = getClanDocRef(clanTag);
+  await ref.update({ currentRiverRace: currentRace, updatedAt: Date.now() });
+}
+
+export async function saveLocalWarRank(clanTag: string, rank: number | null) {
+  const ref = getClanDocRef(clanTag);
+  await ref.update({ localWarRank: rank, updatedAt: Date.now() });
+}
+
+export async function saveWarRankPrediction(
+  clanTag: string,
+  data: {
+    rank: number | null;
+    confidence: string;
+    method: string;
+    newEntries: number;
+    scoreGap: number;
+    estimatedChange: number;
+  }
+) {
+  const ref = getClanDocRef(clanTag);
+  await ref.set(
+    {
+      warRankPrediction: data,
+      updatedAt: Date.now(),
+    },
+    { merge: true }
+  );
+}
+
+export async function getClanUpdatedAt(clanTag: string): Promise<number | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    return snap.data()?.updatedAt ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getLocalWarRank(clanTag: string): Promise<number | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    return snap.data()?.localWarRank ?? null;
+  } catch {
+    return null;
+  }
+}
