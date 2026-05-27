@@ -1,0 +1,10 @@
+{
+  "name": "clashmanager",
+  "private": true,
+  "packageManager": "pnpm@11.3.0",
+  "scripts": {
+    "dev": "pnpm --filter @clashmanager/web dev",
+    "build": "pnpm --filter @clashmanager/web build",
+    "lint": "pnpm --filter @clashmanager/web lint"
+  }
+}
