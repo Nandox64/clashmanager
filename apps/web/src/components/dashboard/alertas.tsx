@@ -28,12 +28,22 @@ export function Alertas() {
     });
   }
 
+  const donationsValues = members
+    .filter((m) => m.status === "active")
+    .map((m) => m.weeklyStats.donationsGiven);
+  const avgDonations =
+    donationsValues.length > 0
+      ? donationsValues.reduce((a, b) => a + b, 0) / donationsValues.length
+      : 0;
+  const lowDonationThreshold = Math.max(avgDonations * 0.5, 20);
   const lowDonations = members.filter(
-    (m) => m.weeklyStats.donationsGiven < 100 && m.status === "active"
+    (m) =>
+      m.status === "active" &&
+      m.weeklyStats.donationsGiven < lowDonationThreshold
   );
-  if (lowDonations.length > 0) {
+  if (lowDonations.length > 0 && avgDonations > 30) {
     alerts.push({
-      message: `${lowDonations.length} miembro(s) con donaciones bajas esta semana`,
+      message: `${lowDonations.length} miembro(s) con donaciones bajas (menos de ${Math.round(lowDonationThreshold)})`,
       variant: "info",
     });
   }
