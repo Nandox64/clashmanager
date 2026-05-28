@@ -36,7 +36,7 @@ const MEDAL_CHECKERS: {
     icon: "🔥",
     check: (m) => {
       const daysSinceActive = (Date.now() - m.lastActiveAt) / 86400000;
-      return daysSinceActive < 30;
+      return daysSinceActive < 2;
     },
   },
   {

@@ -164,38 +164,35 @@ export default function AchievementsPage() {
       </Card>
 
       {achievements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle>Logros Recientes</CardTitle>
-              <p className="text-xs text-clash-muted mt-0.5">Últimos logros obtenidos por los miembros</p>
-            </div>
-          </CardHeader>
-          <div className="space-y-2">
-            {achievements.slice().reverse().slice(0, 20).map((ach) => {
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Award size={16} className="text-clash-gold" />
+            <h2 className="text-sm font-semibold text-clash-text">Logros Recientes</h2>
+            <span className="text-xs text-clash-muted">({achievements.length} total)</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {achievements.slice().reverse().slice(0, 24).map((ach) => {
               const member = members.find((m) => m.uid === ach.memberId);
               if (!member) return null;
               return (
                 <div
                   key={ach.id}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-glass transition-colors"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
                 >
-                  <span className="text-xl">{ach.icon}</span>
-                  <Avatar name={member.displayName} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-clash-text">
-                      {member.displayName}
-                    </p>
-                    <p className="text-xs text-clash-muted">{ach.name}</p>
-                  </div>
-                  <Badge variant="success" size="sm">
-                    Nuevo
-                  </Badge>
+                  <span className="text-2xl">{ach.icon}</span>
+                  <Avatar name={member.displayName} size="xs" />
+                  <p className="text-xs font-medium text-clash-text truncate w-full text-center">
+                    {member.displayName}
+                  </p>
+                  <p className="text-[10px] text-clash-muted text-center leading-tight">
+                    {ach.name}
+                  </p>
+                  <Badge variant="success" size="sm">Nuevo</Badge>
                 </div>
               );
             })}
           </div>
-        </Card>
+        </div>
       )}
 
       {achievements.length === 0 && (
