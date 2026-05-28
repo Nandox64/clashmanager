@@ -4,14 +4,13 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { useClanStore } from "@/lib/store";
-import { mockAchievements } from "@/lib/mock-data";
 import { MEDALS } from "@clashmanager/shared";
 import { Award, Trophy } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
 export default function AchievementsPage() {
   const members = useClanStore((s) => s.members);
-  const achievements = mockAchievements;
+  const achievements = useClanStore((s) => s.achievements);
 
   const sortedByXp = [...members].sort((a, b) => b.xp - a.xp);
 

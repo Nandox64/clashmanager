@@ -1,7 +1,7 @@
 import "server-only";
 
 import { adminDb } from "./firebase-admin";
-import type { Clan, Member } from "@clashmanager/shared";
+import type { Clan, Member, Achievement } from "@clashmanager/shared";
 
 const CLANS_COLLECTION = "clans";
 
@@ -133,6 +133,37 @@ export async function getLocalWarRank(clanTag: string): Promise<number | null> {
     return snap.data()?.localWarRank ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function saveAchievements(clanTag: string, achievements: Achievement[]) {
+  const ref = getClanDocRef(clanTag);
+  const achievementsRef = ref.collection("achievements");
+  const batch = adminDb!.batch();
+
+  const existingSnap = await achievementsRef.select().get();
+  const currentIds = new Set(achievements.map(a => a.id));
+  existingSnap.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  achievements.forEach((achievement) => {
+    const achRef = achievementsRef.doc(achievement.id);
+    batch.set(achRef, { ...achievement, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getAchievements(clanTag: string): Promise<Achievement[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("achievements").orderBy("awardedAt", "desc").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Achievement));
+  } catch {
+    return [];
   }
 }
 

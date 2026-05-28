@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Member, Clan } from "@clashmanager/shared";
+import type { Member, Clan, Achievement } from "@clashmanager/shared";
 
 const emptyClan: Clan = {
   id: "",
@@ -29,6 +29,7 @@ const emptyClan: Clan = {
 interface ClanState {
   clan: Clan;
   members: Member[];
+  achievements: Achievement[];
   selectedMember: Member | null;
   localWarRank: number | null;
   localWarRankChange: number;
@@ -38,6 +39,7 @@ interface ClanState {
   loaded: boolean;
   setClan: (clan: Clan) => void;
   setMembers: (members: Member[]) => void;
+  setAchievements: (achievements: Achievement[]) => void;
   setSelectedMember: (member: Member | null) => void;
   setLocalWarRank: (rank: number | null) => void;
   setLocalWarRankChange: (change: number) => void;
@@ -52,6 +54,7 @@ interface ClanState {
 export const useClanStore = create<ClanState>((set) => ({
   clan: emptyClan,
   members: [],
+  achievements: [],
   selectedMember: null,
   localWarRank: null,
   localWarRankChange: 0,
@@ -61,6 +64,7 @@ export const useClanStore = create<ClanState>((set) => ({
   loaded: false,
   setClan: (clan) => set({ clan }),
   setMembers: (members) => set({ members }),
+  setAchievements: (achievements) => set({ achievements }),
   setSelectedMember: (member) => set({ selectedMember: member }),
   setLocalWarRank: (rank) => set({ localWarRank: rank }),
   setLocalWarRankChange: (change) => set({ localWarRankChange: change }),

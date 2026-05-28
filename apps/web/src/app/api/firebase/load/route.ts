@@ -6,6 +6,7 @@ import {
   estimateWarRank,
   type WarRankEstimate,
 } from "@/lib/cr-transform";
+import type { Achievement } from "@clashmanager/shared";
 import {
   saveClan,
   saveMembers,
@@ -13,24 +14,28 @@ import {
   saveLocalWarRank,
   saveLocalWarTrophies,
   saveWarRankPrediction,
+  saveAchievements,
   getClanFromFirestore,
   getMembersFromFirestore,
+  getAchievements,
   getClanUpdatedAt,
   getLocalWarRank,
   getLocalWarTrophies,
 } from "@/lib/firestore-service";
+import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
 const STALE_AFTER_MS = 15 * 60 * 1000;
 
 async function readFromFirestore(clanTag: string) {
-  const [clan, members, rank] = await Promise.all([
+  const [clan, members, rank, achievements] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
     getLocalWarRank(clanTag),
+    getAchievements(clanTag),
   ]);
   return clan
-    ? { clan, members, localWarRank: rank, localWarRankChange: 0 }
+    ? { clan, members, achievements, localWarRank: rank, localWarRankChange: 0 }
     : null;
 }
 
@@ -80,7 +85,11 @@ export async function GET() {
       storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || null),
     );
 
+    let achievements: Achievement[] = [];
     if (adminDb) {
+      const existingAchievements = await getAchievements(clan.tag).catch(() => []);
+      achievements = computeAchievements(transformedMembers, existingAchievements);
+
       await Promise.all([
         saveClan(transformedClan).catch(() => {}),
         saveMembers(clan.tag, transformedMembers).catch(() => {}),
@@ -88,12 +97,14 @@ export async function GET() {
         saveLocalWarRank(clan.tag, estimate.rank).catch(() => {}),
         saveLocalWarTrophies(clan.tag, clan.clanWarTrophies).catch(() => {}),
         saveWarRankPrediction(clan.tag, estimate).catch(() => {}),
+        saveAchievements(clan.tag, achievements).catch(() => {}),
       ]);
     }
 
     return NextResponse.json({
       clan: transformedClan,
       members: transformedMembers,
+      achievements,
       localWarRank: estimate.rank,
       localWarRankChange: estimate.estimatedChange,
       warRankConfidence: estimate.confidence,

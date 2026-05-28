@@ -8,6 +8,7 @@ export function useClanData() {
   const [error, setError] = useState<string | null>(null);
   const setClan = useClanStore((s) => s.setClan);
   const setMembers = useClanStore((s) => s.setMembers);
+  const setAchievements = useClanStore((s) => s.setAchievements);
   const setLocalWarRank = useClanStore((s) => s.setLocalWarRank);
   const setLocalWarRankChange = useClanStore((s) => s.setLocalWarRankChange);
   const setWarRankMeta = useClanStore((s) => s.setWarRankMeta);
@@ -25,6 +26,7 @@ export function useClanData() {
       const data = await res.json();
       setClan(data.clan);
       setMembers(data.members);
+      setAchievements(data.achievements ?? []);
       setLocalWarRank(data.localWarRank ?? null);
       setLocalWarRankChange(data.localWarRankChange ?? 0);
       setWarRankMeta({

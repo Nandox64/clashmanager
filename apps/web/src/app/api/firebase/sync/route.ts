@@ -13,10 +13,13 @@ import {
   saveLocalWarRank,
   saveLocalWarTrophies,
   saveWarRankPrediction,
+  saveAchievements,
+  getAchievements,
   getLocalWarRank,
   getLocalWarTrophies,
   getMembersFromFirestore,
 } from "@/lib/firestore-service";
+import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
 async function sync() {
@@ -46,6 +49,9 @@ async function sync() {
   );
 
   if (adminDb) {
+    const existingAchievements = await getAchievements(clan.tag).catch(() => []);
+    const achievements = computeAchievements(transformedMembers, existingAchievements);
+
     await Promise.all([
       saveClan(transformedClan).catch(() => {}),
       saveMembers(clan.tag, transformedMembers).catch(() => {}),
@@ -53,6 +59,7 @@ async function sync() {
       saveLocalWarRank(clan.tag, estimate.rank).catch(() => {}),
       saveLocalWarTrophies(clan.tag, clan.clanWarTrophies).catch(() => {}),
       saveWarRankPrediction(clan.tag, estimate).catch(() => {}),
+      saveAchievements(clan.tag, achievements).catch(() => {}),
     ]);
   }
 
