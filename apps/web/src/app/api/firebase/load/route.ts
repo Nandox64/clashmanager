@@ -25,7 +25,7 @@ import {
 import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
-const STALE_AFTER_MS = 15 * 60 * 1000;
+const STALE_AFTER_MS = 60 * 60 * 1000;
 
 async function readFromFirestore(clanTag: string) {
   const [clan, members, rank, achievements] = await Promise.all([
