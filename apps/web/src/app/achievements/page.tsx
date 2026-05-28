@@ -98,38 +98,33 @@ export default function AchievementsPage() {
       </div>
 
       {memberMedals.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle>Medallas por Miembro</CardTitle>
-              <p className="text-xs text-clash-muted mt-0.5">Miembros que han obtenido medallas</p>
-            </div>
+        <div>
+          <div className="flex items-center gap-2 mb-3">
             <Award size={16} className="text-clash-gold" />
-          </CardHeader>
-          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-clash-text">Medallas por Miembro</h2>
+            <span className="text-xs text-clash-muted">({memberMedals.length} miembros)</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {memberMedals.map(({ member, medals }) => (
               <div
                 key={member.uid}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-glass transition-colors"
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
               >
                 <Avatar name={member.displayName} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-clash-text">
-                    {member.displayName}
-                  </p>
-                  <div className="flex gap-1 mt-1">
-                    {medals.map((m) => (
-                      <span key={m.id} title={m.name} className="text-lg">
-                        {m.icon}
-                      </span>
-                    ))}
-                  </div>
+                <p className="text-xs font-medium text-clash-text truncate w-full text-center">
+                  {member.displayName}
+                </p>
+                <div className="flex gap-0.5 flex-wrap justify-center">
+                  {medals.map((m) => (
+                    <span key={m.id} title={m.name} className="text-base">
+                      {m.icon}
+                    </span>
+                  ))}
                 </div>
-                <span className="text-xs text-clash-muted">{medals.length} medalla(s)</span>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       <Card>
