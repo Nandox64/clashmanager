@@ -10,31 +10,31 @@ const MEDAL_CHECKERS: {
     medalId: "war_legend",
     name: "Leyenda de la Guerra",
     icon: "🏆",
-    check: (m) => (m.weeklyStats?.warParticipation ?? 0) >= 90,
+    check: (m) => (m.weeklyStats?.warParticipation ?? 0) >= 80,
   },
   {
     medalId: "clan_heart",
     name: "Corazón del Clan",
     icon: "❤️",
-    check: (m) => (m.weeklyStats?.donationsGiven ?? 0) >= 400,
+    check: (m) => (m.donations ?? 0) >= 200,
   },
   {
     medalId: "unstoppable",
     name: "Imparable",
     icon: "⚡",
-    check: (m) => (m.weeklyStats?.trophiesGained ?? 0) >= 300,
+    check: (m) => (m.weeklyStats?.trophiesGained ?? 0) >= 100,
   },
   {
     medalId: "guardian",
     name: "Guardián",
     icon: "🛡️",
-    check: (m) => (m.weeklyStats?.donationsGiven ?? 0) >= 600,
+    check: (m) => (m.donations ?? 0) >= 500,
   },
   {
     medalId: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 6,
+    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 5,
   },
   {
     medalId: "diamond",
@@ -43,7 +43,7 @@ const MEDAL_CHECKERS: {
     check: (m) => {
       const days = m.weeklyStats?.activityDays ?? 0;
       const gained = m.weeklyStats?.trophiesGained ?? 0;
-      return days > 0 && gained / days >= 50;
+      return days > 0 && gained / days >= 20;
     },
   },
   {
