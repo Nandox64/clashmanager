@@ -619,10 +619,15 @@ App carga (PC o celular)
 | Staleness check: Firestore < 15 min → cache | ✅ |
 | Ranking guerra con limit=200 | ✅ |
 | CR API river race opcionales (no bloquean sync) | ✅ |
-| Puesto 562 hardcodeado (fallback hasta top 200) | ✅ |
-| Tendencia +19 puestos en widget guerra | ✅ |
+| Seed fijo fuera del top 200 (547, 2620, -5 desde .env) | ✅ |
+| Tendencia en widget guerra | ✅ |
 | **Tema metálico (oro, plata, bronce) implementado** | ✅ |
 | Activar Google Auth en Firebase Console y verificar login | ✅ |
+| weeklyStats calculados (trophiesGained, activityDays, warParticipation) | ✅ |
+| Limpieza automática de ex-miembros en Firestore | ✅ |
+| Descripciones en cards UI | ✅ |
+| Botón "Enviar mazo al juego" con deep link | ✅ |
+| text-black en botones gold | ✅ |
 
 ## Pendiente / Próximos Pasos
 
@@ -634,11 +639,23 @@ App carga (PC o celular)
 - **Panel lateral metálico** – ✅ Implementado con `MetalPanel`
 - **Tipografía y tamaños elegantes** – ✅ Fuente `Inter` + `font-size: 18px`
 - **Animación del panel** – ✅ Manteniendo animación existente
-- **Ranking guerra dinámico** – ✅ Reemplazado hardcode 562 por `estimateWarRank()` con score-gap + churn analysis
 - **Export `getToken()`** – ✅ Fix build error preexistente (`check-token/route.ts`)
 - **Deploy en Vercel** – ✅ `clashmanager.vercel.app` (dominio personalizado)
 - **Alertas dinámicas** – ✅ Threshold basado en promedio del clan, lista en 3 columnas con avatares
 - **Avatar size `xs`** – ✅ Añadido para listas compactas
+- **Ranking guerra simplificado a seed fijo** – ✅ Cuando el clan está fuera del top 200, usa valores de `.env` (547, 2620, -5) en lugar de estimación inestable por score-gap. Persiste en Firestore como `localWarRank` / `localWarTrophies`.
+- **Member status real** – ✅ Corregido: status se calcula desde `lastSeen` (inactive >10d, risk >5d, active) en lugar de hardcode `"active"`
+- **adminDb guard en sync** – ✅ Evita crash cuando Firebase Admin no está inicializado
+- **Division by zero en healthScore** – ✅ Fix cuando `memberList` está vacío
+- **weeklyStats padding en getMembersFromFirestore** – ✅ Evita runtime error por datos cacheados sin `weeklyStats`
+- **PWA icons** – ✅ Manifest apunta a `/logo_clase_pro.png` existente
+- **Deck deep link** – ✅ Botón "Enviar mazo al juego" con `clashroyale://copyDeck` + clipboard fallback
+- **text-black en gold buttons** – ✅ 11 botones `bg-metallic-gold` cambiados de `text-white` a `text-black`
+- **Descripciones en cards** – ✅ ~22 cards con texto descriptivo bajo el título (dashboard, settings, analytics, achievements, recruitment)
+- **trophiesGained real** – ✅ Calculado como `currentTrophies - previousTrophies` desde Firestore (delta entre syncs)
+- **activityDays real** – ✅ Derivado de `lastSeen`: <2d→5, <5d→3, <10d→1, else→0
+- **warParticipation real** – ✅ Extraído de `currentRiverRace.participants` (decksUsed/4 * 100%)
+- **Limpieza automática de ex-miembros** – ✅ `saveMembers` elimina documentos de miembros que ya no están en la respuesta de la API
 
 ### Git Workflow
 - `main` → producción (Vercel auto-deploy)
@@ -649,14 +666,18 @@ App carga (PC o celular)
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| 🔴 Alta | ~~Desplegar en Vercel~~ | ✅ Desplegado en `clashmanager.vercel.app` |
+| 🔴 Alta | ~~Desplegar en Vercel~~ | ✅ `clashmanager.vercel.app` |
+| 🔴 Alta | ~~Ranking guerra estable~~ | ✅ Seed fijo en `.env` (547, 2620, -5) |
+| 🔴 Alta | ~~Member status desde lastSeen~~ | ✅ |
+| 🔴 Alta | ~~weeklyStats no hardcodeados~~ | ✅ trophiesGained, activityDays, warParticipation calculados |
+| 🔴 Alta | ~~Ex-miembros en analytics~~ | ✅ `saveMembers` limpia al sync |
 | 🟡 Media | Conectar **achievements** a Firestore (usa `mockAchievements`) | ❌ Pendiente |
 | 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ❌ Pendiente |
 | 🟡 Media | PWA (service worker para instalar en celular) | ❌ Pendiente |
-| 🟢 Baja | Paginar ranking guerra si clan está fuera del top 200 | ✅ Implementado |
+| 🟡 Media | Auto-deploy Vercel desde GitHub | ❌ Pendiente (conectar repo en Vercel Dashboard) |
 | 🟢 Baja | Command palette (⌘K) | ❌ Pendiente |
 | 🟢 Baja | Testing (Vitest + Playwright) | ❌ Pendiente |
 | 🟢 Baja | Webhook Discord para alertas automáticas | ❌ Pendiente |
-| 🟢 Baja | Arreglar warning ESLint | ❌ Pendiente |
+| 🟢 Baja | Arreglar warning ESLint | ❌ Pendiente (eslint-config-next, externo) |
 
 > **Nota:** members, analytics y settings **ya están conectados a Firestore** vía `useClanData()`.
