@@ -43,7 +43,7 @@ export default function AchievementsPage() {
     );
   }
 
-  const sortedByXp = [...members].sort((a, b) => b.xp - a.xp);
+  const sortedByTrophies = [...members].sort((a, b) => b.trophies - a.trophies);
 
   const memberMedals = members.map((m) => ({
     member: m,
@@ -65,7 +65,7 @@ export default function AchievementsPage() {
        </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {sortedByXp.slice(0, 4).map((member, i) => (
+        {sortedByTrophies.slice(0, 4).map((member, i) => (
           <Card key={member.uid}>
             <div className="flex items-center gap-3">
               <span className="text-lg font-bold font-mono text-clash-gold">
@@ -77,7 +77,7 @@ export default function AchievementsPage() {
                   {member.displayName}
                 </p>
                 <p className="text-xs text-clash-muted font-mono">
-                  {formatNumber(member.xp)} XP
+                  🏆 {formatNumber(member.trophies)}
                 </p>
               </div>
               <Trophy
