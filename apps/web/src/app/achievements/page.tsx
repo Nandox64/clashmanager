@@ -108,15 +108,14 @@ export default function AchievementsPage() {
             {memberMedals.map(({ member, medals }) => (
               <div
                 key={member.uid}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
+                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
               >
-                <Avatar name={member.displayName} size="sm" />
-                <p className="text-xs font-medium text-clash-text truncate w-full text-center">
+                <p className="text-xs font-medium text-clash-text truncate w-full text-center leading-tight">
                   {member.displayName}
                 </p>
                 <div className="flex gap-0.5 flex-wrap justify-center">
                   {medals.map((m) => (
-                    <span key={m.id} title={m.name} className="text-base">
+                    <span key={m.id} title={m.name} className="text-sm">
                       {m.icon}
                     </span>
                   ))}
@@ -177,17 +176,15 @@ export default function AchievementsPage() {
               return (
                 <div
                   key={ach.id}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
+                  className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-glass border border-clash-border hover:border-clash-gold/30 transition-colors"
                 >
-                  <span className="text-2xl">{ach.icon}</span>
-                  <Avatar name={member.displayName} size="xs" />
-                  <p className="text-xs font-medium text-clash-text truncate w-full text-center">
+                  <span className="text-xl">{ach.icon}</span>
+                  <p className="text-xs font-medium text-clash-text truncate w-full text-center leading-tight">
                     {member.displayName}
                   </p>
                   <p className="text-[10px] text-clash-muted text-center leading-tight">
                     {ach.name}
                   </p>
-                  <Badge variant="success" size="sm">Nuevo</Badge>
                 </div>
               );
             })}
