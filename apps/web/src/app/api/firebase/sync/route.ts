@@ -48,10 +48,10 @@ async function sync() {
     storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || 2620),
   );
 
-  if (adminDb) {
-    const existingAchievements = await getAchievements(clan.tag).catch(() => []);
-    const achievements = computeAchievements(transformedMembers, existingAchievements);
+  const existingAchievements = adminDb ? await getAchievements(clan.tag).catch(() => []) : [];
+  const achievements = computeAchievements(transformedMembers, existingAchievements);
 
+  if (adminDb) {
     await Promise.all([
       saveClan(transformedClan).catch(() => {}),
       saveMembers(clan.tag, transformedMembers).catch(() => {}),

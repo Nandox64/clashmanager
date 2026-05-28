@@ -28,15 +28,17 @@ import { adminDb } from "@/lib/firebase-admin";
 const STALE_AFTER_MS = 60 * 60 * 1000;
 
 async function readFromFirestore(clanTag: string) {
-  const [clan, members, rank, achievements] = await Promise.all([
+  const [clan, members, rank, storedAchievements] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
     getLocalWarRank(clanTag),
     getAchievements(clanTag),
   ]);
-  return clan
-    ? { clan, members, achievements, localWarRank: rank, localWarRankChange: 0 }
-    : null;
+  if (!clan) return null;
+
+  // Always compute achievements from members, using stored ones as seed
+  const achievements = computeAchievements(members, storedAchievements);
+  return { clan, members, achievements, localWarRank: rank, localWarRankChange: 0 };
 }
 
 export async function GET(request: Request) {
@@ -88,11 +90,11 @@ export async function GET(request: Request) {
       storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || 2620),
     );
 
-    let achievements: Achievement[] = [];
-    if (adminDb) {
-      const existingAchievements = await getAchievements(clan.tag).catch(() => []);
-      achievements = computeAchievements(transformedMembers, existingAchievements);
+    // Always compute achievements from member data (deterministic)
+    const existingAchievements = adminDb ? await getAchievements(clan.tag).catch(() => []) : [];
+    const achievements = computeAchievements(transformedMembers, existingAchievements);
 
+    if (adminDb) {
       await Promise.all([
         saveClan(transformedClan).catch(() => {}),
         saveMembers(clan.tag, transformedMembers).catch(() => {}),
