@@ -39,14 +39,17 @@ async function readFromFirestore(clanTag: string) {
     : null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const clanTag = process.env.CLAN_TAG;
   if (!clanTag) {
     return NextResponse.json({ error: "CLAN_TAG no configurado" }, { status: 400 });
   }
 
-  // Check if Firestore has fresh data
-  if (adminDb) {
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "1";
+
+  // Check if Firestore has fresh data (skip if force sync)
+  if (!force && adminDb) {
     const updatedAt = await getClanUpdatedAt(clanTag);
     if (updatedAt && Date.now() - updatedAt < STALE_AFTER_MS) {
       const cached = await readFromFirestore(clanTag);

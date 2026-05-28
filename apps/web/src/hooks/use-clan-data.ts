@@ -14,11 +14,12 @@ export function useClanData() {
   const setWarRankMeta = useClanStore((s) => s.setWarRankMeta);
   const setLoaded = useClanStore((s) => s.setLoaded);
 
-  const fetchData = async () => {
+  const fetchData = async (force = false) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/firebase/load");
+      const url = force ? "/api/firebase/load?force=1" : "/api/firebase/load";
+      const res = await fetch(url);
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Error desconocido" }));
         throw new Error(err.error || `HTTP ${res.status}`);
@@ -43,8 +44,8 @@ export function useClanData() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
   }, []);
 
-  return { loading, error, refetch: fetchData };
+  return { loading, error, refetch: () => fetchData(false), forceSync: () => fetchData(true) };
 }

@@ -10,7 +10,7 @@ import { Award, Trophy, RefreshCw } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
 export default function AchievementsPage() {
-  const { loading, error, refetch } = useClanData();
+  const { loading, error, forceSync } = useClanData();
   const members = useClanStore((s) => s.members);
   const achievements = useClanStore((s) => s.achievements);
   const loaded = useClanStore((s) => s.loaded);
@@ -21,7 +21,7 @@ export default function AchievementsPage() {
         <div className="text-center space-y-3">
           <p className="text-sm text-clash-error">{error}</p>
           <button
-            onClick={refetch}
+            onClick={() => forceSync()}
             disabled={loading}
             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
           >
@@ -59,7 +59,7 @@ export default function AchievementsPage() {
              Sistema de gamificación del clan
            </p>
          </div>
-         <button onClick={refetch} disabled={loading}>
+         <button onClick={() => forceSync()} disabled={loading} title="Sync ahora">
            <RefreshCw size={16} className={`text-clash-muted hover:text-clash-text transition-colors ${loading ? "animate-spin" : ""}`} />
          </button>
        </div>
@@ -208,9 +208,18 @@ export default function AchievementsPage() {
           <div className="text-center py-10">
             <Award size={32} className="mx-auto text-clash-muted mb-3" />
             <p className="text-sm text-clash-muted">Nadie ha obtenido medallas aún</p>
-            <p className="text-xs text-clash-muted/60 mt-1">
-              Las medallas se otorgan automáticamente al sincronizar según el rendimiento semanal
+            <p className="text-xs text-clash-muted/60 mt-2 max-w-md mx-auto">
+              Las medallas se otorgan automáticamente al sincronizar. Algunas (donaciones, actividad, guerra) aparecen en el primer sync. 
+              Otras (copas ganadas, diamante) necesitan un <strong>segundo sync</strong> para calcular la diferencia.
             </p>
+            <p className="text-xs text-clash-muted/60 mt-3">Haz clic en Sync 🔄 dos veces para generar todos los datos.</p>
+            <button
+              onClick={() => forceSync()}
+              disabled={loading}
+              className="mt-4 px-4 py-2 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+            >
+              {loading ? "Sincronizando..." : "Sync Now 🔄"}
+            </button>
           </div>
         </Card>
       )}
