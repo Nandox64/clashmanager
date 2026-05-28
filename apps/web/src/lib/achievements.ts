@@ -34,7 +34,10 @@ const MEDAL_CHECKERS: {
     medalId: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 4,
+    check: (m) => {
+      const daysSinceActive = (Date.now() - m.lastActiveAt) / 86400000;
+      return daysSinceActive < 30;
+    },
   },
   {
     medalId: "diamond",
