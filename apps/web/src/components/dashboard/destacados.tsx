@@ -16,7 +16,10 @@ export function Destacados() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Jugadores Destacados ⭐</CardTitle>
+        <div>
+          <CardTitle>Jugadores Destacados ⭐</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Mejor rendimiento de la semana</p>
+        </div>
         <Star size={16} className="text-clash-gold" />
       </CardHeader>
       <div className="space-y-3">

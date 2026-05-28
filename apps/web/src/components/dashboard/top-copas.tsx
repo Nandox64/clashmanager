@@ -13,7 +13,10 @@ export function TopCopas() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-metallic-gold bg-clip-text">Top Copas</CardTitle>
+        <div>
+          <CardTitle className="text-metallic-gold bg-clip-text">Top Copas</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Jugadores con mayor cantidad de copas</p>
+        </div>
         <Trophy size={16} className="text-metallic-gold animate-icon-shine" />
       </CardHeader>
       <div className="space-y-2">

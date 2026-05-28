@@ -24,10 +24,19 @@ export async function saveClan(clan: Clan) {
 
 export async function saveMembers(clanTag: string, members: Member[]) {
   const ref = getClanDocRef(clanTag);
+  const membersRef = ref.collection("members");
   const batch = adminDb!.batch();
 
+  const existingSnap = await membersRef.select().get();
+  const currentUids = new Set(members.map(m => m.uid));
+  existingSnap.docs.forEach(doc => {
+    if (!currentUids.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
   members.forEach((member) => {
-    const memberRef = ref.collection("members").doc(member.uid);
+    const memberRef = membersRef.doc(member.uid);
     batch.set(memberRef, { ...member, updatedAt: Date.now() }, { merge: true });
   });
 
@@ -53,7 +62,19 @@ export async function getMembersFromFirestore(
   try {
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("members").orderBy("trophies", "desc").get();
-    return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as Member));
+    return snap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        uid: doc.id,
+        ...data,
+        weeklyStats: data.weeklyStats ?? {
+          trophiesGained: 0,
+          donationsGiven: data.donations ?? 0,
+          warParticipation: 0,
+          activityDays: 0,
+        },
+      } as Member;
+    });
   } catch {
     return [];
   }
@@ -110,6 +131,22 @@ export async function getLocalWarRank(clanTag: string): Promise<number | null> {
     const snap = await ref.get();
     if (!snap.exists) return null;
     return snap.data()?.localWarRank ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLocalWarTrophies(clanTag: string, trophies: number | null) {
+  const ref = getClanDocRef(clanTag);
+  await ref.update({ localWarTrophies: trophies, updatedAt: Date.now() });
+}
+
+export async function getLocalWarTrophies(clanTag: string): Promise<number | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    return snap.data()?.localWarTrophies ?? null;
   } catch {
     return null;
   }

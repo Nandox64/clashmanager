@@ -47,7 +47,10 @@ export function Alertas() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Alertas</CardTitle>
+        <div>
+          <CardTitle>Alertas</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Inactivos, riesgo y donaciones bajas</p>
+        </div>
         <Bell size={16} className="text-clash-gold" />
       </CardHeader>
       <div className="space-y-2">
@@ -71,8 +74,8 @@ export function Alertas() {
                 {lowDonations.length} miembro(s) con donaciones bajas (menos de {Math.round(lowDonationThreshold)})
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-x-3 gap-y-1 ml-6">
-              {lowDonations.slice(0, 12).map((m) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-1 ml-6 grid-flow-row">
+              {lowDonations.map((m) => (
                 <div key={m.uid} className="flex items-center gap-1.5 min-w-0">
                   <Avatar name={m.displayName} size="xs" />
                   <span className="text-xs text-clash-text truncate">{m.displayName}</span>

@@ -32,7 +32,7 @@ interface ClanState {
   selectedMember: Member | null;
   localWarRank: number | null;
   localWarRankChange: number;
-  warRankConfidence: "exact" | "estimated" | "fallback";
+  warRankConfidence: "exact" | "estimated" | "fallback" | "seed";
   warRankMethod: string;
   warRankNewEntries: number;
   loaded: boolean;
@@ -42,7 +42,7 @@ interface ClanState {
   setLocalWarRank: (rank: number | null) => void;
   setLocalWarRankChange: (change: number) => void;
   setWarRankMeta: (meta: {
-    confidence: "exact" | "estimated" | "fallback";
+    confidence: "exact" | "estimated" | "fallback" | "seed";
     method: string;
     newEntries: number;
   }) => void;

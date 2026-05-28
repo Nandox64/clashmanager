@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Brain } from "lucide-react";
+import { Sparkles, Brain, Share2, Check } from "lucide-react";
 import { ElixirIcon } from "@/components/ui/elixir-icon";
-import { findCard, getCardImageUrl, isHeroOrEvo } from "@/lib/cards";
+import { findCard, getCardImageUrl, isHeroOrEvo, getDeckShareLink } from "@/lib/cards";
 
 interface DeckCardProps {
   deck: {
@@ -27,6 +28,19 @@ function rarityBorder(rarity: string): string {
 }
 
 export function DeckCard({ deck, index }: DeckCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const link = getDeckShareLink(deck.cards);
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(deck.cards.join(", "));
+    } catch { }
+    window.open(link, "_blank");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between mb-3">
@@ -85,6 +99,17 @@ export function DeckCard({ deck, index }: DeckCardProps) {
           );
         })}
       </div>
+
+      <button
+        onClick={handleShare}
+        className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 transition-all"
+      >
+        {copied ? (
+          <><Check size={14} /> Copiado — abre CR</>
+        ) : (
+          <><Share2 size={14} /> Enviar mazo al juego</>
+        )}
+      </button>
     </Card>
   );
 }

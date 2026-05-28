@@ -23,25 +23,34 @@ export function GuerraActiva() {
     ? null
     : warRankConfidence === "estimated"
       ? <HelpCircle size={12} className="text-clash-muted" />
-      : null;
+      : warRankConfidence === "seed"
+        ? null
+        : null;
 
   const confidenceLabel = warRankConfidence === "exact"
     ? "Exacto"
     : warRankConfidence === "estimated"
       ? `Estimado${warRankNewEntries > 0 ? ` (${warRankNewEntries} nuevos)` : ""}`
-      : "Fallback";
+      : warRankConfidence === "seed"
+        ? null
+        : "Fallback";
 
   return (
     <Card>
        <CardHeader>
-         <CardTitle className="text-metallic-gold bg-clip-text">Guerra de Clanes</CardTitle>
+         <div>
+           <CardTitle className="text-metallic-gold bg-clip-text">Guerra de Clanes</CardTitle>
+           <p className="text-xs text-clash-muted mt-0.5">Ranking local, trofeos y participación</p>
+         </div>
          <Swords size={16} className="text-metallic-gold animate-icon-shine" />
        </CardHeader>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-clash-muted flex items-center gap-1.5">
             <MapPin size={14} /> Puesto Local
-            <span className="text-[10px] text-clash-muted/60">({confidenceLabel})</span>
+            {confidenceLabel && (
+              <span className="text-[10px] text-clash-muted/60">({confidenceLabel})</span>
+            )}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold font-mono text-clash-gold">

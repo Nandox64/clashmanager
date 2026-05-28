@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
           <button
             onClick={refetch}
             disabled={loading}
-            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-white border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
           >
             Reintentar
           </button>
@@ -103,9 +103,12 @@ export default function AnalyticsPage() {
 
        {/* Weekly trend chart */}
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Progreso Semanal</CardTitle>
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Progreso Semanal</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Evolución de trofeos y donaciones por semana</p>
+            </div>
+          </CardHeader>
          <div className="h-48 flex gap-2">
            {weeklyStats.map((week, i) => {
              const max = Math.max(...weeklyStats.map((s) => s.totalTrophies));
@@ -153,10 +156,13 @@ export default function AnalyticsPage() {
 
        {/* Matriz 2x2 - Rendimiento vs Actividad */}
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Matriz Rendimiento vs Actividad</CardTitle>
-           <Radar size={16} className="text-metallic-gold animate-icon-shine" />
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Matriz Rendimiento vs Actividad</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Clasifica miembros en estrellas, talento dormido, trabajadores y lastre</p>
+            </div>
+            <Radar size={16} className="text-metallic-gold animate-icon-shine" />
+          </CardHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -280,11 +286,14 @@ export default function AnalyticsPage() {
 
        {/* Comparativa de jugadores */}
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Comparativa de Jugadores</CardTitle>
-         </CardHeader>
-         <div className="space-y-3">
-           {topEffort.map((member, i) => (
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Comparativa de Jugadores</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Top 3 por esfuerzo combinado (copas, donaciones, guerra)</p>
+            </div>
+          </CardHeader>
+          <div className="space-y-3">
+            {topEffort.map((member, i) => (
              <div
                key={member.uid}
                className="flex items-center gap-3 p-3 rounded-lg bg-glass"
@@ -310,9 +319,12 @@ export default function AnalyticsPage() {
 
        {/* Radar chart visualization */}
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Rendimiento Individual</CardTitle>
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Rendimiento Individual</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Score compuesto 0–100 de cada miembro</p>
+            </div>
+          </CardHeader>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {members.slice(0, 10).map((member) => {
             const score = Math.round(

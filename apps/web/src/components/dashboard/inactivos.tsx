@@ -18,7 +18,10 @@ export function Inactivos() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Inactivos</CardTitle>
+          <div>
+            <CardTitle>Inactivos</CardTitle>
+            <p className="text-xs text-clash-muted mt-0.5">Miembros sin actividad reciente</p>
+          </div>
           <AlertTriangle size={16} className="text-green-400" />
         </CardHeader>
         <p className="text-sm text-clash-muted text-center py-6">
@@ -31,7 +34,10 @@ export function Inactivos() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Inactivos / En Riesgo</CardTitle>
+        <div>
+          <CardTitle>Inactivos / En Riesgo</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Miembros sin actividad reciente</p>
+        </div>
         <AlertTriangle size={16} className="text-orange-400" />
       </CardHeader>
       <div className="space-y-2">

@@ -11,11 +11,13 @@ import {
   saveMembers,
   saveRiverRaceData,
   saveLocalWarRank,
+  saveLocalWarTrophies,
   saveWarRankPrediction,
   getClanFromFirestore,
   getMembersFromFirestore,
   getClanUpdatedAt,
   getLocalWarRank,
+  getLocalWarTrophies,
 } from "@/lib/firestore-service";
 import { adminDb } from "@/lib/firebase-admin";
 
@@ -54,17 +56,28 @@ export async function GET() {
     const { clan, currentRiverRace, localWarRanking } = await getClanFull();
 
     const transformedClan = transformClan(clan);
-    const transformedMembers = transformMembers(clan.memberList);
 
-    // Read last known rank from Firestore for the estimator
-    const storedRank = await getLocalWarRank(clan.tag).catch(() => null);
+    // Read stored members for delta computation
+    const storedMembers = adminDb ? await getMembersFromFirestore(clan.tag).catch(() => []) : [];
+    const prevTrophies = new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
+    const transformedMembers = transformMembers(clan.memberList, {
+      previousTrophies: prevTrophies,
+      currentRaceParticipants: currentRiverRace?.participants,
+    });
+
+    // Read last known data from Firestore for the estimator
+    const [storedRank, storedTrophies] = await Promise.all([
+      getLocalWarRank(clan.tag).catch(() => null),
+      getLocalWarTrophies(clan.tag).catch(() => null),
+    ]);
 
     const estimate: WarRankEstimate = estimateWarRank(
       localWarRanking,
       clan.tag,
       clan.clanWarTrophies,
       storedRank ?? (Number(process.env.CLAN_WAR_RANK_FALLBACK) || null),
-      0
+      Number(process.env.CLAN_WAR_CHANGE_FALLBACK) || 0,
+      storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || null),
     );
 
     if (adminDb) {
@@ -73,6 +86,7 @@ export async function GET() {
         saveMembers(clan.tag, transformedMembers).catch(() => {}),
         saveRiverRaceData(clan.tag, currentRiverRace).catch(() => {}),
         saveLocalWarRank(clan.tag, estimate.rank).catch(() => {}),
+        saveLocalWarTrophies(clan.tag, clan.clanWarTrophies).catch(() => {}),
         saveWarRankPrediction(clan.tag, estimate).catch(() => {}),
       ]);
     }

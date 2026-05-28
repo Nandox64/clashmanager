@@ -11,7 +11,10 @@ export function EvolucionClan() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan (8 semanas)</CardTitle>
+        <div>
+          <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan (8 semanas)</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Progreso de copas totales semana a semana</p>
+        </div>
         <TrendingUp size={16} className="text-metallic-silver animate-icon-shine" />
       </CardHeader>
       <div className="h-40 flex gap-2">

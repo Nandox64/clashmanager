@@ -16,7 +16,10 @@ export function MiembrosRiesgo() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Miembros en Riesgo</CardTitle>
+          <div>
+            <CardTitle>Miembros en Riesgo</CardTitle>
+            <p className="text-xs text-clash-muted mt-0.5">Jugadores que requieren atención</p>
+          </div>
           <AlertTriangle size={16} className="text-green-400" />
         </CardHeader>
         <p className="text-sm text-clash-muted text-center py-6">
@@ -29,7 +32,10 @@ export function MiembrosRiesgo() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Miembros en Riesgo</CardTitle>
+        <div>
+          <CardTitle>Miembros en Riesgo</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Jugadores que requieren atención</p>
+        </div>
         <AlertTriangle size={16} className="text-red-400" />
       </CardHeader>
       <div className="space-y-2">

@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary:
-    "bg-metallic-gold animate-metallic-shimmer text-white hover:brightness-110 active:brightness-90",
+    "bg-metallic-gold animate-metallic-shimmer text-black hover:brightness-110 active:brightness-90",
   secondary:
     "bg-glass-card border border-clash-border text-clash-text hover:bg-clash-border",
   ghost: "text-clash-muted hover:text-clash-text hover:bg-glass-card",

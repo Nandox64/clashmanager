@@ -40,7 +40,10 @@ export function RendimientoSemanal() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-metallic-gold bg-clip-text">Rendimiento Semanal</CardTitle>
+        <div>
+          <CardTitle className="text-metallic-gold bg-clip-text">Rendimiento Semanal</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Copas ganadas, donaciones y miembros activos</p>
+        </div>
         <TrendingUp size={16} className="text-clash-success" />
       </CardHeader>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

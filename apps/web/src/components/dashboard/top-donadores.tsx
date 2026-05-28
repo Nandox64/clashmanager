@@ -14,7 +14,10 @@ export function TopDonadores() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-metallic-gold bg-clip-text">Top Donadores Semanal</CardTitle>
+        <div>
+          <CardTitle className="text-metallic-gold bg-clip-text">Top Donadores Semanal</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Jugadores con más donaciones de la semana</p>
+        </div>
         <Gift size={16} className="text-metallic-silver animate-icon-shine" />
       </CardHeader>
       <div className="space-y-2">

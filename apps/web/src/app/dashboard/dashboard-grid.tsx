@@ -35,7 +35,7 @@ export function DashboardGrid() {
            <button
              onClick={refetch}
              disabled={loading}
-             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-white border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
            >
              Reintentar
            </button>
@@ -63,7 +63,7 @@ export function DashboardGrid() {
            <button
              onClick={refetch}
              disabled={loading}
-             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-white border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
            >
              Reintentar
            </button>

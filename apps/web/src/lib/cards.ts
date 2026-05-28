@@ -230,6 +230,19 @@ export function toCardSlug(name: string): string {
     .replace(/[^a-z0-9-]/g, "");
 }
 
+export function getDeckShareLink(cardNames: string[]): string {
+  const ids = cardNames
+    .map((name) => {
+      const base = stripEvolution(name);
+      const card = findCard(base);
+      return card ? card.id.toString() : null;
+    })
+    .filter(Boolean)
+    .join(";");
+  if (!ids) return "";
+  return `https://link.clashroyale.com/en/?clashroyale://copyDeck?deck=${ids}`;
+}
+
 const CARD_IMAGE_BASE = "https://cdn.royaleapi.com/static/img/cards";
 
 export function getCardImageUrl(name: string, isEvolvedFlag?: boolean): string {

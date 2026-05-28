@@ -13,7 +13,9 @@ export async function GET() {
 
     const data = {
       clan: transformClan(clan),
-      members: transformMembers(clan.memberList),
+      members: transformMembers(clan.memberList, {
+        currentRaceParticipants: currentRiverRace?.participants,
+      }),
       weeklyStats: riverRaceLog
         ? transformToWeeklyStats(clan, riverRaceLog)
         : [],

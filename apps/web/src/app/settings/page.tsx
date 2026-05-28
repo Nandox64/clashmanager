@@ -23,7 +23,7 @@ export default function SettingsPage() {
           <button
             onClick={refetch}
             disabled={loading}
-            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-white border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
           >
             Reintentar
           </button>
@@ -55,10 +55,13 @@ export default function SettingsPage() {
       </div>
 
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Configuración del Clan</CardTitle>
-           <Settings size={16} className="text-metallic-gold animate-icon-shine" />
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Configuración del Clan</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Nombre, tag, requisitos y tipo de clan</p>
+            </div>
+            <Settings size={16} className="text-metallic-gold animate-icon-shine" />
+          </CardHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -85,10 +88,13 @@ export default function SettingsPage() {
       </Card>
 
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Reglas de Automatización</CardTitle>
-           <Bell size={16} className="text-metallic-silver animate-icon-shine" />
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Reglas de Automatización</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Reglas inteligentes para gestión del clan</p>
+            </div>
+            <Bell size={16} className="text-metallic-silver animate-icon-shine" />
+          </CardHeader>
         <div className="space-y-3">
           {rules.map((rule) => (
             <div
@@ -120,10 +126,13 @@ export default function SettingsPage() {
       </Card>
 
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Eventos Semanales</CardTitle>
-           <Shield size={16} className="text-metallic-silver animate-icon-shine" />
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Eventos Semanales</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Retos automáticos programados por día</p>
+            </div>
+            <Shield size={16} className="text-metallic-silver animate-icon-shine" />
+          </CardHeader>
         <div className="space-y-3">
           {events.map((event) => (
             <div
@@ -160,10 +169,13 @@ export default function SettingsPage() {
       </Card>
 
        <Card>
-         <CardHeader>
-           <CardTitle className="text-metallic-gold bg-clip-text">Historial de Actividad</CardTitle>
-           <Webhook size={16} className="text-metallic-silver animate-icon-shine" />
-         </CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold bg-clip-text">Historial de Actividad</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Registro de acciones de gestión del clan</p>
+            </div>
+            <Webhook size={16} className="text-metallic-silver animate-icon-shine" />
+          </CardHeader>
         <div className="space-y-2">
           {logs.map((log) => (
             <div

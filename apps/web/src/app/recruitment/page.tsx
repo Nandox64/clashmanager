@@ -55,7 +55,10 @@ export default function RecruitmentPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Candidatos</CardTitle>
+          <div>
+            <CardTitle>Candidatos</CardTitle>
+            <p className="text-xs text-clash-muted mt-0.5">Lista de reclutas en evaluación y período de prueba</p>
+          </div>
           <UserPlus size={16} className="text-clash-secondary" />
         </CardHeader>
         <div className="space-y-3">

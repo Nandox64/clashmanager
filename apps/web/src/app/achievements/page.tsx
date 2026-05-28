@@ -59,7 +59,10 @@ export default function AchievementsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Medallas Disponibles</CardTitle>
+          <div>
+            <CardTitle>Medallas Disponibles</CardTitle>
+            <p className="text-xs text-clash-muted mt-0.5">Logros y recompensas del sistema de gamificación</p>
+          </div>
           <Award size={16} className="text-clash-gold" />
         </CardHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -92,7 +95,10 @@ export default function AchievementsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Logros Recientes</CardTitle>
+          <div>
+            <CardTitle>Logros Recientes</CardTitle>
+            <p className="text-xs text-clash-muted mt-0.5">Últimos logros obtenidos por los miembros</p>
+          </div>
         </CardHeader>
         <div className="space-y-2">
           {achievements.slice().reverse().map((ach) => {

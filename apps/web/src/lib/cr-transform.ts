@@ -16,8 +16,9 @@ import type {
 
 export interface WarRankEstimate {
   rank: number;
-  confidence: "exact" | "estimated" | "fallback";
-  method: "api" | "score_gap" | "fallback";
+  trophies: number;
+  confidence: "exact" | "seed" | "fallback";
+  method: "api" | "seed" | "fallback";
   newEntries: number;
   scoreGap: number;
   previousRank: number | null;
@@ -55,35 +56,66 @@ export function transformClan(data: CRClan): Clan {
 }
 
 export function transformMembers(
-  members: CRClanMember[]
+  members: CRClanMember[],
+  options?: {
+    previousTrophies?: Map<string, number>;
+    currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
+  }
 ): Member[] {
   const now = Date.now();
-  return members.map((m) => ({
-    uid: m.tag.replace("#", ""),
-    displayName: m.name,
-    email: "",
-    photoURL: "",
-    role: mapRole(m.role),
-    playerTag: m.tag,
-    joinedAt: now - Math.floor(Math.random() * 180 * 86400000),
-    lastActiveAt: parseLastSeen(m.lastSeen),
-    status: "active" as const,
-    trophies: m.trophies,
-    bestTrophies: m.trophies,
-    level: 0,
-    warDayWins: 0,
-    cardsCollected: 0,
-    donations: m.donations,
-    donationsReceived: m.donationsReceived,
-    clanPoints: 0,
-    xp: 0,
-    weeklyStats: {
-      trophiesGained: 0,
-      donationsGiven: m.donations,
-      warParticipation: 0,
-      activityDays: 0,
-    },
-  }));
+  return members.map((m) => {
+    const lastSeen = parseLastSeen(m.lastSeen);
+    const daysSinceActive = (now - lastSeen) / 86400000;
+    const status: Member["status"] = daysSinceActive > 10
+      ? "inactive"
+      : daysSinceActive > 5
+        ? "risk"
+        : "active";
+
+    const prev = options?.previousTrophies?.get(m.tag);
+    const trophiesGained = prev !== undefined && prev > 0
+      ? Math.max(0, m.trophies - prev)
+      : 0;
+
+    const raceParticipant = options?.currentRaceParticipants?.find(
+      (p) => p.tag === m.tag
+    );
+    const warParticipation = raceParticipant && raceParticipant.decksUsed > 0
+      ? Math.min(Math.round((raceParticipant.decksUsed / 4) * 100), 100)
+      : 0;
+
+    const activityDays =
+      daysSinceActive < 2 ? 5 :
+      daysSinceActive < 5 ? 3 :
+      daysSinceActive < 10 ? 1 : 0;
+
+    return {
+      uid: m.tag.replace("#", ""),
+      displayName: m.name,
+      email: "",
+      photoURL: "",
+      role: mapRole(m.role),
+      playerTag: m.tag,
+      joinedAt: now - Math.floor(Math.random() * 180 * 86400000),
+      lastActiveAt: lastSeen,
+      status,
+      trophies: m.trophies,
+      bestTrophies: m.trophies,
+      level: 0,
+      warDayWins: 0,
+      cardsCollected: 0,
+      donations: m.donations,
+      donationsReceived: m.donationsReceived,
+      clanPoints: 0,
+      xp: 0,
+      weeklyStats: {
+        trophiesGained,
+        donationsGiven: m.donations,
+        warParticipation,
+        activityDays,
+      },
+    };
+  });
 }
 
 export function transformToWeeklyStats(
@@ -154,84 +186,61 @@ export function estimateWarRank(
   rankings: CRClanWarRankingsResponse | null,
   clanTag: string,
   clanWarTrophies: number,
-  lastKnownRank: number | null,
-  lastKnownChange: number,
+  seedRank: number | null,
+  seedChange: number,
+  seedTrophies: number | null,
 ): WarRankEstimate {
-  const fallback = (rank: number): WarRankEstimate => ({
-    rank,
-    confidence: "fallback",
-    method: "fallback",
-    newEntries: 0,
-    scoreGap: 0,
-    previousRank: lastKnownRank,
-    estimatedChange: 0,
-  });
-
+  // ── Mode 1: No rankings → fallback ──
   if (!rankings?.items?.length) {
-    return fallback(lastKnownRank ?? clanWarTrophies > 0 ? 200 : 0);
+    return {
+      rank: seedRank ?? (clanWarTrophies > 0 ? 200 : 0),
+      trophies: seedTrophies ?? clanWarTrophies,
+      confidence: "fallback",
+      method: "fallback",
+      newEntries: 0,
+      scoreGap: 0,
+      previousRank: seedRank,
+      estimatedChange: 0,
+    };
   }
 
   const cleanTag = clanTag.replace("#", "").toUpperCase();
   const entry = rankings.items.find(
     (r) => r.tag.replace("#", "").toUpperCase() === cleanTag
   );
+
+  // ── Mode 2: Clan in top 200 → exact ──
   if (entry) {
     return {
       rank: entry.rank,
+      trophies: clanWarTrophies,
       confidence: "exact",
       method: "api",
       newEntries: 0,
       scoreGap: 0,
       previousRank: entry.previousRank,
-      estimatedChange: lastKnownRank ? lastKnownRank - entry.rank : 0,
+      estimatedChange: seedRank ? seedRank - entry.rank : 0,
     };
   }
 
-  // ── Score-gap estimation ──
-  const items = [...rankings.items].sort((a, b) => a.rank - b.rank);
-  const bottom = items.slice(-20);
-  const lastPlace = bottom[bottom.length - 1];
-
-  // Average score step at the boundary
-  let totalDiff = 0;
-  let pairs = 0;
-  for (let i = 0; i < bottom.length - 1; i++) {
-    const diff = bottom[i].clanScore - bottom[i + 1].clanScore;
-    if (diff > 0) { totalDiff += diff; pairs++; }
-  }
-  const avgStep = pairs > 0 ? totalDiff / pairs : 10;
-
-  const scoreGap = Math.max(0, lastPlace.clanScore - clanWarTrophies);
-  const estimatedRanksBehind = avgStep > 0
-    ? Math.round(scoreGap / avgStep)
-    : 50;
-
-  let scoreEstimate = 200 + estimatedRanksBehind;
-
-  // ── New-entrant churn analysis ──
-  const newEntriesCount = items.filter((r) => r.previousRank > 200).length;
-
-  // ── Blend with last known rank for stability ──
-  const rank = lastKnownRank && lastKnownRank > 0
-    ? Math.round(0.7 * scoreEstimate + 0.3 * lastKnownRank)
-    : scoreEstimate;
-
-  const estimatedChange = lastKnownRank && lastKnownRank > 0
-    ? lastKnownRank - rank
-    : 0;
-
+  // ── Mode 3: Clan fuera del top 200 → valor fijo (seed manual) ──
+  // El seed se configura en .env.local y se persiste en Firestore.
+  // El usuario lo actualiza manualmente cuando cambia el puesto real.
+  const rank = seedRank ?? 201;
   return {
     rank: Math.max(201, rank),
-    confidence: "estimated",
-    method: "score_gap",
-    newEntries: newEntriesCount,
-    scoreGap,
-    previousRank: lastKnownRank,
-    estimatedChange,
+    trophies: seedTrophies ?? clanWarTrophies,
+    confidence: "seed",
+    method: "seed",
+    newEntries: 0,
+    scoreGap: 0,
+    previousRank: seedRank,
+    estimatedChange: seedChange,
   };
 }
 
 function calculateHealthScore(members: CRClanMember[]): number {
+  if (!members.length) return 0;
   const now = Date.now();
   const active = members.filter((m) => {
     const lastSeen = new Date(m.lastSeen).getTime();

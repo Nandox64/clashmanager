@@ -141,7 +141,7 @@ export function WarDecksClient() {
           <button
             onClick={refetchClan}
             disabled={clanLoading}
-            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-white border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
           >
             Reintentar
           </button>
@@ -196,7 +196,7 @@ export function WarDecksClient() {
             onClick={handleGenerate}
             disabled={!selectedTag || loading}
             size="lg"
-            className="w-full bg-metallic-gold text-white hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
           >
             {loading ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
@@ -237,7 +237,7 @@ export function WarDecksClient() {
             onClick={handleGenerateTrophy}
             disabled={!selectedTag || loadingTrophy}
             size="lg"
-            className="w-full bg-metallic-gold text-white hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
           >
             {loadingTrophy ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
@@ -276,7 +276,7 @@ export function WarDecksClient() {
             onClick={handleLoadWarDecks}
             disabled={!selectedTag || loadingWarDecks}
             size="lg"
-            className="w-full bg-metallic-gold text-white hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
           >
             {loadingWarDecks ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />

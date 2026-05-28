@@ -636,12 +636,20 @@ App carga (PC o celular)
 - **Animación del panel** – ✅ Manteniendo animación existente
 - **Ranking guerra dinámico** – ✅ Reemplazado hardcode 562 por `estimateWarRank()` con score-gap + churn analysis
 - **Export `getToken()`** – ✅ Fix build error preexistente (`check-token/route.ts`)
+- **Deploy en Vercel** – ✅ `clashmanager.vercel.app` (dominio personalizado)
+- **Alertas dinámicas** – ✅ Threshold basado en promedio del clan, lista en 3 columnas con avatares
+- **Avatar size `xs`** – ✅ Añadido para listas compactas
+
+### Git Workflow
+- `main` → producción (Vercel auto-deploy)
+- `dev/*` → desarrollo sin disparar deploy
+- Merge a `main` solo cuando está listo para producción
 
 ### Tabla de Prioridades
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| 🔴 Alta | Desplegar en Vercel (dejar de depender del PC) | ❌ Pendiente |
+| 🔴 Alta | ~~Desplegar en Vercel~~ | ✅ Desplegado en `clashmanager.vercel.app` |
 | 🟡 Media | Conectar **achievements** a Firestore (usa `mockAchievements`) | ❌ Pendiente |
 | 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ❌ Pendiente |
 | 🟡 Media | PWA (service worker para instalar en celular) | ❌ Pendiente |
