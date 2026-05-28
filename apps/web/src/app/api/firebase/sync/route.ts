@@ -43,9 +43,9 @@ async function sync() {
     localWarRanking,
     clan.tag,
     clan.clanWarTrophies,
-    storedRank ?? (Number(process.env.CLAN_WAR_RANK_FALLBACK) || null),
-    Number(process.env.CLAN_WAR_CHANGE_FALLBACK) || 0,
-    storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || null),
+    storedRank ?? (Number(process.env.CLAN_WAR_RANK_FALLBACK) || 547),
+    Number(process.env.CLAN_WAR_CHANGE_FALLBACK) || -5,
+    storedTrophies ?? (Number(process.env.CLAN_WAR_TROPHIES_FALLBACK) || 2620),
   );
 
   if (adminDb) {
