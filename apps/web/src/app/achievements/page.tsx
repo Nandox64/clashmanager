@@ -48,7 +48,7 @@ export default function AchievementsPage() {
   const memberMedals = members.map((m) => ({
     member: m,
     medals: achievements.filter((a) => a.memberId === m.uid),
-  })).filter((m) => m.medals.length > 0);
+  })).filter((m) => m.medals.length > 0).sort((a, b) => b.medals.length - a.medals.length);
 
   return (
     <div className="space-y-6">
