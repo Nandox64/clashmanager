@@ -34,6 +34,16 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <div className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: -10,
+            backgroundImage: 'url("/logo_clase_pro.png")',
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "50% 50%",
+            backgroundSize: "min(120vw, 900px) auto",
+            opacity: 0.25,
+          }}
+        />
         <NavigationLoader />
         <AuthProvider>
           <AppShell>{children}</AppShell>

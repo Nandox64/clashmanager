@@ -39,19 +39,6 @@ body {
   position: relative;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("/logo_clase_pro.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: min(120vw, 900px) auto;
-  opacity: 0.25;
-  pointer-events: none;
-  z-index: 0;
-}
-
 body::after {
   content: "";
   position: fixed;

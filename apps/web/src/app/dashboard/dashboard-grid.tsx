@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
 import { MetricCard } from "@/components/shared/metric-card";
 import { TopCopas } from "@/components/dashboard/top-copas";
 import { TopDonadores } from "@/components/dashboard/top-donadores";
@@ -104,56 +105,60 @@ export function DashboardGrid() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard
-          title="Total Copas"
-          value={clan.stats.clanScore.toLocaleString()}
-          subtitle={`Promedio: ${avgTrophies.toLocaleString()}`}
-          trend="up"
-          trendValue="+2.1%"
-          icon={<Trophy size={16} />}
-        />
-        <MetricCard
-          title="Miembros"
-          value={`${members.length}`}
-          subtitle={`${activeMembers} activos`}
-          trend="up"
-          trendValue="+2"
-          icon={<Users size={16} />}
-        />
-        <MetricCard
-          title="Trofeos Guerra"
-          value={clan.stats.clanWarTrophies.toLocaleString()}
-          trend="up"
-          trendValue="+120"
-          icon={<Shield size={16} />}
-        />
-        <MetricCard
-          title="Salud del Clan"
-          value={`${clan.healthScore}%`}
-          subtitle={
-            clan.healthScore >= 80
-              ? "Excelente"
-              : clan.healthScore >= 60
-                ? "Buena"
-                : "Regular"
-          }
-          trend={
-            clan.healthScore >= 80
-              ? "up"
-              : clan.healthScore >= 60
-                ? "neutral"
-                : "down"
-          }
-          trendValue={
-            clan.healthScore >= 80
-              ? "Óptimo"
-              : clan.healthScore >= 60
-                ? "Estable"
-                : "Crítico"
-          }
-          icon={<Activity size={16} />}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Trophy size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Total Copas</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {clan.stats.clanScore.toLocaleString()}
+              </span>
+              <p className="text-[10px] text-clash-muted mt-0.5">
+                Promedio: {avgTrophies.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Users size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Miembros</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {members.length}
+              </span>
+              <p className="text-[10px] text-clash-muted mt-0.5">
+                {activeMembers} activos
+              </p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Shield size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Trofeos Guerra</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {clan.stats.clanWarTrophies.toLocaleString()}
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Activity size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Salud del Clan</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {clan.healthScore}%
+              </span>
+              <p className="text-[10px] text-clash-muted mt-0.5">
+                {clan.healthScore >= 80 ? "Excelente" : clan.healthScore >= 60 ? "Buena" : "Regular"}
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
