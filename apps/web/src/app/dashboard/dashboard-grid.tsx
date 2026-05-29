@@ -177,6 +177,12 @@ export function DashboardGrid() {
       </div>
 
       <Destacados />
+
+      <footer className="text-center pt-6 pb-4 border-t border-clash-border">
+        <p className="text-xs text-clash-muted/50 font-mono">
+          V.1.0 - 2026 &nbsp;&nbsp;&nbsp;&nbsp; "By Nandox64"
+        </p>
+      </footer>
     </div>
   );
 }
