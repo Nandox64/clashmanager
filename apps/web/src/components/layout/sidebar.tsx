@@ -46,14 +46,27 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle — only hamburger outside sidebar */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="toggle-btn fixed top-3 left-3 z-50 lg:hidden flex items-center justify-center"
-        aria-label="Open menu"
-      >
-        <Menu size={20} />
-      </button>
+      {/* Mobile top bar — always visible when sidebar is closed */}
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 lg:hidden bg-glass-strong border-b border-clash-border">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="toggle-btn flex items-center justify-center shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        <img
+          src="/logo_clase_pro.png"
+          alt="Clase Pro"
+          className="w-8 h-8 object-contain shrink-0"
+        />
+        <span className="text-sm font-bold" style={{ color: "var(--pm-gold)" }}>
+          Clash Manager
+        </span>
+        <span className="text-[10px] text-clash-muted ml-auto truncate max-w-24">
+          {clanName}
+        </span>
+      </div>
 
       {/* Mobile overlay */}
       {isOpen && (

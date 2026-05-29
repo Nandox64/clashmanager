@@ -1,21 +1,27 @@
 "use client";
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { MetricCard } from "@/components/shared/metric-card";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
-import { mockWeeklyStats, mockWars } from "@/lib/mock-data";
-import { BarChart3, Radar, RefreshCw } from "lucide-react";
+import type { Member } from "@clashmanager/shared";
+import { BarChart3, Radar } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 
 export default function AnalyticsPage() {
   const { loading, error, refetch } = useClanData();
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
-  const weeklyStats = mockWeeklyStats;
-  const lastWar = mockWars[mockWars.length - 1];
+
+  const totalDonations = members.reduce((a, m) => a + m.donations, 0);
+  const avgWarParticipation = members.length > 0
+    ? Math.round(members.reduce((a, m) => a + (m.weeklyStats?.warParticipation ?? 0), 0) / members.length)
+    : 0;
+  const currentWeekTrophies = members.reduce((a, m) => a + m.trophies, 0);
+  const avgTrophies = members.length > 0
+    ? Math.round(currentWeekTrophies / members.length)
+    : 0;
 
   if (error && !loaded) {
     return (
@@ -45,18 +51,17 @@ export default function AnalyticsPage() {
     );
   }
 
+  const effortScore = (m: Member) =>
+    m.trophies / 20 +
+    m.donations / 10 +
+    (m.weeklyStats?.warParticipation ?? 0) +
+    (m.weeklyStats?.activityDays ?? 0) * 50;
+
   const sortedByEffort = [...members].sort(
-    (a, b) =>
-      b.weeklyStats.trophiesGained +
-      b.weeklyStats.donationsGiven / 10 +
-      b.weeklyStats.warParticipation -
-      (a.weeklyStats.trophiesGained +
-        a.weeklyStats.donationsGiven / 10 +
-        a.weeklyStats.warParticipation)
+    (a, b) => effortScore(b) - effortScore(a)
   );
 
   const topEffort = sortedByEffort.slice(0, 3);
-  const lowEffort = sortedByEffort.slice(-3).reverse();
 
   return (
     <div className="space-y-6">
@@ -67,222 +72,89 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-         <MetricCard
-           title="Promedio Semanal"
-           value={`+${formatNumber(weeklyStats[weeklyStats.length - 1].totalTrophies - weeklyStats[0].totalTrophies)}`}
-           subtitle="Crecimiento total"
-           trend="up"
-           trendValue="+4.2%"
-           icon={<BarChart3 size={16} className="text-metallic-gold animate-icon-shine" />}
-         />
-         <MetricCard
-           title="Donaciones Totales"
-           value={formatNumber(
-             weeklyStats.reduce((a, s) => a + s.totalDonations, 0)
-           )}
-           subtitle="Últimas 8 semanas"
-           trend="up"
-           trendValue="+12%"
-         />
-         <MetricCard
-           title="Participación Guerra"
-           value={`${Math.round((lastWar.battlesPlayed / (lastWar.participants * 4)) * 100)}%`}
-           subtitle="Última guerra"
-           trend="up"
-           trendValue="+5%"
-         />
-         <MetricCard
-           title="Mejor Semana"
-           value={formatNumber(
-             Math.max(...weeklyStats.map((s) => s.totalTrophies))
-           )}
-           subtitle="Máximo histórico"
-         />
-       </div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard
+            title="Copas Totales"
+            value={formatNumber(currentWeekTrophies)}
+            subtitle="Todos los miembros"
+            icon={<BarChart3 size={16} className="text-metallic-gold animate-icon-shine" />}
+          />
+          <MetricCard
+            title="Promedio de Copas"
+            value={formatNumber(avgTrophies)}
+            subtitle="Por miembro"
+          />
+          <MetricCard
+            title="Donaciones Totales"
+            value={formatNumber(totalDonations)}
+            subtitle="Todos los miembros"
+          />
+          <MetricCard
+            title="Participación Guerra"
+            value={`${avgWarParticipation}%`}
+            subtitle="Promedio del clan"
+          />
+        </div>
 
-       {/* Weekly trend chart */}
+       {/* Donations leaderboard */}
        <Card>
           <CardHeader>
             <div>
-              <CardTitle className="text-metallic-gold bg-clip-text">Progreso Semanal</CardTitle>
-              <p className="text-xs text-clash-muted mt-0.5">Evolución de trofeos y donaciones por semana</p>
+              <CardTitle className="text-metallic-gold bg-clip-text">Top Donaciones</CardTitle>
+              <p className="text-xs text-clash-muted mt-0.5">Miembros con más donaciones</p>
             </div>
           </CardHeader>
-         <div className="h-48 flex gap-2">
-           {weeklyStats.map((week, i) => {
-             const max = Math.max(...weeklyStats.map((s) => s.totalTrophies));
-             const min = Math.min(...weeklyStats.map((s) => s.totalTrophies));
-             const range = max - min || 1;
-             const trophyPct = (week.totalTrophies - min) / range;
-             const donationPct =
-               week.totalDonations /
-               Math.max(...weeklyStats.map((s) => s.totalDonations));
-
-             return (
-               <div key={week.id} className="flex-1 h-full flex flex-col items-center justify-end gap-1">
-                 <div className="w-full flex-1 flex flex-col justify-end gap-0.5">
-                   <div
-                     className={`w-full rounded-t-sm transition-all ${
-                       i === weeklyStats.length - 1
-                         ? "bg-metallic-gold animate-metallic-shimmer"
-                         : "bg-gradient-to-t from-green-500/40 to-green-500/70"
-                     }`}
-                     style={{ flex: trophyPct * 0.5 }}
-                   />
-                   <div
-                     className="w-full rounded-t-sm bg-gradient-to-t from-clash-secondary/40 to-clash-secondary/70 transition-all"
-                     style={{ flex: donationPct * 0.5 }}
-                   />
-                 </div>
-                 <span className="text-[10px] text-clash-muted font-mono">
-                   S{i + 1}
-                 </span>
+         <div className="space-y-2">
+           {[...members]
+             .sort((a, b) => b.donations - a.donations)
+             .slice(0, 10)
+             .map((m, i) => (
+               <div key={m.uid} className="flex items-center gap-3 p-2 rounded-lg bg-glass">
+                 <span className="text-xs font-mono text-clash-muted w-4">#{i + 1}</span>
+                 <span className="text-sm text-clash-text flex-1 truncate">{m.displayName}</span>
+                 <span className="text-xs font-mono text-metallic-silver">{formatNumber(m.donations)}</span>
                </div>
-             );
-           })}
-         </div>
-         <div className="flex items-center gap-4 mt-3 text-xs text-clash-muted">
-           <div className="flex items-center gap-1.5">
-             <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-green-500/70 to-green-500/40" />
-             <span>Copas</span>
-           </div>
-           <div className="flex items-center gap-1.5">
-             <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-clash-secondary/70 to-clash-secondary/40" />
-             <span>Donaciones</span>
-           </div>
+             ))}
          </div>
        </Card>
 
-       {/* Matriz 2x2 - Rendimiento vs Actividad */}
-       <Card>
-          <CardHeader>
-            <div>
-              <CardTitle className="text-metallic-gold bg-clip-text">Matriz Rendimiento vs Actividad</CardTitle>
-              <p className="text-xs text-clash-muted mt-0.5">Clasifica miembros en estrellas, talento dormido, trabajadores y lastre</p>
-            </div>
-            <Radar size={16} className="text-metallic-gold animate-icon-shine" />
-          </CardHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-green-400 flex items-center gap-1">
-                ★ Estrellas
-              </h4>
-              {members
-                .filter(
-                  (m) =>
-                    m.weeklyStats.trophiesGained > 150 &&
-                    m.weeklyStats.activityDays >= 5
-                )
-                .slice(0, 3)
-                .map((m) => (
-                  <div
-                    key={m.uid}
-                    className="flex items-center gap-2 p-2 rounded bg-glass"
-                  >
-                    <Avatar name={m.displayName} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
-                        {m.displayName}
-                      </p>
-                      <p className="text-[10px] text-clash-muted">
-                        +{m.weeklyStats.trophiesGained} · {m.weeklyStats.activityDays}d
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-yellow-400 flex items-center gap-1">
-                ⚠️ Talento Dormido
-              </h4>
-              {members
-                .filter(
-                  (m) =>
-                    m.weeklyStats.trophiesGained > 150 &&
-                    m.weeklyStats.activityDays < 5
-                )
-                .slice(0, 3)
-                .map((m) => (
-                  <div
-                    key={m.uid}
-                    className="flex items-center gap-2 p-2 rounded bg-glass"
-                  >
-                    <Avatar name={m.displayName} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
-                        {m.displayName}
-                      </p>
-                      <p className="text-[10px] text-clash-muted">
-                        +{m.weeklyStats.trophiesGained} · {m.weeklyStats.activityDays}d
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-blue-400 flex items-center gap-1">
-                💪 Trabajadores
-              </h4>
-              {members
-                .filter(
-                  (m) =>
-                    m.weeklyStats.trophiesGained <= 150 &&
-                    m.weeklyStats.activityDays >= 5
-                )
-                .slice(0, 3)
-                .map((m) => (
-                  <div
-                    key={m.uid}
-                    className="flex items-center gap-2 p-2 rounded bg-glass"
-                  >
-                    <Avatar name={m.displayName} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
-                        {m.displayName}
-                      </p>
-                      <p className="text-[10px] text-clash-muted">
-                        +{m.weeklyStats.trophiesGained} · {m.weeklyStats.activityDays}d
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-red-400 flex items-center gap-1">
-                ❌ Lastre
-              </h4>
-              {members
-                .filter(
-                  (m) =>
-                    m.weeklyStats.trophiesGained <= 150 &&
-                    m.weeklyStats.activityDays < 5
-                )
-                .slice(0, 3)
-                .map((m) => (
-                  <div
-                    key={m.uid}
-                    className="flex items-center gap-2 p-2 rounded bg-glass"
-                  >
-                    <Avatar name={m.displayName} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
-                        {m.displayName}
-                      </p>
-                      <p className="text-[10px] text-clash-muted">
-                        +{m.weeklyStats.trophiesGained} · {m.weeklyStats.activityDays}d
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
-      </Card>
+        {/* Matriz 2x2 - Rendimiento vs Actividad */}
+        <Card>
+           <CardHeader>
+             <div>
+               <CardTitle className="text-metallic-gold bg-clip-text">Matriz Rendimiento vs Actividad</CardTitle>
+               <p className="text-xs text-clash-muted mt-0.5">Clasifica miembros por copas (rendimiento) y días activo (actividad)</p>
+             </div>
+             <Radar size={16} className="text-metallic-gold animate-icon-shine" />
+           </CardHeader>
+         <div className="space-y-4">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             {([
+               { key: "stars", label: "★ Estrellas", color: "text-green-400", filter: (m: Member) => m.trophies >= 6000 && (m.weeklyStats?.activityDays ?? 0) >= 4 },
+               { key: "talento", label: "⚠️ Talento Dormido", color: "text-yellow-400", filter: (m: Member) => m.trophies >= 6000 && (m.weeklyStats?.activityDays ?? 0) < 4 },
+               { key: "workers", label: "💪 Trabajadores", color: "text-blue-400", filter: (m: Member) => m.trophies < 6000 && (m.weeklyStats?.activityDays ?? 0) >= 4 },
+               { key: "lastre", label: "❌ Lastre", color: "text-red-400", filter: (m: Member) => m.trophies < 6000 && (m.weeklyStats?.activityDays ?? 0) < 4 },
+             ] as const).map((section) => (
+               <div key={section.key} className="space-y-2">
+                 <h4 className={`text-xs font-semibold ${section.color} flex items-center gap-1`}>
+                   {section.label}
+                 </h4>
+                 {members.filter(section.filter).slice(0, 3).map((m) => (
+                   <div key={m.uid} className="flex items-center gap-2 p-2 rounded bg-glass">
+                     <Avatar name={m.displayName} size="sm" />
+                     <div className="flex-1 min-w-0">
+                       <p className="text-xs font-medium truncate">{m.displayName}</p>
+                       <p className="text-[10px] text-clash-muted">
+                         🏆 {formatNumber(m.trophies)} · {(m.weeklyStats?.activityDays ?? 0)}d activo
+                       </p>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             ))}
+           </div>
+         </div>
+       </Card>
 
        {/* Comparativa de jugadores */}
        <Card>
@@ -307,11 +179,11 @@ export default function AnalyticsPage() {
                    {member.displayName}
                  </p>
                </div>
-               <div className="flex items-center gap-4 text-xs font-mono">
-                 <span className="text-green-400">+{member.weeklyStats.trophiesGained}</span>
-                 <span className="text-metallic-silver">{member.weeklyStats.donationsGiven}</span>
-                 <span className="text-metallic-gold">{member.weeklyStats.warParticipation}%</span>
-               </div>
+                <div className="flex items-center gap-4 text-xs font-mono">
+                  <span className="text-green-400">🏆{formatNumber(member.trophies)}</span>
+                  <span className="text-metallic-silver">📦{formatNumber(member.donations)}</span>
+                  <span className="text-metallic-gold">{member.weeklyStats?.warParticipation ?? 0}% guerra</span>
+                </div>
              </div>
            ))}
          </div>
@@ -327,12 +199,12 @@ export default function AnalyticsPage() {
           </CardHeader>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {members.slice(0, 10).map((member) => {
-            const score = Math.round(
-              (member.weeklyStats.trophiesGained / 300) * 30 +
-                (member.weeklyStats.donationsGiven / 1000) * 25 +
-                (member.weeklyStats.warParticipation / 100) * 25 +
-                (member.weeklyStats.activityDays / 7) * 20
-            );
+            const score = Math.min(100, Math.round(
+              (member.trophies / 6000) * 30 +
+                (member.donations / 5000) * 25 +
+                ((member.weeklyStats?.warParticipation ?? 0) / 100) * 25 +
+                ((member.weeklyStats?.activityDays ?? 1) / 7) * 20
+            ));
             return (
               <div key={member.uid} className="text-center p-3 rounded-lg bg-glass">
                 <Avatar name={member.displayName} size="md" className="mx-auto mb-2" />

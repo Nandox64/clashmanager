@@ -80,6 +80,9 @@ export function DashboardGrid() {
           <p className="text-sm text-clash-muted mt-0.5">
             Centro de control • {clan.name}
           </p>
+          <p className="text-xs text-clash-muted/60 mt-1">
+            Monitorea el rendimiento, actividad y logros de tu clan en tiempo real
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {loading && (
@@ -101,7 +104,7 @@ export function DashboardGrid() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard
           title="Total Copas"
           value={clan.stats.clanScore.toLocaleString()}

@@ -175,22 +175,22 @@ export default function MembersPage() {
                        <td className="p-3 text-right font-mono text-sm text-metallic-gold">
                          {member.trophies.toLocaleString()}
                        </td>
-                       <td className="p-3 text-right font-mono text-sm text-metallic-silver">
-                         {member.weeklyStats.donationsGiven}
+                        <td className="p-3 text-right font-mono text-sm text-metallic-silver">
+                          {member.weeklyStats?.donationsGiven ?? 0}
+                        </td>
+                       <td className="p-3 text-right">
+                         <Badge
+                           variant={
+                             (member.weeklyStats?.warParticipation ?? 0) >= 80
+                               ? "success"
+                               : (member.weeklyStats?.warParticipation ?? 0) >= 40
+                                 ? "warning"
+                                 : "danger"
+                           }
+                         >
+                           {member.weeklyStats?.warParticipation ?? 0}%
+                         </Badge>
                        </td>
-                      <td className="p-3 text-right">
-                        <Badge
-                          variant={
-                            member.weeklyStats.warParticipation >= 80
-                              ? "success"
-                              : member.weeklyStats.warParticipation >= 40
-                                ? "warning"
-                                : "danger"
-                          }
-                        >
-                          {member.weeklyStats.warParticipation}%
-                        </Badge>
-                      </td>
                       <td className="p-3 text-right">
                         <span
                           className={`font-mono text-xs ${getActivityColor(daysSinceActive)}`}
@@ -237,8 +237,8 @@ export default function MembersPage() {
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-clash-muted flex-wrap">
                     <span>🏆 {member.trophies.toLocaleString()}</span>
-                    <span>🎁 {member.weeklyStats.donationsGiven}</span>
-                    <span>⚔️ {member.weeklyStats.warParticipation}%</span>
+                    <span>🎁 {member.weeklyStats?.donationsGiven ?? 0}</span>
+                    <span>⚔️ {member.weeklyStats?.warParticipation ?? 0}%</span>
                   </div>
                 </div>
                 <span
