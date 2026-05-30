@@ -8,8 +8,12 @@ import { formatNumber } from "@/lib/utils";
 
 export function Destacados() {
   const members = useClanStore((s) => s.members);
-  const sorted = [...members].sort(
-    (a, b) => b.weeklyStats.trophiesGained - a.weeklyStats.trophiesGained
+  const hasDelta = members.some((m) => m.weeklyStats.trophiesGained > 0);
+
+  const sorted = [...members].sort((a, b) =>
+    hasDelta
+      ? b.weeklyStats.trophiesGained - a.weeklyStats.trophiesGained
+      : b.trophies - a.trophies
   );
   const topGainers = sorted.slice(0, 3);
 
@@ -18,14 +22,17 @@ export function Destacados() {
       <CardHeader>
         <div>
           <CardTitle>Jugadores Destacados ⭐</CardTitle>
-          <p className="text-xs text-clash-muted mt-0.5">Mejor rendimiento de la semana</p>
+          <p className="text-xs text-clash-muted mt-0.5">
+            {hasDelta ? "Mejor rendimiento de la semana" : "Jugadores con más copas"}
+          </p>
         </div>
         <Star size={16} className="text-clash-gold" />
       </CardHeader>
       <div className="space-y-3">
         {topGainers.map((member, i) => {
+          const delta = member.weeklyStats.trophiesGained;
           const badges = [];
-          if (member.weeklyStats.trophiesGained > 200) badges.push("🚀");
+          if (delta > 200) badges.push("🚀");
           if (member.weeklyStats.donationsGiven > 500) badges.push("🏅");
           if (member.weeklyStats.warParticipation === 100) badges.push("⚔️");
 
@@ -43,12 +50,13 @@ export function Destacados() {
                   <span className="text-xs">{badges.join(" ")}</span>
                 </div>
                 <p className="text-xs text-clash-muted">
-                  +{member.weeklyStats.trophiesGained} copas ·{" "}
-                  {member.weeklyStats.donationsGiven} donaciones
+                  {hasDelta
+                    ? `+${delta} copas · ${member.weeklyStats.donationsGiven} donaciones`
+                    : `🏆 ${member.trophies.toLocaleString()} copas`}
                 </p>
               </div>
               <span className="text-xs font-mono text-green-400">
-                +{formatNumber(member.weeklyStats.trophiesGained)}
+                {hasDelta ? `+${formatNumber(delta)}` : `#${i + 1}`}
               </span>
             </div>
           );

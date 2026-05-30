@@ -9,6 +9,7 @@ export function useClanData() {
   const setClan = useClanStore((s) => s.setClan);
   const setMembers = useClanStore((s) => s.setMembers);
   const setAchievements = useClanStore((s) => s.setAchievements);
+  const setWeeklyStats = useClanStore((s) => s.setWeeklyStats);
   const setLocalWarRank = useClanStore((s) => s.setLocalWarRank);
   const setLocalWarRankChange = useClanStore((s) => s.setLocalWarRankChange);
   const setWarRankMeta = useClanStore((s) => s.setWarRankMeta);
@@ -28,6 +29,7 @@ export function useClanData() {
       setClan(data.clan);
       setMembers(data.members);
       setAchievements(data.achievements ?? []);
+      setWeeklyStats(data.weeklyStats ?? []);
       setLocalWarRank(data.localWarRank ?? null);
       setLocalWarRankChange(data.localWarRankChange ?? 0);
       setWarRankMeta({

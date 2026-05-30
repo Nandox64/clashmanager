@@ -13,9 +13,11 @@ function encodeTag(tag: string): string {
 }
 
 /**
- * Intenta obtener los mazos de guerra actuales del jugador mediante la API de clan war.
- * Si falla (jugador sin clan, guerra no activa, error de red...), recurre a los mazos
- * únicos del battlelog (guerras pasadas) como fallback.
+ * Obtiene los mazos de guerra del jugador desde el battlelog.
+ * Solo considera batallas de River Race: riverRacePvP, riverRaceDuelColosseum, boatBattle.
+ * La CR API no expone el "mazo de guerra actual" como campo dedicado
+ * — el currentDeck del perfil es el mazo seleccionado en la UI del juego
+ * (clásica 1c1, 2c2, etc.) y no es confiable.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -23,52 +25,16 @@ export async function GET(req: Request) {
   if (!playerTagEncoded) {
     return NextResponse.json({ error: "Falta playerTag" }, { status: 400 });
   }
-  // Decode the URL-encoded tag (e.g., "%23ABC") to raw tag "#ABC"
   const playerTag = decodeURIComponent(playerTagEncoded);
-
   const token = getToken();
 
-  // ----------- 1️⃣ Intentar vía Clan War ------------
   try {
-    // Obtener datos del jugador para saber a qué clan pertenece
-    const playerRes = await fetch(`${BASE_URL}/players/${encodeTag(playerTag)}`,
-      { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } });
-    if (!playerRes.ok) throw new Error("player fetch error");
-    const playerData = await playerRes.json();
-    const clanTag: string | undefined = playerData.clan?.tag;
-
-    if (clanTag) {
-      const warRes = await fetch(`${BASE_URL}/clans/${encodeTag(clanTag)}/war`,
-        { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } });
-      if (warRes.ok) {
-        const warData = await warRes.json();
-        // Sólo consideramos guerras activas
-        if (warData.state && warData.state.toLowerCase() === "inwar") {
-          const member = (warData.clan?.members ?? []).find((m: any) =>
-            m.tag?.replace("#", "") === playerTag.replace("#", "")
-          );
-          if (member && member.warDeck?.cards?.length) {
-            const deck = {
-              name: "Mazo de guerra actual",
-              cards: member.warDeck.cards.map((c: any) => c.name),
-              elixirAvg: 0,
-              description: "Mazo de guerra del jugador (actual)",
-              isAI: false,
-            };
-            return NextResponse.json({ decks: [deck] });
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.error("Error obteniendo mazos de guerra actuales", e);
-    // Continuamos al fallback sin abortar
-  }
-
-  // ----------- 2️⃣ Fallback: Battlelog (guerras pasadas) ------------
-  try {
-    const battlelogRes = await fetch(`${BASE_URL}/players/${encodeTag(playerTag)}/battlelog`,
-      { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } });
+    const isDev = process.env.NODE_ENV === "development";
+    const battlelogRes = await fetch(`${BASE_URL}/players/${encodeTag(playerTag)}/battlelog`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: isDev ? "no-store" : undefined,
+      next: isDev ? undefined : { revalidate: 120 },
+    });
     if (!battlelogRes.ok) {
       const err = await battlelogRes.json().catch(() => ({ error: "Error" }));
       console.error("Error fetching battlelog", err);
@@ -77,24 +43,64 @@ export async function GET(req: Request) {
     const battlelog = await battlelogRes.json();
     const seen = new Set<string>();
     const warDecks: any[] = [];
+
     for (const b of battlelog) {
-      let deckCards: any[] = [];
-      if (b.deck?.cards) deckCards = b.deck.cards;
-      else if (b.team?.[0]?.deck?.cards) deckCards = b.team[0].deck.cards;
-      else if (b.opponent?.deck?.cards) deckCards = b.opponent.deck.cards;
-      if (!deckCards?.length) continue;
-      const names = deckCards.map((c: any) => c.name);
-      const key = names.sort().join(",");
-      if (seen.has(key)) continue;
-      seen.add(key);
-      warDecks.push({
-        name: `Mazo ${warDecks.length + 1}`,
-        cards: names,
-        elixirAvg: 0,
-        description: "Mazo de guerra del jugador (histórico)",
-        isAI: false,
-      });
       if (warDecks.length >= 4) break;
+      if (b.type !== "riverRacePvP" && b.type !== "riverRaceDuelColosseum" && b.type !== "boatBattle") continue;
+
+      let deckCards: any[] = [];
+      if (b.team?.[0]?.cards) deckCards = b.team[0].cards;
+      else continue;
+      if (!deckCards?.length) continue;
+
+      // Duelo coliseo: varias rondas en un mismo battle entry
+      if (b.type === "riverRaceDuelColosseum") {
+        const roundSize = 8;
+        const rounds = [];
+        for (let i = 0; i < deckCards.length; i += roundSize) {
+          const chunk = deckCards.slice(i, i + roundSize);
+          if (chunk.length === 8) rounds.push(chunk);
+        }
+        for (const round of rounds) {
+          const cardsData = round.map((c: any) => ({
+            name: c.name,
+            id: c.id,
+            maxLevel: c.maxLevel,
+            iconUrl: c.iconUrls?.medium || c.iconUrls?.default || null,
+          }));
+          const key = cardsData.map((c: any) => c.name).sort().join(",");
+          if (seen.has(key)) continue;
+          seen.add(key);
+          warDecks.push({
+            name: `Duelo Ronda ${warDecks.length + 1}`,
+            cards: cardsData,
+            elixirAvg: 0,
+            description: "Mazo de duelo coliseo",
+            isAI: false,
+          });
+          if (warDecks.length >= 4) break;
+        }
+      } else {
+        // riverRacePvP o boatBattle — exactamente 8 cartas
+        if (deckCards.length !== 8) continue;
+        const cardsData = deckCards.map((c: any) => ({
+          name: c.name,
+          id: c.id,
+          maxLevel: c.maxLevel,
+          iconUrl: c.iconUrls?.medium || c.iconUrls?.default || null,
+        }));
+        const key = cardsData.map((c: any) => c.name).sort().join(",");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const label = b.type === "boatBattle" ? "Mazo de Barco" : "Mazo de Guerra (1v1)";
+        warDecks.push({
+          name: `${label} ${warDecks.length + 1}`,
+          cards: cardsData,
+          elixirAvg: 0,
+          description: "Mazo de guerra del jugador (histórico)",
+          isAI: false,
+        });
+      }
     }
     return NextResponse.json({ decks: warDecks });
   } catch (e) {

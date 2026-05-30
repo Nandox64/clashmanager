@@ -186,6 +186,14 @@ export function getDisplayLevel(apiLevel: number, rarity: string): number {
   }
 }
 
+const BASE_API_MAX_LEVEL: Record<string, number> = {
+  common: 14,
+  rare: 12,
+  epic: 9,
+  legendary: 6,
+  champion: 4,
+};
+
 export function deduplicateCards(
   cards: { name: string; level: number; maxLevel: number; iconUrls?: Record<string, string> }[]
 ): RawPlayerCard[] {
@@ -200,7 +208,7 @@ export function deduplicateCards(
 
     const ratio = displayMaxLevel > 0 ? displayLevel / displayMaxLevel : 0;
     const existing = map.get(baseName);
-    const evolved = isHeroOrEvo(c.name);
+    const evolved = c.maxLevel > (BASE_API_MAX_LEVEL[rarity] ?? 14);
 
     const card: RawPlayerCard = {
       name: baseName,
@@ -245,11 +253,19 @@ export function getDeckShareLink(cardNames: string[]): string {
 
 const CARD_IMAGE_BASE = "https://cdn.royaleapi.com/static/img/cards";
 
+export function isCardEvolved(
+  maxLevel: number | undefined,
+  rarity: string
+): boolean {
+  const baseMax = BASE_API_MAX_LEVEL[rarity] ?? 14;
+  return maxLevel != null && maxLevel > baseMax;
+}
+
 export function getCardImageUrl(name: string, isEvolvedFlag?: boolean): string {
   const card = findCard(name);
   const baseName = card?.name ?? name;
   const slug = toCardSlug(baseName);
-  // Use explicit flag if provided, otherwise infer with isHeroOrEvo helper.
-  const suffix = (isEvolvedFlag ?? isHeroOrEvo(name)) ? "-ev" : "";
-  return `${CARD_IMAGE_BASE}/${slug}${suffix}.png`;
+  // NOTE: the CDN doesn't serve evolution-specific images (firecracker-evo.png 404s).
+  // For correct evolution art, use iconUrl from the CR API response instead.
+  return `${CARD_IMAGE_BASE}/${slug}.png`;
 }

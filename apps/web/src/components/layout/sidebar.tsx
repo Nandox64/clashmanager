@@ -36,13 +36,13 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const clan = useClanStore((s) => s.clan);
-  const clanName    = clan?.name || "Clash Manager";
-  const clanTag     = clan?.tag  || "#GLQVYCUL";
+  const clanName    = clan?.name || "...";
+  const clanTag     = clan?.tag  || "";
   const clanTrophies = clan?.stats?.clanScore || 0;
   const initials = user?.displayName
     ? user.displayName.slice(0, 2).toUpperCase()
-    : "CM";
-  const userName = user?.displayName || "Jugador";
+    : "";
+  const userName = user?.displayName || "";
 
   return (
     <>

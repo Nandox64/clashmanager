@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Member, Clan, Achievement } from "@clashmanager/shared";
+import type { Member, Clan, Achievement, WeeklyClanStats, Recruit, AutomationRule, ClanEvent, LogEntry } from "@clashmanager/shared";
 
 const emptyClan: Clan = {
   id: "",
@@ -30,6 +30,11 @@ interface ClanState {
   clan: Clan;
   members: Member[];
   achievements: Achievement[];
+  weeklyStats: WeeklyClanStats[];
+  recruits: Recruit[];
+  rules: AutomationRule[];
+  events: ClanEvent[];
+  logs: LogEntry[];
   selectedMember: Member | null;
   localWarRank: number | null;
   localWarRankChange: number;
@@ -40,6 +45,11 @@ interface ClanState {
   setClan: (clan: Clan) => void;
   setMembers: (members: Member[]) => void;
   setAchievements: (achievements: Achievement[]) => void;
+  setWeeklyStats: (stats: WeeklyClanStats[]) => void;
+  setRecruits: (recruits: Recruit[]) => void;
+  setRules: (rules: AutomationRule[]) => void;
+  setEvents: (events: ClanEvent[]) => void;
+  setLogs: (logs: LogEntry[]) => void;
   setSelectedMember: (member: Member | null) => void;
   setLocalWarRank: (rank: number | null) => void;
   setLocalWarRankChange: (change: number) => void;
@@ -55,6 +65,11 @@ export const useClanStore = create<ClanState>((set) => ({
   clan: emptyClan,
   members: [],
   achievements: [],
+  weeklyStats: [],
+  recruits: [],
+  rules: [],
+  events: [],
+  logs: [],
   selectedMember: null,
   localWarRank: null,
   localWarRankChange: 0,
@@ -65,6 +80,11 @@ export const useClanStore = create<ClanState>((set) => ({
   setClan: (clan) => set({ clan }),
   setMembers: (members) => set({ members }),
   setAchievements: (achievements) => set({ achievements }),
+  setWeeklyStats: (stats) => set({ weeklyStats: stats }),
+  setRecruits: (recruits) => set({ recruits }),
+  setRules: (rules) => set({ rules }),
+  setEvents: (events) => set({ events }),
+  setLogs: (logs) => set({ logs }),
   setSelectedMember: (member) => set({ selectedMember: member }),
   setLocalWarRank: (rank) => set({ localWarRank: rank }),
   setLocalWarRankChange: (change) => set({ localWarRankChange: change }),

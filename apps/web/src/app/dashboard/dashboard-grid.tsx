@@ -15,6 +15,7 @@ import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { Trophy, Users, Activity, Shield, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { barContainerStyle, barTrackStyle, barFillStyle } from "@/lib/utils";
 
 export function DashboardGrid() {
   const { loading, error, refetch } = useClanData();
@@ -153,7 +154,11 @@ export function DashboardGrid() {
               <span className="text-lg font-bold font-mono text-clash-text">
                 {clan.healthScore}%
               </span>
-              <p className="text-[10px] text-clash-muted mt-0.5">
+              <div className="mt-1" style={{ ...barContainerStyle, height: "6px" }}>
+                <div style={barTrackStyle} />
+                <div style={barFillStyle(clan.healthScore)} />
+              </div>
+              <p className="text-[10px] text-clash-muted mt-1">
                 {clan.healthScore >= 80 ? "Excelente" : clan.healthScore >= 60 ? "Buena" : "Regular"}
               </p>
             </div>

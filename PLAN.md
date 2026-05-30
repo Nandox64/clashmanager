@@ -631,7 +631,7 @@ App carga (PC o celular)
 
 ## Pendiente / Próximos Pasos
 
-### Últimos Avances (completados)
+### Últimos Avances (Sesión actual — Mazos de Guerra + Evoluciones)
 - **Botón metálico con bisel** – ✅ Variante `metal` añadida en `components/ui/button.tsx`
 - **Imágenes correctas para héroes y evoluciones** – ✅ Helper `isHeroOrEvo` en `getCardImageUrl`
 - **Carga de mazos de guerra anteriores** – ✅ Fallback a `battlelog` implementado
@@ -657,6 +657,23 @@ App carga (PC o celular)
 - **warParticipation real** – ✅ Extraído de `currentRiverRace.participants` (decksUsed/4 * 100%)
 - **Limpieza automática de ex-miembros** – ✅ `saveMembers` elimina documentos de miembros que ya no están en la respuesta de la API
 
+### War Decks — Carga de Mazos de Guerra
+- **Endpoint corregido** – ✅ Cambiado de `/clans/{tag}/war` (no existe) a usar battlelog como única fuente
+- **Tipos de batalla reales** – ✅ `riverRacePvP`, `riverRaceDuelColosseum`, `boatBattle` (en vez de `warDay`/`clanMateWarDay` obsoletos)
+- **Estructura battlelog corregida** – ✅ `team[0].cards` en vez de `team[0].deck.cards`
+- **Duelo coliseo** – ✅ Partir `team[0].cards` en chunks de 8 → 1 mazo por ronda
+- **Validación 8 cartas** – ✅ Rechazar decks con length !== 8 (filtra ruido)
+- **Cache** – ✅ `no-store` en dev para datos frescos
+- **Card Mazos de Guerra** – ✅ Movido al primer lugar en el grid
+- **Limpiar al cambiar miembro** – ✅ Al cambiar miembro se borran warDecks, trophyDeck, errores anteriores
+- **CardData con iconUrl** – ✅ load-war-decks devuelve `{name, id, maxLevel, iconUrl}` por carta
+
+### Evoluciones — Imagen + Detección
+- **`deduplicateCards`** – ✅ Detecta evos por `c.maxLevel > BASE_API_MAX_LEVEL[rarity]` (antes usaba `id >= 28000000`, daba falsos positivos)
+- **`getCardImageUrl`** – ✅ Eliminado `-ev` suffix (CDN de RoyaleAPI no tiene imágenes de evo)
+- **`top-cards.tsx`** – ✅ Usa `card.iconUrl` de la API como primera opción, cae a CDN como fallback
+- **`deck-card.tsx`** – ✅ Usa `iconUrl` de la API + detecta evo por `maxLevel` con badge EVO
+
 ### Git Workflow
 - `main` → producción (Vercel auto-deploy)
 - `dev/*` → desarrollo sin disparar deploy
@@ -675,6 +692,8 @@ App carga (PC o celular)
 | 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ❌ Pendiente |
 | 🟡 Media | PWA (service worker para instalar en celular) | ❌ Pendiente |
 | 🟡 Media | Auto-deploy Vercel desde GitHub | ❌ Pendiente (conectar repo en Vercel Dashboard) |
+| 🟡 Media | ~~Carga de mazos de guerra (battlelog)~~ | ✅ `rivRacePvP`, `rivRaceDuelColosseum`, `boatBattle` |
+| 🟡 Media | ~~Detección de evoluciones~~ | ✅ Por `maxLevel > baseMaxLevel` + `iconUrl` API |
 | 🟢 Baja | Command palette (⌘K) | ❌ Pendiente |
 | 🟢 Baja | Testing (Vitest + Playwright) | ❌ Pendiente |
 | 🟢 Baja | Webhook Discord para alertas automáticas | ❌ Pendiente |

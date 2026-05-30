@@ -59,17 +59,34 @@ export function RendimientoSemanal() {
           </div>
         ))}
       </div>
-      <div className="mt-4 h-16 flex items-end gap-1">
-        {Array.from({ length: 7 }).map((_, i) => {
-          const height = 20 + Math.floor(Math.random() * 60);
-          return (
-            <div
-              key={i}
-              className="flex-1 rounded-t-sm bg-metallic-gold animate-metallic-shimmer"
-              style={{ height: `${height}%` }}
-            />
-          );
-        })}
+      <div className="mt-4">
+        <p className="text-[10px] text-clash-muted mb-2">Distribución de actividad</p>
+        <div className="flex gap-1">
+          {["active", "risk", "inactive"].map((status) => {
+            const count = members.filter((m) => m.status === status).length;
+            const pct = members.length > 0 ? (count / members.length) * 100 : 0;
+            const colors: Record<string, string> = {
+              active: "bg-clash-success",
+              risk: "bg-yellow-500",
+              inactive: "bg-clash-error",
+            };
+            const labels: Record<string, string> = {
+              active: "Activos",
+              risk: "En riesgo",
+              inactive: "Inactivos",
+            };
+            return (
+              <div key={status} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  className={`w-full rounded-t-sm ${colors[status]}`}
+                  style={{ height: `${Math.max(pct, 4)}%` }}
+                />
+                <span className="text-[10px] font-mono text-clash-muted">{count}</span>
+                <span className="text-[8px] text-clash-muted/60">{labels[status]}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </Card>
   );

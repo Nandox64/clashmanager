@@ -1,7 +1,7 @@
 import "server-only";
 
 import { adminDb } from "./firebase-admin";
-import type { Clan, Member, Achievement } from "@clashmanager/shared";
+import type { Clan, Member, Achievement, Recruit, AutomationRule, ClanEvent, LogEntry, WeeklyClanStats } from "@clashmanager/shared";
 
 const CLANS_COLLECTION = "clans";
 
@@ -67,6 +67,8 @@ export async function getMembersFromFirestore(
       return {
         uid: doc.id,
         ...data,
+        totalWars: data.totalWars ?? 0,
+        warsParticipated: data.warsParticipated ?? 0,
         weeklyStats: data.weeklyStats ?? {
           trophiesGained: 0,
           donationsGiven: data.donations ?? 0,
@@ -180,5 +182,193 @@ export async function getLocalWarTrophies(clanTag: string): Promise<number | nul
     return snap.data()?.localWarTrophies ?? null;
   } catch {
     return null;
+  }
+}
+
+// ── War History (Cumulative) ──
+
+export async function getLastRaceKey(clanTag: string): Promise<string | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    return snap.data()?.lastRaceKey ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLastRaceKey(clanTag: string, key: string) {
+  const ref = getClanDocRef(clanTag);
+  await ref.set({ lastRaceKey: key, updatedAt: Date.now() }, { merge: true });
+}
+
+export function extractWarHistory(
+  members: Member[]
+): Map<string, { totalWars: number; warsParticipated: number }> {
+  const map = new Map<string, { totalWars: number; warsParticipated: number }>();
+  for (const m of members) {
+    map.set(m.playerTag, {
+      totalWars: m.totalWars ?? 0,
+      warsParticipated: m.warsParticipated ?? 0,
+    });
+  }
+  return map;
+}
+
+// ── Recruits ──
+
+export async function saveRecruits(clanTag: string, recruits: Recruit[]) {
+  const ref = getClanDocRef(clanTag);
+  const recruitsRef = ref.collection("recruits");
+  const batch = adminDb!.batch();
+
+  const existingSnap = await recruitsRef.select().get();
+  const currentIds = new Set(recruits.map(r => r.id));
+  existingSnap.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  recruits.forEach((recruit) => {
+    const recruitRef = recruitsRef.doc(recruit.id);
+    batch.set(recruitRef, { ...recruit, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getRecruits(clanTag: string): Promise<Recruit[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("recruits").orderBy("appliedAt", "desc").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Recruit));
+  } catch {
+    return [];
+  }
+}
+
+// ── Automation Rules ──
+
+export async function saveRules(clanTag: string, rules: AutomationRule[]) {
+  const ref = getClanDocRef(clanTag);
+  const rulesRef = ref.collection("rules");
+  const batch = adminDb!.batch();
+
+  const existingSnap = await rulesRef.select().get();
+  const currentIds = new Set(rules.map(r => r.id));
+  existingSnap.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  rules.forEach((rule) => {
+    const ruleRef = rulesRef.doc(rule.id);
+    batch.set(ruleRef, { ...rule, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getRules(clanTag: string): Promise<AutomationRule[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("rules").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as AutomationRule));
+  } catch {
+    return [];
+  }
+}
+
+// ── Clan Events ──
+
+export async function saveEvents(clanTag: string, events: ClanEvent[]) {
+  const ref = getClanDocRef(clanTag);
+  const eventsRef = ref.collection("events");
+  const batch = adminDb!.batch();
+
+  const existingSnap = await eventsRef.select().get();
+  const currentIds = new Set(events.map(e => e.id));
+  existingSnap.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  events.forEach((event) => {
+    const eventRef = eventsRef.doc(event.id);
+    batch.set(eventRef, { ...event, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getEvents(clanTag: string): Promise<ClanEvent[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("events").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ClanEvent));
+  } catch {
+    return [];
+  }
+}
+
+// ── Logs ──
+
+export async function saveLogs(clanTag: string, logs: LogEntry[]) {
+  const ref = getClanDocRef(clanTag);
+  const logsRef = ref.collection("logs");
+  const batch = adminDb!.batch();
+
+  logs.forEach((log) => {
+    const logRef = logsRef.doc(log.id);
+    batch.set(logRef, { ...log, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getLogs(clanTag: string, limit = 20): Promise<LogEntry[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("logs").orderBy("timestamp", "desc").limit(limit).get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as LogEntry));
+  } catch {
+    return [];
+  }
+}
+
+// ── Weekly Clan Stats ──
+
+export async function saveWeeklyStats(clanTag: string, stats: WeeklyClanStats[]) {
+  const ref = getClanDocRef(clanTag);
+  const statsRef = ref.collection("weeklyStats");
+  const batch = adminDb!.batch();
+
+  const existingSnap = await statsRef.select().get();
+  const currentIds = new Set(stats.map(s => s.id));
+  existingSnap.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  stats.forEach((stat) => {
+    const statRef = statsRef.doc(stat.id);
+    batch.set(statRef, { ...stat, updatedAt: Date.now() }, { merge: true });
+  });
+
+  await batch.commit();
+}
+
+export async function getWeeklyStats(clanTag: string): Promise<WeeklyClanStats[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("weeklyStats").orderBy("weekStart", "asc").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as WeeklyClanStats));
+  } catch {
+    return [];
   }
 }

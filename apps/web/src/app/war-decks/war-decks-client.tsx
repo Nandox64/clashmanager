@@ -20,7 +20,7 @@ interface PlayerCard {
 
 interface DeckResult {
   name: string;
-  cards: string[];
+  cards: (string | { name: string; id?: number; maxLevel?: number; iconUrl?: string | null })[];
   elixirAvg: number;
   description: string;
   isAI: boolean;
@@ -36,6 +36,7 @@ export function WarDecksClient() {
   const [topCards, setTopCards] = useState<PlayerCard[]>([]);
   const [topCardsLoading, setTopCardsLoading] = useState(false);
   const [loadingWarDecks, setLoadingWarDecks] = useState(false);
+  const [loadedWarDecks, setLoadedWarDecks] = useState(false);
   const [warDecksError, setWarDecksError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +63,13 @@ export function WarDecksClient() {
 
   useEffect(() => {
     setDecks([]);
+    setWarDecks([]);
+    setTrophyDeck([]);
     setTopCards([]);
+    setLoadedWarDecks(false);
+    setWarDecksError(null);
+    setError(null);
+    setTrophyError(null);
     if (selectedTag) {
       fetchTopCards(selectedTag);
     }
@@ -72,6 +79,7 @@ export function WarDecksClient() {
     if (!selectedTag) return;
     setLoadingWarDecks(true);
     setWarDecksError(null);
+    setLoadedWarDecks(false);
     try {
       const res = await fetch(`/api/ai/load-war-decks?playerTag=${encodeURIComponent(selectedTag)}`);
       if (!res.ok) {
@@ -84,6 +92,7 @@ export function WarDecksClient() {
       setWarDecksError(err instanceof Error ? err.message : "Error al conectar");
     } finally {
       setLoadingWarDecks(false);
+      setLoadedWarDecks(true);
     }
   };
 
@@ -186,6 +195,52 @@ export function WarDecksClient() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader>
+            <CardTitle>Mazos de Guerra</CardTitle>
+            <RefreshCw size={16} className="text-clash-gold" />
+          </CardHeader>
+          <p className="text-xs text-clash-muted mb-3">
+            Carga los mazos de guerra actuales o históricos
+          </p>
+          <Button
+            onClick={handleLoadWarDecks}
+            disabled={!selectedTag || loadingWarDecks}
+            size="lg"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
+          >
+            {loadingWarDecks ? (
+              <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
+            ) : (
+              <RefreshCw size={20} className="mr-2" />
+            )}
+            {loadingWarDecks ? "Cargando..." : "Cargar Mazos"}
+          </Button>
+          {warDecksError && (
+            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+              <AlertCircle size={12} />
+              {warDecksError}
+            </div>
+          )}
+          {loadedWarDecks && warDecks.length === 0 && !warDecksError && (
+            <p className="text-xs text-clash-muted mt-3 text-center">
+              No se encontraron batallas de guerra.
+              <br />
+              El jugador debe participar en la guerra de clanes.
+            </p>
+          )}
+          {warDecks.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs text-clash-muted font-medium">Mazos de guerra actuales</p>
+              <div className="grid grid-cols-1 gap-2">
+                {warDecks.map((deck, i) => (
+                  <DeckCard key={i} deck={deck} index={i} />
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Generar Mazos IA</CardTitle>
             <Sparkles size={16} className="text-clash-gold" />
           </CardHeader>
@@ -257,45 +312,6 @@ export function WarDecksClient() {
               <p className="text-xs text-clash-muted font-medium">Mazo de trofeos generado</p>
               <div className="grid grid-cols-1 gap-2">
                 {trophyDeck.map((deck, i) => (
-                  <DeckCard key={i} deck={deck} index={i} />
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Mazos de Guerra</CardTitle>
-            <RefreshCw size={16} className="text-clash-gold" />
-          </CardHeader>
-          <p className="text-xs text-clash-muted mb-3">
-            Carga los mazos de guerra actuales o históricos
-          </p>
-          <Button
-            onClick={handleLoadWarDecks}
-            disabled={!selectedTag || loadingWarDecks}
-            size="lg"
-            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
-          >
-            {loadingWarDecks ? (
-              <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
-            ) : (
-              <RefreshCw size={20} className="mr-2" />
-            )}
-            {loadingWarDecks ? "Cargando..." : "Cargar Mazos"}
-          </Button>
-          {warDecksError && (
-            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-              <AlertCircle size={12} />
-              {warDecksError}
-            </div>
-          )}
-          {warDecks.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-xs text-clash-muted font-medium">Mazos de guerra actuales</p>
-              <div className="grid grid-cols-1 gap-2">
-                {warDecks.map((deck, i) => (
                   <DeckCard key={i} deck={deck} index={i} />
                 ))}
               </div>

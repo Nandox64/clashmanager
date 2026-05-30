@@ -40,6 +40,8 @@ export interface Member {
   clanPoints: number;
   xp: number;
   weeklyStats: WeeklyStats;
+  totalWars: number;
+  warsParticipated: number;
 }
 
 export interface WeeklyStats {

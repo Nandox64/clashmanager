@@ -4,16 +4,55 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { mockAutomationRules, mockEvents, mockLogs } from "@/lib/mock-data";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { Settings, Bell, Shield, Webhook, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
-  const { loading, error, refetch } = useClanData();
+  const { loading: clanLoading, error, refetch } = useClanData();
   const clan = useClanStore((s) => s.clan);
   const loaded = useClanStore((s) => s.loaded);
-  const rules = mockAutomationRules;
+  const storeRules = useClanStore((s) => s.rules);
+  const setStoreRules = useClanStore((s) => s.setRules);
+  const storeEvents = useClanStore((s) => s.events);
+  const setStoreEvents = useClanStore((s) => s.setEvents);
+  const storeLogs = useClanStore((s) => s.logs);
+  const setStoreLogs = useClanStore((s) => s.setLogs);
+
+  const [rules, setRules] = useState(storeRules);
+  const [events, setEvents] = useState(storeEvents);
+  const [logs, setLogs] = useState(storeLogs);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+
+  const fetchSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Error al cargar ajustes");
+      const data = await res.json();
+      setRules(data.rules ?? []);
+      setEvents(data.events ?? []);
+      setLogs(data.logs ?? []);
+      setStoreRules(data.rules ?? []);
+      setStoreEvents(data.events ?? []);
+      setStoreLogs(data.logs ?? []);
+    } catch {
+      // Silently fall back to current state
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (storeRules.length > 0) {
+      setRules(storeRules);
+      setEvents(storeEvents);
+      setLogs(storeLogs);
+    } else if (loaded) {
+      fetchSettings();
+    }
+  }, [loaded]);
 
   if (error && !loaded) {
     return (
@@ -22,7 +61,7 @@ export default function SettingsPage() {
           <p className="text-sm text-clash-error">{error}</p>
           <button
             onClick={refetch}
-            disabled={loading}
+            disabled={clanLoading}
             className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
           >
             Reintentar
@@ -42,8 +81,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-  const events = mockEvents;
-  const logs = mockLogs.slice(0, 5);
 
   return (
     <div className="space-y-6">

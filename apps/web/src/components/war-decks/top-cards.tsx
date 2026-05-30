@@ -71,7 +71,7 @@ export function TopCards({ cards, title }: TopCardsProps) {
           >
             <div className="relative flex-1 flex items-center justify-center w-full">
               <img
-                src={getCardImageUrl(card.name, card.isEvolved)}
+                src={card.iconUrl || getCardImageUrl(card.name)}
                 alt={card.name}
                 className="w-16 h-20 object-contain drop-shadow-lg"
                 loading="lazy"

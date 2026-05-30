@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useClanStore } from "@/lib/store";
 import { Swords, Trophy, Users, Activity, MapPin, TrendingUp, TrendingDown, HelpCircle } from "lucide-react";
+import { barContainerStyle, barTrackStyle, barFillStyle } from "@/lib/utils";
 
 export function GuerraActiva() {
   const clan = useClanStore((s) => s.clan);
@@ -15,8 +16,8 @@ export function GuerraActiva() {
   const members = useClanStore((s) => s.members);
 
   const activeMembers = members.filter((m) => m.status === "active").length;
-  const participation = members.length > 0
-    ? Math.round((activeMembers / members.length) * 100)
+  const avgWarParticipation = members.length > 0
+    ? Math.round(members.reduce((sum, m) => sum + (m.weeklyStats?.warParticipation ?? 0), 0) / members.length)
     : 0;
 
   const confidenceIcon = warRankConfidence === "exact"
@@ -89,15 +90,13 @@ export function GuerraActiva() {
           <span className="text-sm text-clash-muted flex items-center gap-1.5">
             <Activity size={14} /> Participación
           </span>
-          <Badge variant={participation >= 70 ? "success" : "warning"}>
-            {participation}%
+          <Badge variant={avgWarParticipation >= 70 ? "success" : "warning"}>
+            {avgWarParticipation}%
           </Badge>
         </div>
-         <div className="w-full bg-glass rounded-full h-2 mt-1">
-           <div
-             className="h-full rounded-full bg-metallic-gold animate-metallic-shimmer"
-             style={{ width: `${participation}%` }}
-           />
+         <div className="mt-1" style={{ ...barContainerStyle, height: "8px" }}>
+           <div style={barTrackStyle} />
+           <div style={barFillStyle(avgWarParticipation)} />
          </div>
       </div>
     </Card>

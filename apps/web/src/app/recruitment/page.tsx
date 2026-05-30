@@ -4,11 +4,41 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { mockRecruits } from "@/lib/mock-data";
-import { UserPlus, Check, X, Clock } from "lucide-react";
+import { useClanStore } from "@/lib/store";
+import { UserPlus, Check, X, Clock, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function RecruitmentPage() {
-  const recruits = mockRecruits;
+  const storeRecruits = useClanStore((s) => s.recruits);
+  const setStoreRecruits = useClanStore((s) => s.setRecruits);
+  const loaded = useClanStore((s) => s.loaded);
+  const [recruits, setRecruits] = useState(storeRecruits);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRecruits = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/recruits");
+      if (!res.ok) throw new Error("Error al cargar reclutas");
+      const data = await res.json();
+      setRecruits(data.recruits ?? []);
+      setStoreRecruits(data.recruits ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error de conexión");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (storeRecruits.length > 0) {
+      setRecruits(storeRecruits);
+    } else if (loaded) {
+      fetchRecruits();
+    }
+  }, [loaded]);
 
   const statusConfig = {
     pending: { label: "Pendiente", variant: "warning" as const, icon: Clock },
@@ -17,13 +47,46 @@ export default function RecruitmentPage() {
     rejected: { label: "Rechazado", variant: "danger" as const, icon: X },
   };
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-3">
+          <p className="text-sm text-clash-error">{error}</p>
+          <button
+            onClick={fetchRecruits}
+            disabled={loading}
+            className="px-3 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-xs font-medium hover:brightness-110 disabled:opacity-50"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loaded && loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-3">
+          <img src="/carga4.gif" alt="Cargando..." className="w-24 h-24 mx-auto" />
+          <p className="text-sm text-clash-muted">Cargando reclutas...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-       <div>
-         <h1 className="text-xl font-bold text-metallic-gold bg-clip-text">Reclutamiento</h1>
-         <p className="text-sm text-clash-muted mt-0.5">
-           Evalúa y gestiona nuevos candidatos
-         </p>
+       <div className="flex items-center justify-between">
+         <div>
+           <h1 className="text-xl font-bold text-metallic-gold bg-clip-text">Reclutamiento</h1>
+           <p className="text-sm text-clash-muted mt-0.5">
+             Evalúa y gestiona nuevos candidatos
+           </p>
+         </div>
+         <button onClick={fetchRecruits} disabled={loading} title="Actualizar">
+           <RefreshCw size={16} className={`text-clash-muted hover:text-clash-text transition-colors ${loading ? "animate-spin" : ""}`} />
+         </button>
        </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

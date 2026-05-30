@@ -34,3 +34,37 @@ export function getActivityColor(daysSinceActive: number): string {
   if (daysSinceActive <= 3) return "text-orange-400";
   return "text-red-400";
 }
+
+const RAINBOW_SOLID = "linear-gradient(to right, #ef4444, #eab308, #22c55e)";
+const RAINBOW_TRACK = "linear-gradient(to right, rgba(239,68,68,0.2), rgba(234,179,8,0.2), rgba(34,197,94,0.2))";
+
+export const barContainerStyle: Record<string, string> = {
+  position: "relative",
+  width: "100%",
+  overflow: "hidden",
+  borderRadius: "9999px",
+};
+
+export const barTrackStyle: Record<string, string> = {
+  position: "absolute",
+  inset: "0",
+  background: RAINBOW_TRACK,
+  borderRadius: "9999px",
+};
+
+export function barFillStyle(value: number): Record<string, string> {
+  const pct = Math.min(100, Math.max(0, value));
+  return {
+    position: "absolute",
+    left: "0",
+    top: "0",
+    bottom: "0",
+    width: `${pct}%`,
+    background: RAINBOW_SOLID,
+    backgroundSize: `${pct === 0 ? 100 : 10000 / pct}% 100%`,
+    backgroundPosition: "left center",
+    backgroundRepeat: "no-repeat",
+    borderRadius: "9999px",
+    transition: "width 500ms",
+  };
+}

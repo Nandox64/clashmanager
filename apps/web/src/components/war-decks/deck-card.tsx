@@ -3,17 +3,28 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Brain, Share2, Check } from "lucide-react";
 import { ElixirIcon } from "@/components/ui/elixir-icon";
-import { findCard, getCardImageUrl, isHeroOrEvo, getDeckShareLink } from "@/lib/cards";
+import { findCard, getCardImageUrl, getDeckShareLink, isCardEvolved } from "@/lib/cards";
+
+interface CardData {
+  name: string;
+  id?: number;
+  maxLevel?: number;
+  iconUrl?: string | null;
+}
 
 interface DeckCardProps {
   deck: {
     name: string;
-    cards: string[];
+    cards: (string | CardData)[];
     elixirAvg: number;
     description: string;
     isAI: boolean;
   };
   index: number;
+}
+
+function toCardData(card: string | CardData): CardData {
+  return typeof card === "string" ? { name: card } : card;
 }
 
 function rarityBorder(rarity: string): string {
@@ -31,10 +42,11 @@ export function DeckCard({ deck, index }: DeckCardProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    const link = getDeckShareLink(deck.cards);
+    const cardNames = deck.cards.map((c) => toCardData(c).name);
+    const link = getDeckShareLink(cardNames);
     if (!link) return;
     try {
-      await navigator.clipboard.writeText(deck.cards.join(", "));
+      await navigator.clipboard.writeText(cardNames.join(", "));
     } catch { }
     window.open(link, "_blank");
     setCopied(true);
@@ -73,21 +85,32 @@ export function DeckCard({ deck, index }: DeckCardProps) {
       </div>
 
       <div className="grid grid-cols-4 gap-2">
-        {deck.cards.map((cardName) => {
-          const info = findCard(cardName);
+        {deck.cards.map((raw) => {
+          const card = toCardData(raw);
+          const info = findCard(card.name);
+          const rarity = info?.rarity ?? "common";
+          const imgSrc = card.iconUrl || getCardImageUrl(card.name);
+          const evolved = isCardEvolved(card.maxLevel, rarity);
           return (
             <div
-              key={cardName}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg bg-glass border ${rarityBorder(info?.rarity ?? "common")}`}
+              key={card.name}
+              className={`flex flex-col items-center gap-1 p-2 rounded-lg bg-glass border ${rarityBorder(rarity)}`}
             >
-              <img
-                src={getCardImageUrl(cardName, isHeroOrEvo(cardName))}
-                alt={cardName}
-                className="w-12 h-16 object-contain drop-shadow-lg"
-                loading="lazy"
-              />
+              <div className="relative">
+                <img
+                  src={imgSrc}
+                  alt={card.name}
+                  className="w-12 h-16 object-contain drop-shadow-lg"
+                  loading="lazy"
+                />
+                {evolved && (
+                  <span className="absolute top-0 right-0 text-[7px] font-bold bg-purple-600 text-white px-1 rounded-sm leading-tight">
+                    EVO
+                  </span>
+                )}
+              </div>
               <span className="text-[11px] text-clash-text text-center leading-tight truncate w-full font-medium">
-                {cardName}
+                {card.name}
               </span>
               {info && (
                 <span className="flex items-center gap-0.5">

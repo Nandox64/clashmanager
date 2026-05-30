@@ -60,6 +60,7 @@ export function transformMembers(
   options?: {
     previousTrophies?: Map<string, number>;
     currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
+    warHistory?: Map<string, { totalWars: number; warsParticipated: number }>;
   }
 ): Member[] {
   const now = Date.now();
@@ -77,12 +78,20 @@ export function transformMembers(
       ? Math.max(0, m.trophies - prev)
       : 0;
 
+    const prevWarHistory = options?.warHistory?.get(m.tag);
+    const totalWars = prevWarHistory?.totalWars ?? 0;
+    const warsParticipated = prevWarHistory?.warsParticipated ?? 0;
+
     const raceParticipant = options?.currentRaceParticipants?.find(
       (p) => p.tag === m.tag
     );
-    const warParticipation = raceParticipant && raceParticipant.decksUsed > 0
+    const currentWarPct = raceParticipant && raceParticipant.decksUsed > 0
       ? Math.min(Math.round((raceParticipant.decksUsed / 4) * 100), 100)
       : 0;
+
+    const warParticipation = totalWars > 0
+      ? Math.round((warsParticipated / totalWars) * 100)
+      : currentWarPct;
 
     const activityDays =
       daysSinceActive < 2 ? 5 :
@@ -96,7 +105,7 @@ export function transformMembers(
       photoURL: "",
       role: mapRole(m.role),
       playerTag: m.tag,
-      joinedAt: now - Math.floor(Math.random() * 180 * 86400000),
+      joinedAt: now - 30 * 86400000,
       lastActiveAt: lastSeen,
       status,
       trophies: m.trophies,
@@ -108,6 +117,8 @@ export function transformMembers(
       donationsReceived: m.donationsReceived,
       clanPoints: 0,
       xp: 0,
+      totalWars,
+      warsParticipated,
       weeklyStats: {
         trophiesGained,
         donationsGiven: m.donations,
