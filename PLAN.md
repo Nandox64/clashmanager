@@ -676,7 +676,7 @@ App carga (PC o celular)
 
 ### Git Workflow
 - `main` → producción (Vercel auto-deploy)
-- `dev/*` → desarrollo sin disparar deploy
+- `dev/*` → desarrollo sin disparar deploy (configurado vía `vercel.json` → `git.deploymentEnabled: { main: true }`)
 - Merge a `main` solo cuando está listo para producción
 
 ### Dependencias y Lockfile
@@ -695,8 +695,8 @@ App carga (PC o celular)
 | 🔴 Alta | ~~Ex-miembros en analytics~~ | ✅ `saveMembers` limpia al sync |
 | 🟡 Media | Conectar **achievements** a Firestore (usa `mockAchievements`) | ✅ Ya conectado vía load/sync routes |
 | 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ✅ Ya conectado |
-| 🟡 Media | PWA (service worker para instalar en celular) | ✅ Service worker + icons + Apple meta tags |
-| 🟡 Media | Auto-deploy Vercel desde GitHub | ✅ Ya funciona |
+| 🟡 Media | PWA (service worker para instalar en celular) | ✅ Service worker + icons + Apple meta tags + deployeado |
+| 🟡 Media | Auto-deploy Vercel desde GitHub (solo main) | ✅ `git.deploymentEnabled: { main: true }` |
 | 🟡 Media | ~~Carga de mazos de guerra (battlelog)~~ | ✅ `rivRacePvP`, `rivRaceDuelColosseum`, `boatBattle` |
 | 🟡 Media | ~~Detección de evoluciones~~ | ✅ Por `maxLevel > baseMaxLevel` + `iconUrl` API |
 | 🟢 Baja | Command palette (⌘K) | ❌ Pendiente |
