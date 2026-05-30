@@ -2,20 +2,29 @@ import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/app-shell";
 import { NavigationLoader } from "@/components/layout/navigation-loader";
+import { PWARegister } from "@/components/pwa-register";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "Clash Manager",
-  description: "Gestión inteligente para clanes de Clash Royale",
-  manifest: "/manifest.json",
-};
 
 export const viewport: Viewport = {
   themeColor: "#0d1117",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+};
+
+export const metadata: Metadata = {
+  title: "Clash Manager",
+  description: "Gestión inteligente para clanes de Clash Royale",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Clash Manager",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -45,6 +54,7 @@ export default function RootLayout({
           }}
         />
         <NavigationLoader />
+        <PWARegister />
         <AuthProvider>
           <AppShell>{children}</AppShell>
         </AuthProvider>
