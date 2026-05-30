@@ -679,6 +679,12 @@ App carga (PC o celular)
 - `dev/*` → desarrollo sin disparar deploy (configurado vía `vercel.json` → `git.deploymentEnabled: { main: true }`)
 - Merge a `main` solo cuando está listo para producción
 
+### Vercel — Auto-deploy solo en main
+- Configurado en `vercel.json` vía `git.deploymentEnabled: { "main": true }`.
+- Las branches `dev/*` **no disparan deploy** automáticamente.
+- Si se necesita un preview manual desde una branch, se puede hacer con `vercel --force` desde CLI.
+- También se deshabilitaron los comentarios automáticos en commits (`gitComments.onCommit: false`) vía API.
+
 ### Dependencias y Lockfile
 - **Causa raíz de fallo en deploy:** Cuando se añade un paquete con `pnpm add <pkg>`, pnpm modifica `package.json` y `pnpm-lock.yaml`. Si se commitea solo el `package.json` sin el lockfile, Vercel falla con `ERR_PNPM_OUTDATED_LOCKFILE` porque usa `frozen-lockfile` por defecto en CI.
 - **Prevención:** Verificar siempre con `git status` que ambos archivos (`package.json` + `pnpm-lock.yaml`) están staged antes de commitear. Si el lockfile queda fuera, el deploy se rompe silenciosamente hasta que se pushea.
