@@ -63,9 +63,11 @@ export function Sidebar() {
         <span className="text-sm font-bold" style={{ color: "var(--pm-gold)" }}>
           Clash Manager
         </span>
-        <span className="text-[10px] text-clash-muted ml-auto truncate max-w-24">
-          {clanName}
-        </span>
+        <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
+          <span className="text-[10px] text-clash-muted truncate block">
+            {clanName}
+          </span>
+        </div>
       </div>
 
       {/* Mobile overlay */}
