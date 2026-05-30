@@ -679,6 +679,11 @@ App carga (PC o celular)
 - `dev/*` → desarrollo sin disparar deploy
 - Merge a `main` solo cuando está listo para producción
 
+### Dependencias y Lockfile
+- **Causa raíz de fallo en deploy:** Cuando se añade un paquete con `pnpm add <pkg>`, pnpm modifica `package.json` y `pnpm-lock.yaml`. Si se commitea solo el `package.json` sin el lockfile, Vercel falla con `ERR_PNPM_OUTDATED_LOCKFILE` porque usa `frozen-lockfile` por defecto en CI.
+- **Prevención:** Verificar siempre con `git status` que ambos archivos (`package.json` + `pnpm-lock.yaml`) están staged antes de commitear. Si el lockfile queda fuera, el deploy se rompe silenciosamente hasta que se pushea.
+- **Recuperación:** `pnpm install --no-frozen-lockfile` regenera el lockfile local, luego commitearlo y pushearlo. Vercel detecta el nuevo commit y redeploya automáticamente.
+
 ### Tabla de Prioridades
 
 | Prioridad | Tarea | Estado |
