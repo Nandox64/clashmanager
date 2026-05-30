@@ -688,10 +688,10 @@ App carga (PC o celular)
 | 🔴 Alta | ~~Member status desde lastSeen~~ | ✅ |
 | 🔴 Alta | ~~weeklyStats no hardcodeados~~ | ✅ trophiesGained, activityDays, warParticipation calculados |
 | 🔴 Alta | ~~Ex-miembros en analytics~~ | ✅ `saveMembers` limpia al sync |
-| 🟡 Media | Conectar **achievements** a Firestore (usa `mockAchievements`) | ❌ Pendiente |
-| 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ❌ Pendiente |
-| 🟡 Media | PWA (service worker para instalar en celular) | ❌ Pendiente |
-| 🟡 Media | Auto-deploy Vercel desde GitHub | ❌ Pendiente (conectar repo en Vercel Dashboard) |
+| 🟡 Media | Conectar **achievements** a Firestore (usa `mockAchievements`) | ✅ Ya conectado vía load/sync routes |
+| 🟡 Media | Conectar **recruitment** a Firestore (usa `mockRecruits`) | ✅ Ya conectado |
+| 🟡 Media | PWA (service worker para instalar en celular) | ✅ Service worker + icons + Apple meta tags |
+| 🟡 Media | Auto-deploy Vercel desde GitHub | ✅ Ya funciona |
 | 🟡 Media | ~~Carga de mazos de guerra (battlelog)~~ | ✅ `rivRacePvP`, `rivRaceDuelColosseum`, `boatBattle` |
 | 🟡 Media | ~~Detección de evoluciones~~ | ✅ Por `maxLevel > baseMaxLevel` + `iconUrl` API |
 | 🟢 Baja | Command palette (⌘K) | ❌ Pendiente |
