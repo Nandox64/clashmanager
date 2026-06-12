@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 
-const SW_URL = "/sw.js";
-const SW_SCOPE = "/";
+const SW_VERSION = 6;
 
 export function PWARegister() {
   useEffect(() => {
@@ -18,15 +17,22 @@ export function PWARegister() {
       }
     });
 
-    // Force a clean SW install by unregistering any stale registration first.
-    // The old SW might cache its own file via Cache API, preventing updates.
-    // Unregistering removes the old controller so the new one can activate.
-    navigator.serviceWorker.getRegistrations().then((regs) => {
-      const unreg = regs.map((r) => r.unregister());
-      Promise.all(unreg).then(() => {
-        navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE }).catch(() => {});
-      });
-    });
+    navigator.serviceWorker
+      .register(`/sw.js?v=${SW_VERSION}`, { scope: "/", updateViaCache: "none" })
+      .then((reg) => {
+        reg.update().catch(() => {});
+
+        reg.addEventListener("updatefound", () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener("statechange", () => {
+            if (sw.state === "installed" && navigator.serviceWorker.controller) {
+              sw.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
+        });
+      })
+      .catch(() => {});
   }, []);
 
   return null;

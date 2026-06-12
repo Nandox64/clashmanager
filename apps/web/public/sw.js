@@ -1,4 +1,4 @@
-const SW_VERSION = 5;
+const SW_VERSION = 6;
 const CACHE = "clashmanager-v" + SW_VERSION;
 
 function isHtmlNav(req) {
@@ -16,6 +16,12 @@ function isStaticAsset(url) {
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
