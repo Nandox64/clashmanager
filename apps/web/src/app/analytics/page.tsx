@@ -72,28 +72,55 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard
-          title="Copas Totales"
-          value={formatNumber(currentWeekTrophies)}
-          subtitle="Todos los miembros"
-          icon={<BarChart3 size={16} className="text-metallic-gold animate-icon-shine" />}
-        />
-        <MetricCard
-          title="Promedio de Copas"
-          value={formatNumber(avgTrophies)}
-          subtitle="Por miembro"
-        />
-        <MetricCard
-          title="Donaciones Totales"
-          value={formatNumber(totalDonations)}
-          subtitle="Todos los miembros"
-        />
-        <MetricCard
-          title="Participación Guerra"
-          value={`${avgWarParticipation}%`}
-          subtitle="Promedio del clan"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Copas Totales</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {formatNumber(currentWeekTrophies)}
+              </span>
+              <p className="text-[10px] text-clash-dimmed mt-0.5">Todos los miembros</p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Promedio de Copas</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {formatNumber(avgTrophies)}
+              </span>
+              <p className="text-[10px] text-clash-dimmed mt-0.5">Por miembro</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Donaciones Totales</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {formatNumber(totalDonations)}
+              </span>
+              <p className="text-[10px] text-clash-dimmed mt-0.5">Todos los miembros</p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 size={14} className="text-clash-muted" />
+                <span className="text-xs text-clash-muted">Participación Guerra</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-clash-text">
+                {avgWarParticipation}%
+              </span>
+              <p className="text-[10px] text-clash-dimmed mt-0.5">Promedio del clan</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Matriz 2x2 - Rendimiento vs Actividad */}

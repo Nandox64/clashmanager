@@ -208,7 +208,7 @@ body::after {
 }
 
 @utility min-h-dynamic {
-  min-height: 100dvh;
+  min-height: 100lvh;
 }
 
 .border-clash-border {

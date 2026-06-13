@@ -61,6 +61,15 @@ export function OnboardingModal() {
     setFetching(false);
   }, [loaded, user, isMock]);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -112,7 +121,7 @@ export function OnboardingModal() {
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="w-full max-w-lg mx-4 bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
         <div className="flex items-center justify-between p-5 border-b border-clash-border">
           <div>
