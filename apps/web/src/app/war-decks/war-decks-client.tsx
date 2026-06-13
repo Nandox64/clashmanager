@@ -194,7 +194,7 @@ export function WarDecksClient() {
 
       {/* Member selector at top */}
       <div className="w-full sm:w-80">
-        <label className="block text-xs text-clash-muted mb-1.5">
+        <label className="block text-xs text-clash-dimmed mb-1.5">
           Selecciona un miembro
         </label>
         <MemberSelector
@@ -206,19 +206,45 @@ export function WarDecksClient() {
 
       {/* 3 feature cards below */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Mazos de Guerra</CardTitle>
             <RefreshCw size={16} className="text-clash-gold" />
           </CardHeader>
-          <p className="text-xs text-clash-muted mb-3">
-            Carga los mazos de guerra actuales o históricos
-          </p>
+          <div className="flex-1 flex flex-col">
+            <p className="text-xs text-clash-dimmed mb-3">
+              Carga los mazos de guerra actuales o históricos
+            </p>
+            <img src="/divisor5.png" alt="" className="w-2/3 h-auto mx-auto my-3" />
+            {warDecksError && (
+              <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                <AlertCircle size={12} />
+                {warDecksError}
+              </div>
+            )}
+            {loadedWarDecks && warDecks.length === 0 && !warDecksError && (
+              <p className="text-xs text-clash-dimmed mt-3 text-center">
+                No se encontraron batallas de guerra.
+                <br />
+                El jugador debe participar en la guerra de clanes.
+              </p>
+            )}
+            {warDecks.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs text-clash-dimmed font-medium">Mazos de guerra actuales</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {warDecks.map((deck, i) => (
+                    <DeckCard key={i} deck={deck} index={i} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <Button
             onClick={handleLoadWarDecks}
             disabled={!selectedTag || loadingWarDecks}
             size="lg"
-            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all mt-4"
           >
             {loadingWarDecks ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
@@ -227,44 +253,42 @@ export function WarDecksClient() {
             )}
             {loadingWarDecks ? "Cargando..." : "Cargar Mazos"}
           </Button>
-          {warDecksError && (
-            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-              <AlertCircle size={12} />
-              {warDecksError}
-            </div>
-          )}
-          {loadedWarDecks && warDecks.length === 0 && !warDecksError && (
-            <p className="text-xs text-clash-muted mt-3 text-center">
-              No se encontraron batallas de guerra.
-              <br />
-              El jugador debe participar en la guerra de clanes.
-            </p>
-          )}
-          {warDecks.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-xs text-clash-muted font-medium">Mazos de guerra actuales</p>
-              <div className="grid grid-cols-1 gap-2">
-                {warDecks.map((deck, i) => (
-                  <DeckCard key={i} deck={deck} index={i} />
-                ))}
-              </div>
-            </div>
-          )}
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Generar Mazos IA</CardTitle>
             <Sparkles size={16} className="text-clash-gold" />
           </CardHeader>
-          <p className="text-xs text-clash-muted mb-3">
-            Sugerencias de mazos personalizadas usando IA
-          </p>
+          <div className="flex-1 flex flex-col">
+            <p className="text-xs text-clash-dimmed mb-3">
+              Sugerencias de mazos personalizadas usando IA
+            </p>
+            <img src="/divisor.png" alt="" className="w-2/3 h-auto mx-auto my-3" />
+            {error && (
+              <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                <AlertCircle size={12} />
+                {error}
+              </div>
+            )}
+            {decks.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs text-clash-dimmed font-medium">
+                  Mazos para <span className="text-clash-gold">{selectedMember?.displayName}</span>
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  {decks.map((deck, i) => (
+                    <DeckCard key={i} deck={deck} index={i} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <Button
             onClick={handleGenerate}
             disabled={!selectedTag || loading}
             size="lg"
-            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all mt-4"
           >
             {loading ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
@@ -273,39 +297,40 @@ export function WarDecksClient() {
             )}
             {loading ? "Generando..." : "Generar Mazos"}
           </Button>
-          {error && (
-            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-              <AlertCircle size={12} />
-              {error}
-            </div>
-          )}
-          {decks.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-xs text-clash-muted font-medium">
-                Mazos para <span className="text-clash-gold">{selectedMember?.displayName}</span>
-              </p>
-              <div className="grid grid-cols-1 gap-2">
-                {decks.map((deck, i) => (
-                  <DeckCard key={i} deck={deck} index={i} />
-                ))}
-              </div>
-            </div>
-          )}
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Mazo de Trofeos</CardTitle>
             <Sparkles size={16} className="text-clash-gold" />
           </CardHeader>
-          <p className="text-xs text-clash-muted mb-3">
-            Mazo optimizado para subir de trofeos con tus mejores cartas
-          </p>
+          <div className="flex-1 flex flex-col">
+            <p className="text-xs text-clash-dimmed mb-3">
+              Mazo optimizado para subir de trofeos con tus mejores cartas
+            </p>
+            <img src="/divisor1.png" alt="" className="w-2/3 h-auto mx-auto my-3" />
+            {trophyError && (
+              <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                <AlertCircle size={12} />
+                {trophyError}
+              </div>
+            )}
+            {trophyDeck.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs text-clash-dimmed font-medium">Mazo de trofeos generado</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {trophyDeck.map((deck, i) => (
+                    <DeckCard key={i} deck={deck} index={i} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <Button
             onClick={handleGenerateTrophy}
             disabled={!selectedTag || loadingTrophy}
             size="lg"
-            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all"
+            className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all mt-4"
           >
             {loadingTrophy ? (
               <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" />
@@ -314,28 +339,12 @@ export function WarDecksClient() {
             )}
             {loadingTrophy ? "Generando..." : "Generar Mazo"}
           </Button>
-          {trophyError && (
-            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-              <AlertCircle size={12} />
-              {trophyError}
-            </div>
-          )}
-          {trophyDeck.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-xs text-clash-muted font-medium">Mazo de trofeos generado</p>
-              <div className="grid grid-cols-1 gap-2">
-                {trophyDeck.map((deck, i) => (
-                  <DeckCard key={i} deck={deck} index={i} />
-                ))}
-              </div>
-            </div>
-          )}
         </Card>
       </div>
 
       {/* Message when no member selected */}
       {!selectedTag && (
-        <div className="text-center py-12 text-clash-muted text-xl font-medium">
+        <div className="text-center py-12 text-clash-dimmed text-xl font-medium">
           Selecciona un miembro del clan para cargar o generar mazos.
         </div>
       )}

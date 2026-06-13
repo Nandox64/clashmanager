@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/app-shell";
 import { NavigationLoader } from "@/components/layout/navigation-loader";
+import { PageBackground } from "@/components/layout/page-background";
 import { PWARegister } from "@/components/pwa-register";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -43,15 +44,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <div className="fixed inset-0 pointer-events-none"
-          style={{
-            zIndex: -10,
-            backgroundImage: 'url("/patron.png")',
-            backgroundRepeat: "repeat",
-            backgroundSize: "auto",
-            opacity: 0.35,
-          }}
-        />
+        <PageBackground />
         <NavigationLoader />
         <PWARegister />
         <AuthProvider>

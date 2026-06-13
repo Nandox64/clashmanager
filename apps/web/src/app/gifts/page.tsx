@@ -6,6 +6,8 @@ import { Smartphone, Monitor, Gift, ExternalLink, Upload, Loader2, Trash2, User,
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedRole } from "@/lib/profile-cache";
 import { RuletaSection } from "@/components/ruleta/ruleta-section";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "mobile" | "pc" | "qr" | "ruleta";
 
@@ -23,34 +25,18 @@ interface UploadedItem extends Wallpaper {
   uploadedAt?: number;
 }
 
-const mobileWallpapers: Wallpaper[] = [
-  { id: "m1", name: "Clash Royale - Pekka", url: "https://wallpaper.forfun.com/fetch/2e/2e60cd839012687816539ece75ab0db5.jpeg" },
-  { id: "m2", name: "Clash Royale - Rey", url: "https://wallpaper.forfun.com/fetch/95/95677c14c93fe08d03d7f0ebb79346e5.jpeg" },
-  { id: "m3", name: "Clash Royale - Arena", url: "https://wallpaper.forfun.com/fetch/5e/5e55e8f676e2af627d09d6227ca9e6ff.jpeg" },
-  { id: "m4", name: "Clash Royale 4K", url: "https://wallpaper.forfun.com/fetch/0c/0cca8233be22b0a4323718d155049dd5.jpeg" },
-  { id: "m5", name: "Clash Royale - Mega Knight", url: "https://wallpaper.forfun.com/fetch/2e/2e6a3c515eaa442fff3aa89686341177.jpeg" },
-  { id: "m6", name: "Clash Royale - Legendario", url: "https://wallpaper.forfun.com/fetch/d2/d2aa5413398fb4081826f4c2d7e4513d.jpeg" },
+
+
+const tabs: { id: Tab; label: string; title: string; help: string; icon: typeof Smartphone }[] = [
+  { id: "mobile", label: "Móvil", title: "RECURSOS PARA MÓVIL", help: "Imágenes verticales recomendadas para celular (9:16).", icon: Smartphone },
+  { id: "pc", label: "PC", title: "RECURSOS PARA COMPUTADOR", help: "Imágenes horizontales recomendadas para computador (16:9).", icon: Monitor },
+  { id: "qr", label: "Códigos", title: "CÓDIGOS QR DE RECOMPENSAS", help: "Códigos QR para escanear desde Clash Royale.", icon: Gift },
+  { id: "ruleta", label: "Ruleta", title: "RULETA DE PREMIOS", help: "Gira la ruleta durante eventos activos y revisa las reglas antes de participar.", icon: Trophy },
 ];
 
-const pcWallpapers: Wallpaper[] = [
-  { id: "p1", name: "P.E.K.K.A 4K", url: "https://img.uhdpaper.com/wallpaper/pekka-clash-royale-46@0@h-pc-hd.jpg" },
-  { id: "p2", name: "Prince 4K", url: "https://img.uhdpaper.com/wallpaper/prince-clash-royale-48@0@h-pc-hd.jpg" },
-  { id: "p3", name: "Ice Wizard 4K", url: "https://img.uhdpaper.com/wallpaper/ice-wizard-clash-royale-50@0@h-pc-hd.jpg" },
-  { id: "p4", name: "Giant Skeleton 4K", url: "https://img.uhdpaper.com/wallpaper/giant-skeleton-clash-royale-51@0@h-pc-hd.jpg" },
-];
-
-const qrDefaults: Wallpaper[] = [
-  { id: "q1", name: "Hog Banner QR 1", url: "/qr/Hog_Banner_QR%20Codes_1.jpg" },
-  { id: "q2", name: "Hog Banner QR 2", url: "/qr/Hog_Banner_QR%20Codes_2.jpg" },
-  { id: "q3", name: "Oro Gratis", url: "/qr/Oro_Gratis.jpg" },
-];
-
-const tabs: { id: Tab; label: string; icon: typeof Smartphone }[] = [
-  { id: "mobile", label: "Fondos Móvil", icon: Smartphone },
-  { id: "pc", label: "Fondos PC", icon: Monitor },
-  { id: "qr", label: "Códigos QR", icon: Gift },
-  { id: "ruleta", label: "Ruleta", icon: Trophy },
-];
+const titleOutline = {
+  textShadow: "0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000, 0 0 10px rgba(0,0,0,0.8)",
+};
 
 function formatDate(ts: number) {
   const d = new Date(ts);
@@ -58,6 +44,7 @@ function formatDate(ts: number) {
 }
 
 export default function GiftsPage() {
+  const { user, isMock, profile: authProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("mobile");
   const [uploaded, setUploaded] = useState<Record<string, UploadedItem[]>>({});
   const [uploading, setUploading] = useState(false);
@@ -65,33 +52,54 @@ export default function GiftsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const members = useClanStore((s) => s.members);
 
-  const linkedId = getCachedLinkedMemberId();
-  const cachedRole = getCachedRole();
+  const [linkedId, setLinkedId] = useState<string | null>(null);
+  const [cachedRole, setCachedRole] = useState<string | null>(null);
   const linkedMember = members.find((m) => m.uid === linkedId);
   const userRole = linkedMember?.role ?? cachedRole ?? null;
   const isLeader = userRole === "leader";
+  const leaderName = members.find((m) => m.role === "leader")?.displayName;
   const uploaderName = linkedMember?.displayName || "Anónimo";
   const uploaderUid = linkedId || "";
+
+  useEffect(() => {
+    setLinkedId(getCachedLinkedMemberId());
+    setCachedRole(getCachedRole());
+  }, []);
+
+  const getDisplayUploaderName = (name?: string, fallback?: string) => {
+    if (!name || name.trim().toLowerCase() === "anónimo" || name.trim().toLowerCase() === "anonimo") {
+      return fallback || name;
+    }
+    return name;
+  };
+
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    if (isMock) return { Authorization: `Bearer mock-${authProfile?.uid ?? "mode"}` };
+    const token = await user?.getIdToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   const fetchUploaded = () => {
     fetch("/api/resources/list")
       .then((r) => r.json())
       .then((data) => {
         const mapped: Record<string, UploadedItem[]> = {};
+        const fallbackUploader = leaderName;
         for (const type of ["mobile", "pc", "qr"] as const) {
           mapped[type] = (data[type] || []).map((item: UploadedItem, i: number) => ({
             ...item,
+            uploaderName: getDisplayUploaderName(item.uploaderName, fallbackUploader),
             id: `upload-${type}-${i}`,
           }));
         }
         setUploaded(mapped);
       })
-      .catch(() => {});
+      .catch(() => toast.error("Error al cargar recursos"));
   };
 
   useEffect(() => {
     fetchUploaded();
-  }, []);
+  }, [leaderName]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -105,8 +113,12 @@ export default function GiftsPage() {
     formData.append("uploaderUid", uploaderUid);
 
     try {
-      const res = await fetch("/api/resources/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error();
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/resources/upload", { method: "POST", headers, body: formData });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Error al subir imagen");
+      }
       const data = await res.json();
       const newItem: UploadedItem = {
         id: `upload-${Date.now()}`,
@@ -118,8 +130,9 @@ export default function GiftsPage() {
         uploadedAt: data.uploadedAt,
       };
       setUploaded((prev) => ({ ...prev, [activeTab]: [...(prev[activeTab] || []), newItem] }));
-    } catch {
-      // silent
+      toast.success("Imagen subida");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al subir imagen");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -129,19 +142,24 @@ export default function GiftsPage() {
   const handleDelete = async (slug: string) => {
     setDeleting(slug);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/resources/delete", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: activeTab, slug, userRole }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ type: activeTab, slug }),
       });
       if (res.ok) {
         setUploaded((prev) => ({
           ...prev,
           [activeTab]: (prev[activeTab] || []).filter((item) => item.slug !== slug),
         }));
+        toast.success("Imagen eliminada");
+      } else {
+        const err = await res.json().catch(() => null);
+        toast.error(err?.error || "Error al eliminar imagen");
       }
     } catch {
-      // silent
+      toast.error("Error al eliminar imagen");
     } finally {
       setDeleting(null);
     }
@@ -150,9 +168,9 @@ export default function GiftsPage() {
   const renderUploadedBy = (item: UploadedItem) => {
     if (!item.uploaderName) return null;
     return (
-      <p className="text-[10px] text-clash-muted/60 flex items-center gap-1 truncate">
+      <p className="text-[10px] text-clash-dimmed flex items-center gap-1 truncate">
         <User size={10} />
-        {item.uploaderName}
+        Subido por: {item.uploaderName}
         {item.uploadedAt ? ` · ${formatDate(item.uploadedAt)}` : ""}
       </p>
     );
@@ -175,25 +193,28 @@ export default function GiftsPage() {
     );
   };
 
-  const allMobile = [...mobileWallpapers, ...(uploaded.mobile || [])];
-  const allPc = [...pcWallpapers, ...(uploaded.pc || [])];
-  const allQr = [...qrDefaults, ...(uploaded.qr || [])];
+  const allMobile = uploaded.mobile || [];
+  const allPc = uploaded.pc || [];
+  const allQr = uploaded.qr || [];
+  const activeTabConfig = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-clash-text">Regalos</h1>
+        <h1 className="text-2xl font-black text-white" style={titleOutline}>Regalos</h1>
         <p className="text-sm text-clash-muted mt-0.5">
           Fondos de pantalla y códigos QR para canjear recompensas
         </p>
       </div>
 
+      <img src="/divisor2.png" alt="" className="h-auto mx-auto my-6 max-w-xs" />
+
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-metallic-gold">Recursos</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">
-              Descarga wallpapers HD, canjea códigos QR activos o sube tus propios recursos
+            <CardTitle className="text-white font-black" style={titleOutline}>Recursos</CardTitle>
+            <p className="text-xs text-clash-dimmed mt-0.5">
+              Biblioteca del clan para compartir imágenes, códigos QR y eventos de ruleta en un solo lugar. Sube recursos ligeros, identifica quién los aportó y conserva solo contenido útil para la comunidad.
             </p>
           </div>
         </CardHeader>
@@ -209,7 +230,7 @@ export default function GiftsPage() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
                   isActive
                     ? "bg-metallic-gold text-black shadow-sm"
-                    : "text-clash-muted hover:text-clash-text"
+                    : "text-clash-text hover:text-metallic-gold"
                 }`}
               >
                 <Icon size={16} />
@@ -220,31 +241,44 @@ export default function GiftsPage() {
         </div>
 
         {activeTab !== "ruleta" && (
-          <div className="mb-4 flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleUpload}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-metallic-gold text-black text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50"
-            >
-              {uploading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Upload size={16} />
-              )}
-              {uploading ? "Subiendo..." : "Subir imagen"}
-            </button>
-            <p className="text-xs text-clash-muted">
-              {activeTab === "mobile" && "Fondos para celular (9:16)"}
-              {activeTab === "pc" && "Fondos para PC (16:9)"}
-              {activeTab === "qr" && "Códigos QR para canjear"}
-            </p>
+          <div className="mb-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-metallic-gold text-black text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Upload size={16} />
+                )}
+                {uploading ? "Subiendo..." : "Subir imagen"}
+              </button>
+            </div>
+            <div className="rounded-xl border border-clash-border bg-glass p-4">
+              <h2 className="text-base font-black tracking-[0.18em] text-white" style={titleOutline}>{activeTabConfig.title}</h2>
+              <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
+              <p className="text-xs text-clash-dimmed mt-2">
+                {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
+                {activeTab === "pc" && "Instrucción: sube imágenes horizontales para computador en formato 16:9."}
+                {activeTab === "qr" && "Instrucción: sube capturas claras del código para que pueda escanearse sin recortes."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "ruleta" && (
+          <div className="mb-4 rounded-xl border border-clash-border bg-glass p-4">
+            <h2 className="text-base font-black tracking-[0.18em] text-white" style={titleOutline}>{activeTabConfig.title}</h2>
+            <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
           </div>
         )}
 
@@ -277,6 +311,9 @@ export default function GiftsPage() {
                   </a>
                 );
               })}
+              {allMobile.length === 0 && (
+                <p className="text-xs text-clash-dimmed text-center pt-2 col-span-full">No hay fondos aún. ¡Sube el primero!</p>
+              )}
             </div>
           )}
           {activeTab === "pc" && (
@@ -308,7 +345,7 @@ export default function GiftsPage() {
                 );
               })}
               {allPc.length === 0 && (
-                <p className="text-xs text-clash-muted text-center pt-2 col-span-full">No hay fondos aún. ¡Sube el primero!</p>
+                <p className="text-xs text-clash-dimmed text-center pt-2 col-span-full">No hay fondos aún. ¡Sube el primero!</p>
               )}
             </div>
           )}
@@ -334,9 +371,14 @@ export default function GiftsPage() {
                   );
                 })}
               </div>
-              <p className="text-xs text-clash-muted text-center pt-2">
-                Escanea el código QR desde Clash Royale para canjear la recompensa
-              </p>
+              {allQr.length === 0 && (
+                <p className="text-xs text-clash-dimmed text-center pt-2 col-span-full">No hay códigos QR aún. ¡Sube el primero!</p>
+              )}
+              {allQr.length > 0 && (
+                <p className="text-xs text-clash-dimmed text-center pt-2">
+                  Escanea el código QR desde Clash Royale para canjear la recompensa
+                </p>
+              )}
             </div>
           )}
           {activeTab === "ruleta" && <RuletaSection />}

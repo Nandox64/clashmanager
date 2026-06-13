@@ -15,6 +15,7 @@ import {
   UserCircle,
   Gift,
 } from "lucide-react";
+import { getPageTheme } from "./page-theme";
 
 const LEADER_ONLY = ["/recruitment", "/settings"];
 
@@ -37,8 +38,16 @@ export function BottomTabs() {
     (t) => !LEADER_ONLY.includes(t.href) || role === "leader" || role === "coleader"
   );
 
+  const theme = getPageTheme(pathname);
+  const navStyle = {
+    background: theme.surface,
+    borderTopColor: theme.border,
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+  } as React.CSSProperties;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-glass-strong border-t border-clash-border safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden safe-area-bottom" style={navStyle}>
       <div className="flex items-center gap-1 px-1 py-1 overflow-x-auto scrollbar-premium">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
@@ -51,7 +60,7 @@ export function BottomTabs() {
                 "flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1.5 rounded-lg transition-colors min-w-0",
                 isActive
                   ? "text-metallic-gold"
-                  : "text-clash-muted hover:text-clash-text"
+                  : "text-clash-text hover:text-metallic-gold"
               )}
             >
               <Icon size={18} className={isActive ? "animate-icon-shine" : undefined} />

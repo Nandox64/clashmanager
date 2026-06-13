@@ -28,7 +28,7 @@
 
 ---
 
-## Bug crítico activo: Service Worker sirve caché viejo 🐛
+## Bug crítico resuelto: Service Worker servía caché viejo ✅
 
 ### Problema
 El SW sigue serviendo contenido cacheado. Los cambios en código no aparecen.
@@ -51,11 +51,11 @@ Una vez cacheados, el SW los sirve **para siempre** hasta bump de `SW_VERSION`.
 - Imágenes actualizadas muestran versión vieja
 - En PWA instalada, persiste hasta reinstalar
 
-### Fix propuesto (mañana)
-1. Reemplazar cache-first por **stale-while-revalidate** para assets estáticos sin hash
-2. Agregar detección de `localhost` → network-only para JS/CSS en dev mode
-3. `hasHash()` → mantener cache-first (correcto, son inmutables)
-4. Bump `SW_VERSION` a 7 tras el fix
+### Fix aplicado
+1. Assets con hash: se mantiene **cache-first** porque son inmutables.
+2. JS/CSS en `localhost`/`127.0.0.1`: **network-only** para desarrollo.
+3. Assets estáticos sin hash: **stale-while-revalidate** para no bloquear cambios nuevos.
+4. `SW_VERSION` actualizado a 7 para forzar limpieza de caches anteriores.
 
 ---
 
@@ -111,3 +111,76 @@ Una vez cacheados, el SW los sirve **para siempre** hasta bump de `SW_VERSION`.
 - Server pre-warm automático
 - Polling con pausa `visibilitychange`
 - Rol cacheado inmediatamente al seleccionar miembro
+
+## Sesión 7 — Seguridad, recursos y vinculaciones ✅
+- Regalos: eliminado uso de QR por defecto; `/gifts` consume solo `uploaded.qr`.
+- Regalos: eliminadas referencias a wallpapers CDN externos; móvil/PC usan recursos subidos localmente en `public/uploads/{mobile,pc}`.
+- Upload de recursos: requiere auth, perfil vinculado a miembro del clan, tipo imagen permitido y tamaño máximo de 3MB.
+- Delete de recursos: requiere auth y valida rol `leader` server-side antes de borrar archivos.
+- UX: toasts para errores de carga, subida y borrado de recursos; toasts de éxito en upload/delete.
+- Perfil: `POST /api/profile` evita `linkedMemberId` duplicado entre perfiles y devuelve `409` si el miembro ya está vinculado.
+- Perfil: se persiste `memberLinks` al vincular para mantener trazabilidad miembro → Firebase UID.
+- Nuevo endpoint `POST /api/profile/unlink`: solo líder, desvincula perfil y borra `memberLinks`.
+- Settings: sección `Vinculaciones` visible para líder con listado de perfiles vinculados y acción de desvincular.
+- Verificación: `pnpm --filter @clashmanager/web build` compila y genera rutas; queda aviso existente de ESLint por `eslint-config-next`.
+
+## Sesión 8 — Mejoras visuales en Regalos y Ruleta ✅
+- Gifts: descripción de `Recursos` reescrita para explicar biblioteca del clan, recursos ligeros y trazabilidad de aportes.
+- Gifts: botones de pestañas simplificados a `Móvil`, `PC`, `Códigos` y `Ruleta`.
+- Gifts: al seleccionar una pestaña se muestra título descriptivo en mayúsculas y texto de ayuda contextual.
+- Gifts: etiqueta de autor actualizada a `Subido por:` en cada recurso.
+- Gifts: fondos/recursos sin autor o con `Anónimo` se atribuyen visualmente al nombre real del líder cargado desde `members`.
+- Gifts: títulos principales con fuente blanca, mayor peso visual y contorno oscuro.
+- Gifts: descripción e instrucciones de cada sección ubicadas debajo del botón `Subir imagen`.
+- Ruleta: en escritorio las instrucciones pasan al lado derecho de la ruleta; en móvil se mantienen apiladas.
+- Ruleta: la UI del resultado/ganador se muestra debajo de las instrucciones, en la columna derecha junto a la ruleta.
+- Ruleta: sonidos de victoria y derrota más característicos, disparados al mostrar el resultado final.
+
+## Sesión 9 — Service Worker cache fix ✅
+- SW_VERSION 7: fuerza eliminación de caches anteriores en `activate`.
+- Assets inmutables con hash mantienen cache-first.
+- JS/CSS sin hash en desarrollo usan network-only para que los cambios aparezcan al recargar.
+- Assets estáticos sin hash usan stale-while-revalidate para actualizar cache en segundo plano.
+
+## Sesión 10 — Fondos y Sidebar temáticos ✅
+- Fondo principal cambiado a `bg_piso_verde.webp` (reemplaza `patron.png`).
+- Secuencia repetitiva según orden del menú lateral: verde → azul → morado → verde → azul → morado...
+  - Verde: `/dashboard`, `/gifts`, `/recruitment`
+  - Azul: `/achievements`, `/members`, `/analytics`
+  - Morado: `/war-decks`, `/profile`, `/settings`
+- Nuevo `page-theme.ts` centraliza fondo, surface y border por ruta.
+- `PageBackground` usa el tema activo.
+- Sidebar (`premium-sidebar`) y barra móvil superior usan `surface` y `border` del tema con `backdrop-filter: blur(16px)`.
+- Bottom tabs móvil usan el mismo surface/border/blur del tema activo.
+
+### Sesión 10b — Componentes temáticos y utilidades CSS ✅
+- `hooks/use-theme.ts` creado para acceder al tema actual desde cualquier componente.
+- `Card` component ahora es `"use client"`, usa `useTheme()` con `theme.surface` + `theme.border` + `backdrop-filter`.
+- Utilidades `bg-glass*` y `border-clash-border` en `globals.css` usan `var(--theme-surface, ...)` y `var(--theme-border, ...)`.
+- Nav items (sidebar): base blanco, hover/active oro.
+- Iconos inactivos: fondo `theme.border` + icono blanco; activos: fondo dorado + icono oro.
+
+### Sesión 10c — Colores y textos ✅
+- Color azul redefinido a `#003E77` (descartados `#1957A4` y `#115288`).
+- `text-clash-muted` reasignado a `#c8d0d8` (gris claro).
+- Nueva clase `text-clash-dimmed` para textos secundarios aún más tenues.
+
+### Sesión 10d — Layout Analytics ✅
+- Página `/analytics` reordenada: MetricCards → Matriz Rendimiento vs Actividad → Rendimiento Individual → grid `lg:grid-cols-2` con Top Donaciones + Comparativa de Jugadores.
+
+### Sesión 10e — Divisores decorativos en Mazos de Guerra ✅
+- Se agregaron imágenes divisor (`divisor5.png`, `divisor.png`, `divisor1.png`) dentro de cada card de `/war-decks` (entre descripción y botón).
+- Tamaño reducido a `w-2/3` centrado con `mx-auto`.
+
+### Sesión 10f — Logos, divisores en Gifts, instrucciones móvil ✅
+- `logo_clase_pro.png`: aumentado a `w-28` en sidebar y `w-52` en login.
+- `logoclashroyale.png`: aumentado a `180×135px` en AppShell visible en todas las páginas (desktop), eliminado duplicado de dashboard.
+- `divisor2.png` agregado debajo del subtítulo en `/gifts` con `max-w-xs`.
+- Instrucciones móvil unificadas: `"Formato vertical 9:16 · Máximo 3MB por imagen."`
+
+### Sesión 10g — Botones al fondo en Mazos de Guerra ✅
+- Cada card de `/war-decks` convertido a `flex flex-col`.
+- Resultados (errores, mazos cargados) movidos ANTES del botón dentro de un contenedor `flex-1`.
+- Botones con `mt-4` para que queden alineados en la parte inferior de las 3 cards.
+
+- Build verificado: `pnpm --filter @clashmanager/web build` compila correctamente.

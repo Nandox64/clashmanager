@@ -9,13 +9,14 @@ import { useClanData } from "@/hooks/use-clan-data";
 import { useProfile } from "@/hooks/use-profile";
 import { ROLE_LABELS, ROLE_HIERARCHY } from "@clashmanager/shared";
 import { IdentificationBanner } from "@/components/onboarding/identification-banner";
-import { Settings, Bell, Shield, Webhook, Save, Target, Gauge, Trophy } from "lucide-react";
+import { Settings, Bell, Shield, Webhook, Save, Target, Gauge, Trophy, Link2Off, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { AutomationRule, ClanEvent } from "@clashmanager/shared";
 import type { ClanScaling } from "@/lib/store";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { RuletaControl } from "@/components/ruleta/ruleta-control";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ALLOWED_ROLES = ["leader", "coleader"];
 
@@ -27,6 +28,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function SettingsPage() {
+  const { user, isMock, profile: authProfile } = useAuth();
   const { loading: clanLoading, error, refetch } = useClanData();
   const { profile, loading: profileLoading } = useProfile();
   const clan = useClanStore((s) => s.clan);
@@ -53,10 +55,18 @@ export default function SettingsPage() {
   const [events, setEvents] = useState<ClanEvent[]>(storeEvents);
   const [logs, setLogs] = useState(storeLogs);
   const [settingsLoading, setSettingsLoading] = useState(false);
+  const [linkedProfiles, setLinkedProfiles] = useState<Array<{ uid: string; displayName: string; linkedMemberId: string | null; email?: string }>>([]);
+  const [unlinkingUid, setUnlinkingUid] = useState<string | null>(null);
 
   const [warRank, setWarRank] = useState(storeLocalWarRank ?? 0);
   const [warTrophies, setWarTrophies] = useState(storeLocalWarTrophies ?? 0);
   const [scaling, setScaling] = useState<ClanScaling>(storeScaling);
+
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    if (isMock) return { Authorization: `Bearer mock-${authProfile?.uid ?? "mode"}` };
+    const token = await user?.getIdToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   useEffect(() => {
     setWarRank(storeLocalWarRank ?? 0);
@@ -101,6 +111,44 @@ export default function SettingsPage() {
       fetchSettings();
     }
   }, [loaded]);
+
+  const fetchLinkedProfiles = async () => {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/profile?linked=1", { headers });
+      if (!res.ok) throw new Error("Error al cargar vinculaciones");
+      const data = await res.json();
+      setLinkedProfiles(data.profiles ?? []);
+    } catch {
+      toast.error("Error al cargar vinculaciones");
+    }
+  };
+
+  useEffect(() => {
+    if (userRole === "leader") fetchLinkedProfiles();
+  }, [userRole]);
+
+  const unlinkProfile = async (targetUid: string, memberUid: string) => {
+    setUnlinkingUid(targetUid);
+    try {
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch("/api/profile/unlink", {
+        method: "POST",
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: targetUid, memberUid }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Error al desvincular");
+      }
+      setLinkedProfiles((prev) => prev.filter((p) => p.uid !== targetUid));
+      toast.success("Miembro desvinculado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al desvincular");
+    } finally {
+      setUnlinkingUid(null);
+    }
+  };
 
   const saveSettings = async (extra: Record<string, unknown> = {}) => {
     try {
@@ -197,25 +245,25 @@ export default function SettingsPage() {
           <CardHeader>
             <div>
               <CardTitle className="text-metallic-gold">Información del Clan</CardTitle>
-              <p className="text-xs text-clash-muted mt-0.5">Datos del clan obtenidos de la API de Clash Royale (solo lectura)</p>
+              <p className="text-xs text-clash-dimmed mt-0.5">Datos del clan obtenidos de la API de Clash Royale (solo lectura)</p>
             </div>
             <Settings size={16} className="text-metallic-gold" />
           </CardHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs text-clash-muted">Nombre del Clan</label>
+              <label className="text-xs text-clash-dimmed">Nombre del Clan</label>
               <Input value={clan.name} readOnly className="opacity-70" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs text-clash-muted">Tag</label>
+              <label className="text-xs text-clash-dimmed">Tag</label>
               <Input value={clan.tag} readOnly className="opacity-70" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs text-clash-muted">Copas totales</label>
+              <label className="text-xs text-clash-dimmed">Copas totales</label>
               <Input value={clan.stats.clanScore.toLocaleString()} readOnly className="opacity-70" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs text-clash-muted">Trofeos de guerra</label>
+              <label className="text-xs text-clash-dimmed">Trofeos de guerra</label>
               <Input value={clan.stats.clanWarTrophies.toLocaleString()} readOnly className="opacity-70" />
             </div>
           </div>
@@ -235,7 +283,7 @@ export default function SettingsPage() {
               <CardHeader>
                 <div>
                   <CardTitle className="text-metallic-gold">Posición de Guerra</CardTitle>
-                  <p className="text-xs text-clash-muted mt-0.5">
+                  <p className="text-xs text-clash-dimmed mt-0.5">
                     {isAllowed
                       ? "Edita la posición y trofeos de guerra del clan"
                       : "Solo líder y colíder pueden editar — vista de solo lectura"}
@@ -245,7 +293,7 @@ export default function SettingsPage() {
               </CardHeader>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Posición actual (ranking local)</label>
+                  <label className="text-xs text-clash-dimmed">Posición actual (ranking local)</label>
                   <Input
                     type="number"
                     value={warRank}
@@ -255,7 +303,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Trofeos de guerra</label>
+                  <label className="text-xs text-clash-dimmed">Trofeos de guerra</label>
                   <Input
                     type="number"
                     value={warTrophies}
@@ -473,6 +521,43 @@ export default function SettingsPage() {
               </CardHeader>
               <RuletaControl isAllowed={isAllowed} />
             </Card>
+
+            {userRole === "leader" && (
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle className="text-metallic-gold">Vinculaciones</CardTitle>
+                    <p className="text-xs text-clash-muted mt-0.5">Perfiles conectados a miembros del clan</p>
+                  </div>
+                  <Users size={16} className="text-metallic-gold" />
+                </CardHeader>
+                <div className="space-y-2">
+                  {linkedProfiles.map((linkedProfile) => {
+                    const member = members.find((m) => m.uid === linkedProfile.linkedMemberId);
+                    return (
+                      <div key={linkedProfile.uid} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-glass">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-clash-text truncate">{member?.displayName ?? linkedProfile.linkedMemberId}</p>
+                          <p className="text-xs text-clash-muted truncate">{linkedProfile.email || linkedProfile.displayName || linkedProfile.uid}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          disabled={unlinkingUid === linkedProfile.uid || linkedProfile.uid === profile?.uid || !linkedProfile.linkedMemberId}
+                          onClick={() => linkedProfile.linkedMemberId && unlinkProfile(linkedProfile.uid, linkedProfile.linkedMemberId)}
+                        >
+                          <Link2Off size={14} />
+                          Desvincular
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  {linkedProfiles.length === 0 && (
+                    <p className="text-xs text-clash-muted text-center py-3">No hay vinculaciones registradas.</p>
+                  )}
+                </div>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>

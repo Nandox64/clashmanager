@@ -60,7 +60,7 @@ export default function AchievementsPage() {
            </p>
          </div>
          <button onClick={() => forceSync()} disabled={loading} title="Sync ahora">
-           <RefreshCw size={16} className={`text-clash-muted hover:text-clash-text transition-colors ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw size={16} className={`text-clash-text hover:text-metallic-gold transition-colors ${loading ? "animate-spin" : ""}`} />
          </button>
        </div>
 
@@ -102,7 +102,7 @@ export default function AchievementsPage() {
           <div className="flex items-center gap-2 mb-3">
             <Award size={16} className="text-clash-gold" />
             <h2 className="text-sm font-semibold text-clash-text">Medallas por Miembro</h2>
-            <span className="text-xs text-clash-muted">({memberMedals.length} miembros)</span>
+            <span className="text-xs text-clash-dimmed">({memberMedals.length} miembros)</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {memberMedals.map(({ member, medals }) => (
@@ -130,7 +130,7 @@ export default function AchievementsPage() {
         <CardHeader>
           <div>
             <CardTitle>Medallas Disponibles</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">Logros y recompensas del sistema de gamificación</p>
+            <p className="text-xs text-clash-dimmed mt-0.5">Logros y recompensas del sistema de gamificación</p>
           </div>
           <Award size={16} className="text-clash-gold" />
         </CardHeader>
@@ -150,12 +150,12 @@ export default function AchievementsPage() {
                     <p className="text-sm font-medium text-clash-text">
                       {medal.name}
                     </p>
-                    <p className="text-[10px] text-clash-muted">
+                    <p className="text-[10px] text-clash-dimmed">
                       {earned} obtenida(s)
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-clash-muted">{medal.requirement}</p>
+                <p className="text-xs text-clash-dimmed">{medal.requirement}</p>
               </div>
             );
           })}
@@ -167,7 +167,7 @@ export default function AchievementsPage() {
           <div className="flex items-center gap-2 mb-3">
             <Award size={16} className="text-clash-gold" />
             <h2 className="text-sm font-semibold text-clash-text">Logros Recientes</h2>
-            <span className="text-xs text-clash-muted">({achievements.length} total)</span>
+            <span className="text-xs text-clash-dimmed">({achievements.length} total)</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {achievements.slice().reverse().slice(0, 24).map((ach) => {
@@ -182,7 +182,7 @@ export default function AchievementsPage() {
                   <p className="text-xs font-medium text-clash-text truncate w-full text-center leading-tight">
                     {member.displayName}
                   </p>
-                  <p className="text-[10px] text-clash-muted text-center leading-tight">
+                  <p className="text-[10px] text-clash-dimmed text-center leading-tight">
                     {ach.name}
                   </p>
                 </div>
@@ -197,11 +197,11 @@ export default function AchievementsPage() {
           <div className="text-center py-10">
             <Award size={32} className="mx-auto text-clash-muted mb-3" />
             <p className="text-sm text-clash-muted">Nadie ha obtenido medallas aún</p>
-            <p className="text-xs text-clash-muted/60 mt-2 max-w-md mx-auto">
+            <p className="text-xs text-clash-dimmed mt-2 max-w-md mx-auto">
               Las medallas se otorgan automáticamente al sincronizar. Algunas (donaciones, actividad, guerra) aparecen en el primer sync. 
               Otras (copas ganadas, diamante) necesitan un <strong>segundo sync</strong> para calcular la diferencia.
             </p>
-            <p className="text-xs text-clash-muted/60 mt-3">Haz clic en Sync 🔄 dos veces para generar todos los datos.</p>
+            <p className="text-xs text-clash-dimmed mt-3">Haz clic en Sync 🔄 dos veces para generar todos los datos.</p>
             <button
               onClick={() => forceSync()}
               disabled={loading}

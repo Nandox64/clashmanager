@@ -113,14 +113,14 @@ export function RuletaSection() {
     setSpinning(true);
     setCurrentResult(result);
     setLastResult(result);
-    if (result.won) {
-      playWinSound();
-      setTimeout(() => setShowConfetti(true), 8200);
-    } else {
-      playLoseSound();
-    }
     setTimeout(() => {
       setSpinning(false);
+      if (result.won) {
+        playWinSound();
+        setShowConfetti(true);
+      } else {
+        playLoseSound();
+      }
       if (eventActive) {
         setSpinsRemaining((prev) => Math.max(0, prev - 1));
         if (result.won) { setWon(true); setPrize(result.prize); }
@@ -211,77 +211,81 @@ export function RuletaSection() {
         </div>
       )}
 
-      {/* Wheel */}
-      <div className="flex flex-col items-center gap-6">
-        <RuletaWheel
-          spinning={spinning}
-          resultIndex={currentResult?.segmentIndex ?? null}
-        />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        {/* Wheel */}
+        <div className="flex flex-col items-center gap-6">
+          <RuletaWheel
+            spinning={spinning}
+            resultIndex={currentResult?.segmentIndex ?? null}
+          />
 
-        <button
-          onClick={handleSpin}
-          disabled={!canSpin}
-          className="flex items-center gap-2 px-8 py-3 rounded-xl bg-metallic-gold text-black text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-metallic-gold/20"
-        >
-          {countdown !== null ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : spinning ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <Gift size={20} />
+          <button
+            onClick={handleSpin}
+            disabled={!canSpin}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-metallic-gold text-black text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-metallic-gold/20"
+          >
+            {countdown !== null ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : spinning ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Gift size={20} />
+            )}
+            {countdown !== null ? "Preparando..." : spinning ? "Girando..." : eventActive && spinsRemaining <= 0 ? "Sin tiros" : "¡GIRAR!"}
+          </button>
+        </div>
+
+        <div className="space-y-4 lg:sticky lg:top-4">
+          {/* Rules */}
+          <div className="p-4 rounded-xl bg-glass border border-clash-border">
+            <h3 className="text-sm font-bold text-clash-text mb-2">📋 Instrucciones</h3>
+            <ul className="space-y-1 text-xs text-clash-muted">
+              {eventActive ? (
+                <>
+                  <li>• Tienes <strong>2 tiros</strong> por evento</li>
+                  <li>• Si ganas un premio, quedas fuera automáticamente</li>
+                  <li>• Si pierdes los 2 tiros, fuera también</li>
+                  <li>• Máximo {3} ganadores por premio</li>
+                  <li>• Solo 1 Pass Royale por evento</li>
+                  <li>• El ganador debe contactar al líder para reclamar</li>
+                </>
+              ) : (
+                <>
+                  <li>• La ruleta está en <strong>modo libre</strong> — no hay premios reales</li>
+                  <li>• Espera a que el líder active un evento para participar</li>
+                  <li>• En evento: 2 tiros por persona, premios con topes</li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          {/* Last result */}
+          {lastResult && !spinning && countdown === null && (
+            <div className={`p-6 rounded-xl text-center ${lastResult.won ? "bg-green-500/15 border-2 border-green-400/50 shadow-lg shadow-green-500/10 animate-pulse" : lastResult.prize === "error" ? "bg-red-500/10 border border-red-500/30" : "bg-glass border border-clash-border"}`}>
+              {lastResult.won && <p className="text-4xl mb-2">🏆</p>}
+              <p className={`text-2xl font-extrabold ${lastResult.won ? "text-green-400" : lastResult.prize === "error" ? "text-red-400" : "text-clash-text"}`}>
+                {lastResult.label}
+              </p>
+              {lastResult.won && (
+                <>
+                  <p className="text-clash-muted mt-3">
+                    Premio: <span className="text-metallic-gold font-bold text-xl">{lastResult.label}</span>
+                  </p>
+                  <p className="text-lg font-bold text-green-400 mt-3 animate-bounce drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]">
+                    ¡Felicidades!
+                  </p>
+                </>
+              )}
+              {eventActive && lastResult.won && (
+                <p className="text-sm text-clash-muted mt-2">Contacta al líder para recibir tu premio.</p>
+              )}
+            </div>
           )}
-          {countdown !== null ? "Preparando..." : spinning ? "Girando..." : eventActive && spinsRemaining <= 0 ? "Sin tiros" : "¡GIRAR!"}
-        </button>
+        </div>
       </div>
 
       {/* Confetti overlay */}
       <Confetti active={showConfetti} />
-
-      {/* Last result */}
-      {lastResult && !spinning && countdown === null && (
-        <div className={`p-6 rounded-xl text-center ${lastResult.won ? "bg-green-500/15 border-2 border-green-400/50 shadow-lg shadow-green-500/10 animate-pulse" : lastResult.prize === "error" ? "bg-red-500/10 border border-red-500/30" : "bg-glass border border-clash-border"}`}>
-          {lastResult.won && <p className="text-4xl mb-2">🏆</p>}
-          <p className={`text-2xl font-extrabold ${lastResult.won ? "text-green-400" : lastResult.prize === "error" ? "text-red-400" : "text-clash-text"}`}>
-            {lastResult.label}
-          </p>
-          {lastResult.won && (
-            <>
-              <p className="text-clash-muted mt-3">
-                Premio: <span className="text-metallic-gold font-bold text-xl">{lastResult.label}</span>
-              </p>
-              <p className="text-lg font-bold text-green-400 mt-3 animate-bounce drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]">
-                ¡Felicidades!
-              </p>
-            </>
-          )}
-          {eventActive && lastResult.won && (
-            <p className="text-sm text-clash-muted mt-2">Contacta al líder para recibir tu premio.</p>
-          )}
-        </div>
-      )}
-
-      {/* Rules */}
-      <div className="p-4 rounded-xl bg-glass border border-clash-border">
-        <h3 className="text-sm font-bold text-clash-text mb-2">📋 Instrucciones</h3>
-        <ul className="space-y-1 text-xs text-clash-muted">
-          {eventActive ? (
-            <>
-              <li>• Tienes <strong>2 tiros</strong> por evento</li>
-              <li>• Si ganas un premio, quedas fuera automáticamente</li>
-              <li>• Si pierdes los 2 tiros, fuera también</li>
-              <li>• Máximo {3} ganadores por premio</li>
-              <li>• Solo 1 Pass Royale por evento</li>
-              <li>• El ganador debe contactar al líder para reclamar</li>
-            </>
-          ) : (
-            <>
-              <li>• La ruleta está en <strong>modo libre</strong> — no hay premios reales</li>
-              <li>• Espera a que el líder active un evento para participar</li>
-              <li>• En evento: 2 tiros por persona, premios con topes</li>
-            </>
-          )}
-        </ul>
-      </div>
 
       {/* Winners */}
       {winners.length > 0 && (

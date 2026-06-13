@@ -1,4 +1,4 @@
-const SW_VERSION = 6;
+const SW_VERSION = 7;
 const CACHE = "clashmanager-v" + SW_VERSION;
 
 function isHtmlNav(req) {
@@ -10,8 +10,22 @@ function hasHash(url) {
   return /[a-f0-9]{8,}\.(js|css)$/.test(url.pathname);
 }
 
+function isLocalhost(url) {
+  return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+}
+
+function isScriptOrStyle(url) {
+  return /\.(js|css)$/.test(url.pathname);
+}
+
 function isStaticAsset(url) {
   return /\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|eot)$/.test(url.pathname);
+}
+
+function cacheResponse(request, response) {
+  if (!response || !response.ok) return;
+  const clone = response.clone();
+  caches.open(CACHE).then((cache) => cache.put(request, clone));
 }
 
 self.addEventListener("install", (event) => {
@@ -63,22 +77,32 @@ self.addEventListener("fetch", (event) => {
   if (hasHash(url)) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(request, clone));
+        cacheResponse(request, res);
         return res;
       }))
     );
     return;
   }
 
-  // Other static assets (images, fonts): cache first
+  // In dev, Next.js JS/CSS may not be content-hashed. Always fetch the latest.
+  if (isLocalhost(url) && isScriptOrStyle(url)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Other static assets without hash: stale-while-revalidate
   if (isStaticAsset(url)) {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(request, clone));
-        return res;
-      }))
+      caches.match(request).then((cached) => {
+        const fetched = fetch(request)
+          .then((res) => {
+            cacheResponse(request, res);
+            return res;
+          })
+          .catch(() => cached);
+
+        return cached || fetched;
+      })
     );
     return;
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProfile, saveProfile } from "@/lib/firestore-service";
+import { getLinkedProfiles, getMemberByUid, getProfile, getProfileByLinkedMember, saveProfile, saveMemberLink } from "@/lib/firestore-service";
 import { adminAuth } from "@/lib/firebase-admin";
 import type { UserProfileDoc } from "@/lib/firestore-service";
 
@@ -33,6 +33,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
+  const url = new URL(request.url);
+  if (url.searchParams.get("linked") === "1") {
+    const profile = await getProfile(clanTag, uid);
+    if (!profile?.linkedMemberId) {
+      return NextResponse.json({ error: "No vinculado" }, { status: 403 });
+    }
+    const linkedMember = await getMemberByUid(clanTag, profile.linkedMemberId);
+    if (linkedMember?.role !== "leader") {
+      return NextResponse.json({ error: "Solo el líder puede ver vinculaciones" }, { status: 403 });
+    }
+    return NextResponse.json({ profiles: await getLinkedProfiles(clanTag) });
+  }
+
   const profile = await getProfile(clanTag, uid);
   return NextResponse.json({ profile: profile ?? null });
 }
@@ -51,16 +64,24 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const existing = await getProfile(clanTag, uid);
+    const nextLinkedMemberId =
+      body.linkedMemberId !== undefined
+        ? body.linkedMemberId
+        : (existing?.linkedMemberId ?? null);
+
+    if (nextLinkedMemberId) {
+      const linkedProfile = await getProfileByLinkedMember(clanTag, nextLinkedMemberId);
+      if (linkedProfile && linkedProfile.uid !== uid) {
+        return NextResponse.json({ error: "Ese miembro ya está vinculado a otro perfil" }, { status: 409 });
+      }
+    }
 
     const profile: UserProfileDoc = {
       uid,
       displayName: body.displayName ?? existing?.displayName ?? "",
       photoURL: body.photoURL ?? existing?.photoURL ?? "",
-      linkedMemberId:
-        body.linkedMemberId !== undefined
-          ? body.linkedMemberId
-          : (existing?.linkedMemberId ?? null),
-      linkedAt: existing?.linkedAt ?? Date.now(),
+      linkedMemberId: nextLinkedMemberId,
+      linkedAt: nextLinkedMemberId ? (existing?.linkedMemberId === nextLinkedMemberId ? existing?.linkedAt ?? Date.now() : Date.now()) : Date.now(),
       firstName: body.firstName !== undefined ? body.firstName : existing?.firstName,
       lastName: body.lastName !== undefined ? body.lastName : existing?.lastName,
       phone: body.phone !== undefined ? body.phone : existing?.phone,
@@ -68,6 +89,7 @@ export async function POST(request: Request) {
     };
 
     await saveProfile(clanTag, profile);
+    if (nextLinkedMemberId) await saveMemberLink(clanTag, nextLinkedMemberId, uid);
     return NextResponse.json({ profile });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error interno";

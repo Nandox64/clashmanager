@@ -86,7 +86,7 @@ export default function MembersPage() {
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-clash-muted"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-clash-dimmed"
           />
           <Input
             placeholder="Buscar miembro..."
@@ -119,22 +119,22 @@ export default function MembersPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-clash-border">
-                  <th className="text-left text-xs font-medium text-clash-muted p-3">
+                  <th className="text-left text-xs font-medium text-clash-dimmed p-3">
                     Jugador
                   </th>
-                  <th className="text-left text-xs font-medium text-clash-muted p-3">
+                  <th className="text-left text-xs font-medium text-clash-dimmed p-3">
                     Rol
                   </th>
-                  <th className="text-right text-xs font-medium text-clash-muted p-3">
+                  <th className="text-right text-xs font-medium text-clash-dimmed p-3">
                     Copas
                   </th>
-                  <th className="text-right text-xs font-medium text-clash-muted p-3">
+                  <th className="text-right text-xs font-medium text-clash-dimmed p-3">
                     Donaciones
                   </th>
-                  <th className="text-right text-xs font-medium text-clash-muted p-3">
+                  <th className="text-right text-xs font-medium text-clash-dimmed p-3">
                     Guerra
                   </th>
-                  <th className="text-right text-xs font-medium text-clash-muted p-3">
+                  <th className="text-right text-xs font-medium text-clash-dimmed p-3">
                     Actividad
                   </th>
                 </tr>
@@ -235,7 +235,7 @@ export default function MembersPage() {
                       {ROLE_LABELS[member.role]}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-clash-muted flex-wrap">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-clash-dimmed flex-wrap">
                     <span>🏆 {member.trophies.toLocaleString()}</span>
                     <span>🎁 {member.weeklyStats?.donationsGiven ?? 0}</span>
                     <span>⚔️ {member.weeklyStats?.warParticipation ?? 0}%</span>

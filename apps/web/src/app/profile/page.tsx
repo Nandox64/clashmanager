@@ -97,7 +97,7 @@ export default function ProfilePage() {
         <CardHeader>
           <div>
             <CardTitle className="text-metallic-gold">Foto de Perfil</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">
+            <p className="text-xs text-clash-dimmed mt-0.5">
               Sube una foto para identificarte (máx 1MB)
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div className="w-28 h-28 rounded-full bg-glass border-2 border-clash-border flex items-center justify-center">
-                <UserCircle size={56} className="text-clash-muted" />
+                <UserCircle size={56} className="text-clash-dimmed" />
               </div>
             )}
             <button
@@ -146,7 +146,7 @@ export default function ProfilePage() {
         <CardHeader>
           <div>
             <CardTitle className="text-metallic-gold">Vincular Miembro</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">
+            <p className="text-xs text-clash-dimmed mt-0.5">
               {linkedMemberId
                 ? "Miembro vinculado actualmente. Puedes cambiarlo si lo deseas."
                 : "Selecciona tu miembro del clan para identificarte"}
@@ -169,7 +169,7 @@ export default function ProfilePage() {
                   <p className="text-sm font-medium text-clash-text truncate">
                     {linkedMember.displayName}
                   </p>
-                  <p className="text-xs text-clash-muted font-mono">
+                  <p className="text-xs text-clash-dimmed font-mono">
                     {linkedMember.playerTag}
                   </p>
                 </div>
@@ -181,23 +181,23 @@ export default function ProfilePage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div>
-                  <p className="text-xs text-clash-muted">Trofeos</p>
+                  <p className="text-xs text-clash-dimmed">Trofeos</p>
                   <p className="text-sm font-bold text-clash-gold">
                     {linkedMember.trophies.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-clash-muted">Donaciones</p>
+                  <p className="text-xs text-clash-dimmed">Donaciones</p>
                   <p className="text-sm font-bold text-clash-text">
                     {linkedMember.weeklyStats.donationsGiven.toLocaleString()}/sem
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-clash-muted">Nivel</p>
+                  <p className="text-xs text-clash-dimmed">Nivel</p>
                   <p className="text-sm font-bold text-clash-text">{linkedMember.level}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-clash-muted">Participación</p>
+                  <p className="text-xs text-clash-dimmed">Participación</p>
                   <p className="text-sm font-bold text-clash-text">
                     {linkedMember.weeklyStats.warParticipation}%
                   </p>
@@ -206,7 +206,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <p className="text-xs text-clash-muted">
+          <p className="text-xs text-clash-dimmed">
             {linkedMemberId ? "Cambiar a otro miembro:" : "Selecciona un miembro:"}
           </p>
           <select
@@ -237,7 +237,7 @@ export default function ProfilePage() {
         <CardHeader>
           <div>
             <CardTitle className="text-metallic-gold">Información Personal</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">
+            <p className="text-xs text-clash-dimmed mt-0.5">
               Datos adicionales para tu perfil
             </p>
           </div>
@@ -256,7 +256,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-clash-muted mb-1">Apellido</label>
+              <label className="block text-xs text-clash-dimmed mb-1">Apellido</label>
               <input
                 type="text"
                 value={lastName}
@@ -268,7 +268,7 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-clash-muted mb-1">Celular</label>
+              <label className="block text-xs text-clash-dimmed mb-1">Celular</label>
               <input
                 type="tel"
                 value={phone}
@@ -278,7 +278,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-clash-muted mb-1">Correo</label>
+              <label className="block text-xs text-clash-dimmed mb-1">Correo</label>
               <input
                 type="email"
                 value={email}

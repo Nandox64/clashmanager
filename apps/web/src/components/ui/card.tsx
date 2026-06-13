@@ -1,17 +1,27 @@
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
+import { useTheme } from "@/hooks/use-theme";
 
 export function Card({
   className,
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
+  const theme = useTheme();
   return (
     <div
       className={cn(
-        "rounded-xl border border-clash-border bg-glass-sheer p-4 animate-fade-in card-premium",
+        "rounded-xl p-4 animate-fade-in card-premium",
         className
       )}
+      style={{
+        background: theme.surface,
+        borderColor: theme.border,
+        borderWidth: 1,
+        borderStyle: "solid",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+      }}
       {...props}
     >
       {children}

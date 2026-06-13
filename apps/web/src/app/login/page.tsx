@@ -177,7 +177,7 @@ export default function LoginPage() {
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-36 h-36 object-contain"
+            className="w-52 h-52 object-contain"
           />
 
           <div className="text-center">

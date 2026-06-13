@@ -56,6 +56,17 @@ export async function getClanFromFirestore(
   }
 }
 
+export async function getMemberByUid(clanTag: string, uid: string): Promise<Member | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("members").doc(uid).get();
+    if (!snap.exists) return null;
+    return { uid: snap.id, ...snap.data() } as Member;
+  } catch {
+    return null;
+  }
+}
+
 export async function getMembersFromFirestore(
   clanTag: string
 ): Promise<Member[]> {
@@ -404,6 +415,57 @@ export async function saveProfile(clanTag: string, profile: UserProfileDoc) {
     { ...profile, updatedAt: Date.now() },
     { merge: true }
   );
+}
+
+export async function getProfileByLinkedMember(clanTag: string, memberUid: string): Promise<UserProfileDoc | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("profiles").where("linkedMemberId", "==", memberUid).limit(1).get();
+    if (snap.empty) return null;
+    const doc = snap.docs[0];
+    return { uid: doc.id, ...doc.data() } as UserProfileDoc;
+  } catch {
+    return null;
+  }
+}
+
+export async function getLinkedProfiles(clanTag: string): Promise<UserProfileDoc[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("profiles").where("linkedMemberId", "!=", null).get();
+    return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as UserProfileDoc));
+  } catch {
+    return [];
+  }
+}
+
+export async function unlinkProfileMember(clanTag: string, firebaseUid: string) {
+  const ref = getClanDocRef(clanTag);
+  await ref.collection("profiles").doc(firebaseUid).set(
+    { linkedMemberId: null, linkedAt: null, updatedAt: Date.now() },
+    { merge: true }
+  );
+}
+
+export async function getFirebaseUidByMember(clanTag: string, memberUid: string): Promise<string | null> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("memberLinks").doc(memberUid).get();
+    if (!snap.exists) return null;
+    return snap.data()?.firebaseUid ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveMemberLink(clanTag: string, memberUid: string, firebaseUid: string) {
+  const ref = getClanDocRef(clanTag);
+  await ref.collection("memberLinks").doc(memberUid).set({ firebaseUid, linkedAt: Date.now() });
+}
+
+export async function deleteMemberLink(clanTag: string, memberUid: string) {
+  const ref = getClanDocRef(clanTag);
+  await ref.collection("memberLinks").doc(memberUid).delete();
 }
 
 // ── Clan Settings (war rank + scaling) ──

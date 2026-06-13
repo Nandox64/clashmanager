@@ -73,13 +73,11 @@ export function DashboardGrid() {
           <p className="text-sm text-clash-muted mt-0.5">
             Centro de control • {clan.name}
           </p>
-          <p className="text-xs text-clash-muted/60 mt-1">
+          <p className="text-xs text-clash-dimmed mt-1">
             Monitorea el rendimiento, actividad y logros de tu clan en tiempo real
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <img src="/logoclashroyale.png" alt="" className="w-[120px] h-[90px] object-contain shrink-0" />
-
           {/* Badge "Cacheado" — visible mientras se muestran datos de localStorage */}
           {fromCache && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-[11px] font-medium text-blue-400 animate-fade-in">
@@ -101,7 +99,7 @@ export function DashboardGrid() {
           <button
             onClick={refetch}
             disabled={loading}
-            className="p-2 rounded-lg bg-glass-card border border-clash-border text-clash-muted hover:text-clash-text transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg bg-glass-card border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50"
             title="Actualizar datos"
           >
             <RefreshCw
@@ -123,7 +121,7 @@ export function DashboardGrid() {
               <span className="text-lg font-bold font-mono text-clash-text">
                 {clan.stats.clanScore.toLocaleString()}
               </span>
-              <p className="text-[10px] text-clash-muted mt-0.5">
+              <p className="text-[10px] text-clash-dimmed mt-0.5">
                 Promedio: {avgTrophies.toLocaleString()}
               </p>
             </div>
@@ -135,7 +133,7 @@ export function DashboardGrid() {
               <span className="text-lg font-bold font-mono text-clash-text">
                 {members.length}
               </span>
-              <p className="text-[10px] text-clash-muted mt-0.5">
+              <p className="text-[10px] text-clash-dimmed mt-0.5">
                 {activeMembers} activos
               </p>
             </div>
@@ -164,7 +162,7 @@ export function DashboardGrid() {
                 <div style={barTrackStyle} />
                 <div style={barFillStyle(clan.healthScore)} />
               </div>
-              <p className="text-[10px] text-clash-muted mt-1">
+              <p className="text-[10px] text-clash-dimmed mt-1">
                 {clan.healthScore >= 80 ? "Excelente" : clan.healthScore >= 60 ? "Buena" : "Regular"}
               </p>
             </div>
@@ -197,7 +195,7 @@ export function DashboardGrid() {
       </div>
 
       <footer className="text-center pt-6 pb-4 border-t border-clash-border">
-        <p className="text-xs text-clash-muted/50 font-mono">
+        <p className="text-xs text-clash-dimmed font-mono">
           V.1.0 - 2026 &nbsp;&nbsp;&nbsp;&nbsp; "By Nandox64"
         </p>
       </footer>

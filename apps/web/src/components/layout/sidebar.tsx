@@ -24,6 +24,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
 import { ROLE_LABELS } from "@clashmanager/shared";
+import { getPageTheme } from "./page-theme";
+
 const navItems = [
   { href: "/dashboard", label: "Dashboard",   icon: LayoutDashboard },
   { href: "/achievements", label: "Logros",    icon: Award },
@@ -60,10 +62,24 @@ export function Sidebar() {
   const displayName = linkedMember?.displayName || user?.displayName || "";
   const initials = displayName ? displayName.slice(0, 2).toUpperCase() : "";
 
+  const theme = getPageTheme(pathname);
+  const sidebarStyle = {
+    background: theme.surface,
+    borderRightColor: theme.border,
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+  } as React.CSSProperties;
+  const mobileBarStyle = {
+    background: theme.surface,
+    borderBottomColor: theme.border,
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+  } as React.CSSProperties;
+
   return (
     <>
       {/* Mobile top bar — always visible when sidebar is closed */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 lg:hidden bg-glass-strong border-b border-clash-border">
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 lg:hidden" style={mobileBarStyle}>
         <button
           onClick={() => setIsOpen(true)}
           className="toggle-btn flex items-center justify-center shrink-0"
@@ -78,7 +94,7 @@ export function Sidebar() {
           Clash Manager
         </span>
         <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
-          <span className="text-[10px] text-clash-muted truncate block">
+          <span className="text-[10px] truncate block" style={{ color: "var(--pm-text)" }}>
             {clanName}
           </span>
         </div>
@@ -98,6 +114,7 @@ export function Sidebar() {
           "premium-sidebar",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
+        style={sidebarStyle}
       >
         {/* Header / Logo */}
         <div className="flex flex-col items-center gap-3 p-5">
@@ -119,7 +136,7 @@ export function Sidebar() {
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-20 h-20 object-contain"
+            className="w-28 h-28 object-contain"
           />
         </div>
           {/* Close button inside sidebar header */}
@@ -149,10 +166,10 @@ export function Sidebar() {
                   style={{
                     background: isActive
                       ? "hsla(45,90%,55%,0.18)"
-                      : "hsla(0,0%,100%,0.04)",
+                      : theme.border,
                   }}
                 >
-                  <Icon size={16} />
+                  <Icon size={16} style={{ color: isActive ? "var(--pm-gold)" : "var(--pm-text)" }} />
                 </span>
                 <span className="flex-1 text-sm">{item.label}</span>
               </Link>
@@ -201,7 +218,7 @@ export function Sidebar() {
                 <button
                   onClick={signOut}
                   className="p-1.5 rounded-lg transition-colors"
-                  style={{ color: "var(--pm-muted)" }}
+                  style={{ color: "var(--pm-text)" }}
                   title="Cerrar sesión"
                 >
                   <LogOut size={15} />
@@ -215,8 +232,8 @@ export function Sidebar() {
               className="nav-item"
             >
               <span className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
-                    style={{ background: "hsla(0,0%,100%,0.04)" }}>
-                <LogIn size={16} />
+                    style={{ background: theme.border }}>
+                <LogIn size={16} style={{ color: "var(--pm-text)" }} />
               </span>
               <span className="text-sm">Iniciar Sesión</span>
             </Link>

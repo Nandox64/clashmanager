@@ -87,7 +87,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--pm-muted);
+  color: var(--pm-text);
   text-decoration: none;
   transition: color 0.2s, background 0.2s;
   cursor: pointer;
@@ -100,8 +100,8 @@
 }
 
 .nav-item:hover {
-  color: var(--pm-text);
-  background: hsla(0, 0%, 100%, 0.06);
+  color: var(--pm-gold);
+  background: hsla(45, 90%, 55%, 0.12);
 }
 
 .nav-item.active {
