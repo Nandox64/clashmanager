@@ -70,3 +70,4 @@ vite.config.ts.timestamp-*
 # Project-specific
 Old/
 apps/web/.vercel/
+.vercel

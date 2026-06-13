@@ -392,10 +392,10 @@ export interface UserProfileDoc {
   photoURL: string;
   linkedMemberId: string | null;
   linkedAt: number;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  email?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export async function getProfile(clanTag: string, firebaseUid: string): Promise<UserProfileDoc | null> {

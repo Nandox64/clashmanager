@@ -82,10 +82,10 @@ export async function POST(request: Request) {
       photoURL: body.photoURL ?? existing?.photoURL ?? "",
       linkedMemberId: nextLinkedMemberId,
       linkedAt: nextLinkedMemberId ? (existing?.linkedMemberId === nextLinkedMemberId ? existing?.linkedAt ?? Date.now() : Date.now()) : Date.now(),
-      firstName: body.firstName !== undefined ? body.firstName : existing?.firstName,
-      lastName: body.lastName !== undefined ? body.lastName : existing?.lastName,
-      phone: body.phone !== undefined ? body.phone : existing?.phone,
-      email: body.email !== undefined ? body.email : existing?.email,
+      firstName: body.firstName !== undefined ? body.firstName : (existing?.firstName ?? null),
+      lastName: body.lastName !== undefined ? body.lastName : (existing?.lastName ?? null),
+      phone: body.phone !== undefined ? body.phone : (existing?.phone ?? null),
+      email: body.email !== undefined ? body.email : (existing?.email ?? null),
     };
 
     await saveProfile(clanTag, profile);
