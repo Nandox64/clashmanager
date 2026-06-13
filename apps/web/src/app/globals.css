@@ -224,3 +224,8 @@ body::after {
 .bg-clash-border {
   background-color: var(--theme-border, #1e2430) !important;
 }
+
+@keyframes scroll-hint-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.8; }
+}

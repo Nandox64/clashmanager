@@ -48,28 +48,46 @@ export function BottomTabs() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden safe-area-bottom" style={navStyle}>
-      <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-premium snap-x snap-mandatory">
-        {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = pathname.startsWith(tab.href);
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all shrink-0 snap-start",
-                isActive
-                  ? "bg-metallic-gold text-[#0d1117]"
-                  : "text-clash-text hover:text-[var(--pm-gold)]"
-              )}
-            >
-              <Icon size={20} className={isActive ? "text-[#0d1117]" : undefined} />
-              <span className={`text-[11px] font-medium whitespace-nowrap ${isActive ? "text-[#0d1117]" : ""}`}>
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
+      <div className="relative">
+        <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-premium snap-x snap-mandatory scroll-smooth">
+          {visibleTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = pathname.startsWith(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all shrink-0 snap-start",
+                  isActive
+                    ? "bg-metallic-gold text-[#0d1117]"
+                    : "text-clash-text hover:text-[var(--pm-gold)]"
+                )}
+              >
+                <Icon size={20} className={isActive ? "text-[#0d1117]" : undefined} />
+                <span className={`text-[11px] font-medium whitespace-nowrap ${isActive ? "text-[#0d1117]" : ""}`}>
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+        {/* Scroll hint gradients — pulsing fade at edges to hint at hidden tabs */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none"
+          style={{
+            background: `linear-gradient(to left, ${theme.surface}, transparent)`,
+            animation: "scroll-hint-pulse 2s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="absolute left-0 top-0 bottom-0 w-16 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, ${theme.surface}, transparent)`,
+            animation: "scroll-hint-pulse 2s ease-in-out infinite",
+            animationDelay: "1s",
+          }}
+        />
       </div>
     </nav>
   );
