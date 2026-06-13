@@ -36,14 +36,12 @@
 
 html {
   overscroll-behavior: none;
-  overflow-x: hidden;
 }
 
 body {
   background-color: var(--color-clash-dark);
   color: var(--color-clash-text);
   font-family: var(--font-sans);
-  overflow-x: hidden;
   overscroll-behavior: none;
 }
 
