@@ -197,7 +197,7 @@ export default function GiftsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-white text-title-shadow">Regalos</h1>
+        <h1 className="text-page-title text-2xl font-black">Regalos</h1>
         <p className="text-sm text-clash-muted mt-0.5">
           Fondos de pantalla y códigos QR para canjear recompensas
         </p>
@@ -208,7 +208,7 @@ export default function GiftsPage() {
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-white text-xl font-black text-title-shadow">Recursos</CardTitle>
+            <CardTitle className="text-page-title text-xl font-black">Recursos</CardTitle>
             <p className="text-xs text-clash-dimmed mt-0.5">
               Biblioteca del clan para compartir imágenes, códigos QR y eventos de ruleta en un solo lugar. Sube recursos ligeros, identifica quién los aportó y conserva solo contenido útil para la comunidad.
             </p>
@@ -260,7 +260,7 @@ export default function GiftsPage() {
               </button>
             </div>
             <div className="rounded-xl border border-clash-border bg-glass p-4">
-              <h2 className="text-base font-black tracking-[0.18em] text-white text-title-shadow">{activeTabConfig.title}</h2>
+              <h2 className="text-page-title text-base font-black tracking-[0.18em]">{activeTabConfig.title}</h2>
               <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
               <p className="text-xs text-clash-dimmed mt-2">
                 {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
@@ -273,7 +273,7 @@ export default function GiftsPage() {
 
         {activeTab === "ruleta" && (
           <div className="mb-4 rounded-xl border border-clash-border bg-glass p-4">
-            <h2 className="text-base font-black tracking-[0.18em] text-white text-title-shadow">{activeTabConfig.title}</h2>
+            <h2 className="text-page-title text-base font-black tracking-[0.18em]">{activeTabConfig.title}</h2>
             <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
           </div>
         )}

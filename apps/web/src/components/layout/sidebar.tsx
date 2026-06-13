@@ -143,16 +143,14 @@ export function Sidebar() {
                 className={cn("nav-item", isActive && "active")}
               >
                 <span
-                  className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
-                  style={{
-                    background: isActive
-                      ? "hsla(45,90%,55%,0.18)"
-                      : theme.border,
-                  }}
+                  className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-all ${
+                    isActive ? "bg-metallic-gold" : ""
+                  }`}
+                  style={!isActive ? { background: theme.border } : undefined}
                 >
-                  <Icon size={16} style={{ color: isActive ? "var(--pm-gold)" : "var(--pm-text)" }} />
+                  <Icon size={16} className={isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"} />
                 </span>
-                <span className="flex-1 text-sm">{item.label}</span>
+                <span className={`flex-1 text-sm ${isActive ? "text-[var(--pm-gold)]" : ""}`}>{item.label}</span>
               </Link>
             );
           })}

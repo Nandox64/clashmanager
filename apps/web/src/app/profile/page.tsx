@@ -87,7 +87,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-clash-text text-title-shadow">Perfil</h1>
+        <h1 className="text-page-title text-xl">Perfil</h1>
         <p className="text-sm text-clash-muted mt-0.5">
           Personaliza tu perfil y vincúlate a un miembro del clan
         </p>

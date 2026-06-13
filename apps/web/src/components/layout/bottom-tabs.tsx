@@ -57,14 +57,14 @@ export function BottomTabs() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors shrink-0 snap-start",
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all shrink-0 snap-start",
                 isActive
-                  ? "text-metallic-gold bg-metallic-gold-subtle"
-                  : "text-clash-text hover:text-metallic-gold"
+                  ? "bg-metallic-gold text-[#0d1117]"
+                  : "text-clash-text hover:text-[var(--pm-gold)]"
               )}
             >
-              <Icon size={20} className={isActive ? "animate-icon-shine" : undefined} />
-              <span className="text-[11px] font-medium whitespace-nowrap">
+              <Icon size={20} className={isActive ? "text-[#0d1117]" : undefined} />
+              <span className={`text-[11px] font-medium whitespace-nowrap ${isActive ? "text-[#0d1117]" : ""}`}>
                 {tab.label}
               </span>
             </Link>

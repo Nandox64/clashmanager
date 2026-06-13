@@ -110,7 +110,7 @@ export default function RecruitmentPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-metallic-gold bg-clip-text text-title-shadow">Reclutamiento</h1>
+            <h1 className="text-page-title text-xl">Reclutamiento</h1>
             <p className="text-sm text-clash-muted mt-0.5">
               Evalúa y gestiona nuevos candidatos
             </p>
