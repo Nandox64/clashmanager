@@ -86,15 +86,18 @@ export function OnboardingModal() {
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ photoURL: photo, linkedMemberId }),
       });
-      if (!res.ok) throw new Error("Error al guardar");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Error del servidor (${res.status})`);
+      }
       setCachedLinkedMemberId(linkedMemberId);
       setCachedProfilePhoto(photo);
       const linked = members.find((m) => m.uid === linkedMemberId);
       setCachedRole(linked?.role ?? null);
       toast.success("Perfil vinculado correctamente");
       setOpen(false);
-    } catch {
-      toast.error("Error al guardar");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar");
     } finally {
       setSaving(false);
     }

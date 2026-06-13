@@ -66,8 +66,8 @@ export default function ProfilePage() {
     try {
       await saveProfile({ photoURL: photo, linkedMemberId, firstName, lastName, phone, email });
       toast.success("Perfil guardado");
-    } catch {
-      toast.error("Error al guardar perfil");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar perfil");
     } finally {
       setSaving(false);
     }

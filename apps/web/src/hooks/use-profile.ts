@@ -93,7 +93,10 @@ export function useProfile() {
           headers: { ...headers, "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error("Error al guardar perfil");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Error del servidor (${res.status})`);
+        }
         const result = await res.json();
         setProfileState(result.profile);
         if (result.profile) {
