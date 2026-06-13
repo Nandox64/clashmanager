@@ -76,14 +76,10 @@ export function Sidebar() {
   const sidebarStyle = {
     background: theme.surface,
     borderRightColor: theme.border,
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
   } as React.CSSProperties;
   const mobileBarStyle = {
     background: theme.surface,
     borderBottomColor: theme.border,
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
   } as React.CSSProperties;
 
   return (

@@ -44,7 +44,7 @@ body::after {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 100dvh;
+  height: 100lvh;
   background:
     radial-gradient(ellipse 80% 60% at 50% 50%, rgba(212, 160, 23, 0.03) 0%, transparent 70%);
   pointer-events: none;
