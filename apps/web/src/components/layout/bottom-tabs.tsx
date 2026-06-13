@@ -14,6 +14,7 @@ import {
   Settings,
   UserCircle,
   Gift,
+  Trophy,
 } from "lucide-react";
 import { getPageTheme } from "./page-theme";
 import { useEffect, useRef } from "react";
@@ -28,6 +29,7 @@ const tabs = [
   { href: "/analytics", label: "Stats", icon: BarChart3 },
   { href: "/recruitment", label: "Reclutar", icon: UserPlus },
   { href: "/gifts", label: "Regalos", icon: Gift },
+  { href: "/ruleta", label: "Ruleta", icon: Trophy },
   { href: "/profile", label: "Perfil", icon: UserCircle },
   { href: "/settings", label: "Ajustes", icon: Settings },
 ];

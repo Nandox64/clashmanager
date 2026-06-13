@@ -17,6 +17,7 @@ import {
   Shield,
   UserCircle,
   Gift,
+  Trophy,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/achievements", label: "Logros",    icon: Award },
   { href: "/war-decks", label: "Mazos de Guerra", icon: Swords },
   { href: "/gifts",        label: "Regalos",   icon: Gift },
+  { href: "/ruleta",       label: "Ruleta",    icon: Trophy },
   { href: "/members",   label: "Miembros",     icon: Users },
   { href: "/analytics", label: "Estadísticas", icon: BarChart3 },
   { href: "/recruitment",  label: "Reclutar",  icon: UserPlus },

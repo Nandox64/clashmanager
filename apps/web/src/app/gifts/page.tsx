@@ -2,14 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, Monitor, Gift, ExternalLink, Upload, Loader2, Trash2, User, Trophy } from "lucide-react";
+import { Smartphone, Monitor, Gift, ExternalLink, Upload, Loader2, Trash2, User } from "lucide-react";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedRole } from "@/lib/profile-cache";
-import { RuletaSection } from "@/components/ruleta/ruleta-section";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Tab = "mobile" | "pc" | "qr" | "ruleta";
+type Tab = "mobile" | "pc" | "qr";
 
 interface Wallpaper {
   id: string;
@@ -31,7 +30,6 @@ const tabs: { id: Tab; label: string; title: string; help: string; icon: typeof 
   { id: "mobile", label: "Móvil", title: "RECURSOS PARA MÓVIL", help: "Imágenes verticales recomendadas para celular (9:16).", icon: Smartphone },
   { id: "pc", label: "PC", title: "RECURSOS PARA COMPUTADOR", help: "Imágenes horizontales recomendadas para computador (16:9).", icon: Monitor },
   { id: "qr", label: "Códigos", title: "CÓDIGOS QR DE RECOMPENSAS", help: "Códigos QR para escanear desde Clash Royale.", icon: Gift },
-  { id: "ruleta", label: "Ruleta", title: "RULETA DE PREMIOS", help: "Gira la ruleta durante eventos activos y revisa las reglas antes de participar.", icon: Trophy },
 ];
 
 function formatDate(ts: number) {
@@ -236,47 +234,38 @@ export default function GiftsPage() {
           })}
         </div>
 
-        {activeTab !== "ruleta" && (
-          <div className="mb-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleUpload}
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-metallic-gold text-black text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50"
-              >
-                {uploading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Upload size={16} />
-                )}
-                {uploading ? "Subiendo..." : "Subir imagen"}
-              </button>
-            </div>
-            <div className="rounded-xl border border-clash-border bg-glass p-4">
-              <h2 className="text-page-title text-base font-black tracking-[0.18em]">{activeTabConfig.title}</h2>
-              <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
-              <p className="text-xs text-clash-dimmed mt-2">
-                {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
-                {activeTab === "pc" && "Instrucción: sube imágenes horizontales para computador en formato 16:9."}
-                {activeTab === "qr" && "Instrucción: sube capturas claras del código para que pueda escanearse sin recortes."}
-              </p>
-            </div>
+        <div className="mb-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-metallic-gold text-black text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50"
+            >
+              {uploading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Upload size={16} />
+              )}
+              {uploading ? "Subiendo..." : "Subir imagen"}
+            </button>
           </div>
-        )}
-
-        {activeTab === "ruleta" && (
-          <div className="mb-4 rounded-xl border border-clash-border bg-glass p-4">
+          <div className="rounded-xl border border-clash-border bg-glass p-4">
             <h2 className="text-page-title text-base font-black tracking-[0.18em]">{activeTabConfig.title}</h2>
             <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
+            <p className="text-xs text-clash-dimmed mt-2">
+              {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
+              {activeTab === "pc" && "Instrucción: sube imágenes horizontales para computador en formato 16:9."}
+              {activeTab === "qr" && "Instrucción: sube capturas claras del código para que pueda escanearse sin recortes."}
+            </p>
           </div>
-        )}
+        </div>
 
         <div>
           {activeTab === "mobile" && (
@@ -377,7 +366,6 @@ export default function GiftsPage() {
               )}
             </div>
           )}
-          {activeTab === "ruleta" && <RuletaSection />}
         </div>
       </Card>
     </div>
