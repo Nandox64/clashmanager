@@ -20,11 +20,16 @@ export function TopDonadores() {
         </div>
         <Gift size={16} className="text-metallic-silver animate-icon-shine" />
       </CardHeader>
-      <div className="space-y-2 pr-32">
+      <img
+        src="/cofre1.png"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none -z-10"
+      />
+      <div className="relative z-10 space-y-2">
         {top.map((member, i) => (
           <div
             key={member.uid}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
           >
             <span className="w-5 text-center text-sm font-bold font-mono text-clash-muted">
               {i + 1}
@@ -41,11 +46,6 @@ export function TopDonadores() {
           </div>
         ))}
       </div>
-      <img
-        src="/cofre1.png"
-        alt=""
-        className="absolute -bottom-3 right-3 w-auto h-60 max-w-36 object-contain pointer-events-none select-none"
-      />
     </Card>
   );
 }

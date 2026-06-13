@@ -82,7 +82,7 @@ export function MiembrosRiesgo() {
   }
 
   return (
-    <Card className="relative">
+    <Card className="relative overflow-hidden">
       <CardHeader>
         <div>
           <CardTitle>Miembros en Riesgo</CardTitle>
@@ -92,8 +92,8 @@ export function MiembrosRiesgo() {
         </div>
         <AlertTriangle size={16} className="text-red-400" />
       </CardHeader>
-      <img src="/lanza.png" alt="" className="absolute bottom-2 right-2 w-10 h-auto object-contain opacity-30 pointer-events-none" />
-      <div className="space-y-4">
+      <img src="/lanza.png" alt="" className="absolute bottom-0 right-0 w-32 h-auto opacity-20 pointer-events-none -z-10" />
+      <div className="relative z-10 space-y-4">
         {SECTIONS.map((section) => {
           const items = grouped[section.key];
           if (items.length === 0) return null;
