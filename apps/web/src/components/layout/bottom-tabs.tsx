@@ -16,6 +16,7 @@ import {
   Gift,
 } from "lucide-react";
 import { getPageTheme } from "./page-theme";
+import { useEffect, useRef } from "react";
 
 const LEADER_ONLY = ["/recruitment", "/settings"];
 
@@ -34,6 +35,9 @@ const tabs = [
 export function BottomTabs() {
   const pathname = usePathname();
   const role = getCachedRole();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLAnchorElement>(null);
+
   const visibleTabs = tabs.filter(
     (t) => !LEADER_ONLY.includes(t.href) || role === "leader" || role === "coleader"
   );
@@ -46,19 +50,29 @@ export function BottomTabs() {
     WebkitBackdropFilter: "blur(16px)",
   } as React.CSSProperties;
 
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({ behavior: "smooth", inline: "center" });
+    }
+  }, [pathname]);
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden safe-area-bottom" style={navStyle}>
       <div className="relative">
-        <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-premium snap-x snap-mandatory scroll-smooth">
+        <div
+          ref={scrollRef}
+          className="flex items-center gap-1 px-2 py-2 overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none"
+        >
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}
+                ref={isActive ? activeRef : undefined}
                 href={tab.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all shrink-0 snap-start",
+                  "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all shrink-0 snap-center",
                   isActive
                     ? "bg-metallic-gold text-[#0d1117]"
                     : "text-clash-text hover:text-[var(--pm-gold)]"

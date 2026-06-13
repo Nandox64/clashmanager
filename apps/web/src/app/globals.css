@@ -176,6 +176,14 @@ body::after {
   scrollbar-color: var(--color-clash-border) transparent;
 }
 
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 @utility animate-slide-progress {
   animation: slide-progress 1.2s ease-in-out infinite;
 }
