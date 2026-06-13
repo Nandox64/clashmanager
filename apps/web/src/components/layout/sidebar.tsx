@@ -12,14 +12,13 @@ import {
   Settings,
   Swords,
   Menu,
-  X,
   LogOut,
   LogIn,
   Shield,
   UserCircle,
   Gift,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
@@ -43,6 +42,17 @@ const LEADER_ONLY = ["/recruitment", "/settings"];
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (dx < -50) setIsOpen(false);
+  }, []);
   const { user, isMock, signOut } = useAuth();
   const clan = useClanStore((s) => s.clan);
   const members = useClanStore((s) => s.members);
@@ -105,6 +115,9 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <aside
+        ref={sidebarRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className={cn(
           "premium-sidebar",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -120,14 +133,6 @@ export function Sidebar() {
             className="w-28 h-28 object-contain"
           />
         </div>
-          {/* Close button inside sidebar header */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="toggle-btn lg:hidden flex items-center justify-center bg-metallic-gold animate-metallic-shimmer"
-            aria-label="Close menu"
-          >
-            <X size={20} />
-          </button>
         <div className="separator-gold mx-5" />
 
         {/* Navigation */}
