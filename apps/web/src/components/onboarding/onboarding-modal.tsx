@@ -173,12 +173,12 @@ export function OnboardingModal() {
                   setCachedRole(null);
                 }
               }}
-              className="w-full rounded-lg border border-clash-border bg-glass px-3 py-2.5 text-sm text-clash-text focus:outline-none focus:border-metallic-gold focus:ring-1 focus:ring-metallic-gold transition-colors"
+              className="w-full rounded-lg border border-clash-border bg-glass px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-metallic-gold focus:ring-1 focus:ring-metallic-gold transition-colors"
             >
               <option value="">-- Seleccionar miembro --</option>
               {members.map((m) => (
                 <option key={m.uid} value={m.uid}>
-                  {m.displayName} — 🏆 {m.trophies.toLocaleString()}
+                  {m.displayName} ({m.trophies.toLocaleString()})
                 </option>
               ))}
             </select>

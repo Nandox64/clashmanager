@@ -21,14 +21,14 @@ export function MemberSelector({
       <select
         value={selectedTag ?? ""}
         onChange={(e) => onSelect(e.target.value || null)}
-        className="w-full appearance-none bg-glass border border-clash-border rounded-lg px-3 py-2.5 text-sm text-clash-text focus:outline-none focus:border-clash-primary/50 cursor-pointer"
+        className="w-full appearance-none bg-glass border border-clash-border rounded-lg px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-clash-primary/50 cursor-pointer"
       >
         <option value="">Seleccionar miembro...</option>
         {members
           .sort((a, b) => b.trophies - a.trophies)
           .map((m) => (
             <option key={m.uid} value={m.playerTag}>
-              {m.displayName} ({m.trophies.toLocaleString()} 🏆)
+              {m.displayName} ({m.trophies.toLocaleString()})
             </option>
           ))}
       </select>
