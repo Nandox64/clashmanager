@@ -203,7 +203,7 @@ export default function GiftsPage() {
         </p>
       </div>
 
-      <img src="/divisor2.png" alt="" className="h-auto mx-auto my-4 max-w-xs" />
+      <img src="/divisor2.png" alt="" className="h-auto mx-auto -mt-2 mb-4 max-w-xs" />
 
       <Card>
         <CardHeader>
@@ -215,7 +215,7 @@ export default function GiftsPage() {
           </div>
         </CardHeader>
 
-        <div className="flex gap-1 p-1 rounded-lg bg-glass mb-4 overflow-x-auto scrollbar-premium">
+        <div className="grid grid-cols-2 sm:flex gap-1 p-1 rounded-lg bg-glass mb-4">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -223,7 +223,7 @@ export default function GiftsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 justify-center whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all sm:flex-1 justify-center whitespace-nowrap ${
                   isActive
                     ? "bg-metallic-gold text-black shadow-sm"
                     : "text-clash-text hover:text-metallic-gold"
@@ -280,7 +280,7 @@ export default function GiftsPage() {
 
         <div>
           {activeTab === "mobile" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {allMobile.map((item) => {
                 const upItem = item as UploadedItem;
                 return (
@@ -313,7 +313,7 @@ export default function GiftsPage() {
             </div>
           )}
           {activeTab === "pc" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {allPc.map((item) => {
                 const upItem = item as UploadedItem;
                 return (
