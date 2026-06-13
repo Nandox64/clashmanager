@@ -72,18 +72,18 @@ export function BottomTabs() {
             );
           })}
         </div>
-        {/* Scroll hint gradients — pulsing fade at edges to hint at hidden tabs */}
+        {/* Scroll hint shadows — pulsing dark edges hint at hidden tabs */}
         <div
-          className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-20 pointer-events-none"
           style={{
-            background: `linear-gradient(to left, ${theme.surface}, transparent)`,
+            background: "linear-gradient(to left, rgba(0,0,0,0.5), transparent)",
             animation: "scroll-hint-pulse 2s ease-in-out infinite",
           }}
         />
         <div
-          className="absolute left-0 top-0 bottom-0 w-16 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-20 pointer-events-none"
           style={{
-            background: `linear-gradient(to right, ${theme.surface}, transparent)`,
+            background: "linear-gradient(to right, rgba(0,0,0,0.5), transparent)",
             animation: "scroll-hint-pulse 2s ease-in-out infinite",
             animationDelay: "1s",
           }}
