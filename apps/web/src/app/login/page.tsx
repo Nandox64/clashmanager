@@ -167,23 +167,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm p-8">
-        <div className="flex flex-col items-center gap-6">
+    <div className="min-h-dynamic flex items-center justify-center p-3 sm:p-4">
+      <Card className="w-full max-w-sm p-4 sm:p-8 overflow-y-auto max-h-[95dvh]">
+        <div className="flex flex-col items-center gap-4 sm:gap-6">
           <img
             src="/logo_cm.webp"
             alt="Clase Pro"
-            className="w-48 h-auto object-contain"
+            className="w-36 sm:w-48 h-auto object-contain"
           />
 
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-52 h-52 object-contain"
+            className="w-32 h-32 sm:w-52 sm:h-52 object-contain"
           />
 
           <div className="text-center">
-            <p className="text-sm text-clash-muted mt-1">
+            <p className="text-xs sm:text-sm text-clash-muted mt-1">
               Gestiona tu clan como un profesional
             </p>
           </div>

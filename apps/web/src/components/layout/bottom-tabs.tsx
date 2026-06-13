@@ -48,7 +48,7 @@ export function BottomTabs() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden safe-area-bottom" style={navStyle}>
-      <div className="flex items-center gap-1 px-1 py-1 overflow-x-auto scrollbar-premium">
+      <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-premium snap-x snap-mandatory">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname.startsWith(tab.href);
@@ -57,14 +57,14 @@ export function BottomTabs() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1.5 rounded-lg transition-colors min-w-0",
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors shrink-0 snap-start",
                 isActive
-                  ? "text-metallic-gold"
+                  ? "text-metallic-gold bg-metallic-gold-subtle"
                   : "text-clash-text hover:text-metallic-gold"
               )}
             >
-              <Icon size={18} className={isActive ? "animate-icon-shine" : undefined} />
-              <span className="text-[10px] font-medium truncate max-w-14">
+              <Icon size={20} className={isActive ? "animate-icon-shine" : undefined} />
+              <span className="text-[11px] font-medium whitespace-nowrap">
                 {tab.label}
               </span>
             </Link>
