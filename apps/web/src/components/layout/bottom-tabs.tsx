@@ -9,7 +9,6 @@ import {
   Users,
   BarChart3,
   Award,
-  UserPlus,
   Swords,
   Settings,
   UserCircle,
@@ -19,7 +18,7 @@ import {
 import { getPageTheme } from "./page-theme";
 import { useEffect, useRef } from "react";
 
-const LEADER_ONLY = ["/recruitment", "/settings"];
+const LEADER_ONLY = ["/settings"];
 
 const tabs = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -27,7 +26,6 @@ const tabs = [
   { href: "/war-decks", label: "Guerra", icon: Swords },
   { href: "/members", label: "Clan", icon: Users },
   { href: "/analytics", label: "Stats", icon: BarChart3 },
-  { href: "/recruitment", label: "Reclutar", icon: UserPlus },
   { href: "/gifts", label: "Regalos", icon: Gift },
   { href: "/ruleta", label: "Ruleta", icon: Trophy },
   { href: "/profile", label: "Perfil", icon: UserCircle },

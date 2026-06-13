@@ -8,7 +8,6 @@ import {
   Users,
   BarChart3,
   Award,
-  UserPlus,
   Settings,
   Swords,
   Menu,
@@ -34,12 +33,11 @@ const navItems = [
   { href: "/ruleta",       label: "Ruleta",    icon: Trophy },
   { href: "/members",   label: "Miembros",     icon: Users },
   { href: "/analytics", label: "Estadísticas", icon: BarChart3 },
-  { href: "/recruitment",  label: "Reclutar",  icon: UserPlus },
   { href: "/profile",      label: "Perfil",     icon: UserCircle },
   { href: "/settings",     label: "Ajustes",   icon: Settings },
 ];
 
-const LEADER_ONLY = ["/recruitment", "/settings"];
+const LEADER_ONLY = ["/settings"];
 
 export function Sidebar() {
   const pathname = usePathname();
