@@ -12,6 +12,7 @@ export function Card({
     <div
       className={cn(
         "rounded-xl p-4 animate-fade-in card-premium",
+        "overflow-hidden",
         className
       )}
       style={{
@@ -19,8 +20,6 @@ export function Card({
         borderColor: theme.border,
         borderWidth: 1,
         borderStyle: "solid",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
       }}
       {...props}
     >

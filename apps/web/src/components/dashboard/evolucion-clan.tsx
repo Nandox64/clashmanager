@@ -4,23 +4,29 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useClanStore } from "@/lib/store";
 import { TrendingUp } from "lucide-react";
 
-export function EvolucionClan() {
+interface EvolucionClanProps {
+  weeks?: number;
+}
+
+export function EvolucionClan({ weeks = 6 }: EvolucionClanProps) {
   const weeklyStats = useClanStore((s) => s.weeklyStats);
   const clan = useClanStore((s) => s.clan);
+
+  const weeksToShow = Math.min(weeks, 6);
 
   const stats = weeklyStats.length > 0
     ? weeklyStats
     : clan.stats.clanScore > 0
-      ? Array.from({ length: 8 }, (_, i) => {
-          const pct = 0.80 + (i / 8) * 0.20;
+      ? Array.from({ length: weeksToShow }, (_, i) => {
+          const pct = 0.80 + (i / weeksToShow) * 0.20;
           return {
             id: `week-${i}`,
-            weekStart: Date.now() - (7 - i) * 7 * 86400000,
-            weekEnd: Date.now() - (6 - i) * 7 * 86400000,
+            weekStart: Date.now() - (weeksToShow - 1 - i) * 7 * 86400000,
+            weekEnd: Date.now() - (weeksToShow - 2 - i) * 7 * 86400000,
             totalTrophies: Math.round(clan.stats.clanScore * pct),
             avgTrophies: Math.round(clan.stats.clanScore * pct / (clan.memberCount || 45)),
             totalDonations: 0,
-            warTrophies: Math.round(clan.stats.clanWarTrophies * (0.85 + (i / 8) * 0.15)),
+            warTrophies: Math.round(clan.stats.clanWarTrophies * (0.85 + (i / weeksToShow) * 0.15)),
           };
         })
       : [];
@@ -48,7 +54,7 @@ export function EvolucionClan() {
     <Card>
       <CardHeader>
         <div>
-          <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan (8 semanas)</CardTitle>
+          <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan ({weeksToShow} semanas)</CardTitle>
           <p className="text-xs text-clash-muted mt-0.5">Progreso de copas totales semana a semana</p>
         </div>
         <TrendingUp size={16} className="text-metallic-silver animate-icon-shine" />
@@ -58,7 +64,7 @@ export function EvolucionClan() {
           const flexValue = week.totalTrophies / maxTrophies;
           const isLatest = i === stats.length - 1;
           return (
-            <div key={week.id} className="min-w-9 sm:min-w-0 flex-1 h-full flex flex-col items-center justify-end gap-0.5 sm:gap-1">
+            <div key={week.id} className="min-w-7 sm:min-w-0 flex-1 h-full flex flex-col items-center justify-end gap-0.5 sm:gap-1">
               <div
                 className={`w-full rounded-t-sm transition-all duration-500 ${
                   isLatest

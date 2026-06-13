@@ -211,6 +211,11 @@ body::after {
   min-height: 100lvh;
 }
 
+@utility scrollbar-premium {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-clash-border) transparent;
+}
+
 .border-clash-border {
   border-color: var(--theme-border, #1e2430) !important;
 }
