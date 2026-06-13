@@ -67,7 +67,7 @@ export function MiembrosRiesgo() {
   const total = Object.values(grouped).reduce((s, arr) => s + arr.length, 0);
   if (total === 0) {
     return (
-      <Card>
+      <Card className="relative">
         <CardHeader>
           <div>
             <CardTitle>Miembros en Riesgo</CardTitle>
@@ -76,12 +76,13 @@ export function MiembrosRiesgo() {
           <AlertTriangle size={16} className="text-green-400" />
         </CardHeader>
         <p className="text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>
+        <img src="/lanza.png" alt="" className="absolute bottom-2 right-2 w-10 h-auto object-contain opacity-30 pointer-events-none" />
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="relative">
       <CardHeader>
         <div>
           <CardTitle>Miembros en Riesgo</CardTitle>
@@ -91,6 +92,7 @@ export function MiembrosRiesgo() {
         </div>
         <AlertTriangle size={16} className="text-red-400" />
       </CardHeader>
+      <img src="/lanza.png" alt="" className="absolute bottom-2 right-2 w-10 h-auto object-contain opacity-30 pointer-events-none" />
       <div className="space-y-4">
         {SECTIONS.map((section) => {
           const items = grouped[section.key];
