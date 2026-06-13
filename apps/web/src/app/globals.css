@@ -34,22 +34,17 @@
   --color-clash-bronze-light: #e8a85c;
 }
 
-html {
-  overscroll-behavior: none;
-}
-
 body {
   background-color: var(--color-clash-dark);
   color: var(--color-clash-text);
   font-family: var(--font-sans);
-  overscroll-behavior: none;
 }
 
 body::after {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 200dvh;
+  height: 100dvh;
   background:
     radial-gradient(ellipse 80% 60% at 50% 50%, rgba(212, 160, 23, 0.03) 0%, transparent 70%);
   pointer-events: none;

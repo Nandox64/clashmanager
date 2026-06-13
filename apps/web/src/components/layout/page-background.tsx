@@ -16,8 +16,9 @@ export function PageBackground() {
 
   return (
     <div
-      className="fixed inset-x-0 top-0 h-[200dvh] pointer-events-none"
+      className="fixed inset-x-0 top-0 pointer-events-none"
       style={{
+        height: "100dvh",
         zIndex: -10,
         backgroundImage: `${theme.overlay}, url("${theme.background}")`,
         backgroundRepeat: "no-repeat, repeat",
