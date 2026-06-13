@@ -82,17 +82,12 @@ export function Sidebar() {
       <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 lg:hidden" style={mobileBarStyle}>
         <button
           onClick={() => setIsOpen(true)}
-          className="toggle-btn flex items-center justify-center shrink-0"
+          className="toggle-btn flex items-center justify-center shrink-0 bg-metallic-gold animate-metallic-shimmer"
           aria-label="Open menu"
         >
           <Menu size={20} />
         </button>
-        <div className="w-8 h-8 rounded-lg bg-metallic-gold animate-metallic-shimmer flex items-center justify-center shrink-0">
-          <Swords size={18} className="text-white" />
-        </div>
-        <span className="text-sm font-bold" style={{ color: "var(--pm-gold)" }}>
-          Clash Manager
-        </span>
+        <img src="/logo_cm.webp" alt="Clase Pro" className="h-8 w-auto object-contain" />
         <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
           <span className="text-[10px] truncate block" style={{ color: "var(--pm-text)" }}>
             {clanName}
@@ -118,21 +113,7 @@ export function Sidebar() {
       >
         {/* Header / Logo */}
         <div className="flex flex-col items-center gap-3 p-5">
-          <div className="flex items-center gap-3 w-full">
-            <div className="w-12 h-12 rounded-xl bg-metallic-gold animate-metallic-shimmer flex items-center justify-center shrink-0">
-              <Swords size={26} className="text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="font-bold text-sm leading-tight"
-                  style={{ color: "var(--pm-gold)" }}>
-                Clash Manager
-              </h1>
-              <p className="text-[10px] font-semibold leading-tight mt-0.5"
-                 style={{ color: "var(--pm-muted)" }}>
-                CLASE⚔️PRO
-              </p>
-            </div>
-          </div>
+          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[180px] h-auto object-contain" />
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
@@ -142,7 +123,7 @@ export function Sidebar() {
           {/* Close button inside sidebar header */}
           <button
             onClick={() => setIsOpen(false)}
-            className="toggle-btn lg:hidden flex items-center justify-center"
+            className="toggle-btn lg:hidden flex items-center justify-center bg-metallic-gold animate-metallic-shimmer"
             aria-label="Close menu"
           >
             <X size={20} />

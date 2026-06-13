@@ -76,7 +76,7 @@ export default function MembersPage() {
   return (
     <div className="space-y-4">
        <div>
-         <h1 className="text-xl font-bold text-metallic-gold bg-clip-text">Miembros</h1>
+         <h1 className="text-xl font-bold text-metallic-gold bg-clip-text text-title-shadow">Miembros</h1>
          <p className="text-sm text-clash-muted mt-0.5">
            {members.length} miembros en el clan
          </p>

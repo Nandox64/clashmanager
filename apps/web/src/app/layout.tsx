@@ -15,13 +15,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Clash Manager",
+  title: "CLASE⚔️PRO",
   description: "Gestión inteligente para clanes de Clash Royale",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Clash Manager",
+    title: "CLASE⚔️PRO",
   },
   icons: {
     apple: "/apple-touch-icon.png",

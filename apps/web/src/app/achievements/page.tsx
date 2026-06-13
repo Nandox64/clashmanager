@@ -54,7 +54,7 @@ export default function AchievementsPage() {
     <div className="space-y-6">
        <div className="flex items-center justify-between">
          <div>
-           <h1 className="text-xl font-bold text-metallic-gold bg-clip-text">Logros y Medallas</h1>
+           <h1 className="text-xl font-bold text-metallic-gold bg-clip-text text-title-shadow">Logros y Medallas</h1>
            <p className="text-sm text-clash-muted mt-0.5">
              Sistema de gamificación del clan
            </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useClanStore } from "@/lib/store";
 import {
   loadClanCache,
@@ -14,10 +14,6 @@ const FETCH_TIMEOUT = 120_000;
 
 /** TTL del caché cliente: 1 hora */
 const CLIENT_CACHE_TTL = 60 * 60 * 1000;
-
-let pollingStarted = false;
-let fetching = false;
-let lastFetchTime = 0;
 
 /**
  * Intenta hidratar el store desde localStorage.
@@ -102,18 +98,15 @@ function applyApiData(data: Record<string, unknown>) {
   s.setFromCache(false, null);
 }
 
+const fetchingRef = { current: false };
+const lastFetchTimeRef = { current: 0 };
+
 async function fetchFromApi(force = false) {
-  if (fetching) return;
-  fetching = true;
+  if (fetchingRef.current) return;
+  fetchingRef.current = true;
 
   const s = useClanStore.getState();
-  // Solo marcar loading visual si no tenemos datos cargados todavía
-  if (!s.loaded) {
-    useClanStore.setState({ loading: true, error: null });
-  } else {
-    // Ya tenemos datos (del caché u otra carga). No mostrar loading bloqueante.
-    useClanStore.setState({ loading: true, error: null });
-  }
+  useClanStore.setState({ loading: true, error: null });
 
   useClanStore.setState({ progressPhase: "loading-api" });
 
@@ -147,43 +140,45 @@ async function fetchFromApi(force = false) {
   } finally {
     clearTimeout(timeout);
     useClanStore.setState({ loading: false, loaded: true });
-    lastFetchTime = Date.now();
-    fetching = false;
+    lastFetchTimeRef.current = Date.now();
+    fetchingRef.current = false;
   }
 }
 
-export function startPolling() {
-  if (pollingStarted) return;
-  pollingStarted = true;
-
-  // Sub-fase 1b: Hidratar inmediatamente desde localStorage
+export function startPolling(): () => void {
   const hydrated = hydrateFromCache();
 
   if (hydrated) {
-    // Tenemos datos del caché — mostrarlos ya, y actualizar en background
     fetchFromApi(false);
   } else {
-    // Sin caché — carga bloqueante
     useClanStore.setState({ progressPhase: "loading-api" });
     fetchFromApi(false);
   }
 
-  // Polling cada 60s sólo si la pestaña está activa
-  setInterval(() => {
+  const intervalId = setInterval(() => {
     if (typeof document !== "undefined" && document.hidden) return;
     fetchFromApi(false);
   }, POLL_INTERVAL);
 
-  if (typeof document !== "undefined") {
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        const timeSinceLastFetch = Date.now() - lastFetchTime;
-        if (timeSinceLastFetch >= POLL_INTERVAL) {
-          fetchFromApi(false);
-        }
+  const handleVisibility = () => {
+    if (!document.hidden) {
+      const timeSinceLastFetch = Date.now() - lastFetchTimeRef.current;
+      if (timeSinceLastFetch >= POLL_INTERVAL) {
+        fetchFromApi(false);
       }
-    });
+    }
+  };
+
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", handleVisibility);
   }
+
+  return () => {
+    clearInterval(intervalId);
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    }
+  };
 }
 
 export function refetchData() { fetchFromApi(false); }
@@ -196,7 +191,8 @@ export function useClanData() {
   const fromCache = useClanStore((s) => s.fromCache);
 
   useEffect(() => {
-    startPolling();
+    const cleanup = startPolling();
+    return () => { if (cleanup) cleanup(); };
   }, []);
 
   return { loading, error, progressPhase, fromCache, refetch: refetchData, forceSync: forceSyncData };

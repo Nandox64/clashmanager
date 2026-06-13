@@ -69,5 +69,4 @@ vite.config.ts.timestamp-*
 
 # Project-specific
 Old/
-apps/web/public/uploads/
 apps/web/.vercel/

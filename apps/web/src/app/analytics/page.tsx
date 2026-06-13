@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-clash-text">Estadísticas</h1>
+        <h1 className="text-xl font-bold text-clash-text text-title-shadow">Estadísticas</h1>
         <p className="text-sm text-clash-muted mt-0.5">
           Analytics y rendimiento del clan
         </p>

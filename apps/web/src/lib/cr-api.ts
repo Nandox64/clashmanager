@@ -9,7 +9,7 @@ import type {
   CRApiError,
 } from "./cr-types";
 
-const BASE_URL = "https://proxy.royaleapi.dev/v1";
+export const BASE_URL = "https://proxy.royaleapi.dev/v1";
 
 function getClanTag(): string {
   const tag = process.env.CLAN_TAG;
@@ -25,7 +25,7 @@ export function getToken(): string {
   return token;
 }
 
-function encodeTag(tag: string): string {
+export function encodeTag(tag: string): string {
   return "%23" + tag.replace("#", "");
 }
 
@@ -42,13 +42,19 @@ async function fetchCR<T>(path: string): Promise<T> {
   const token = getToken();
   const url = `${BASE_URL}${path}`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     next: { revalidate: 120 },
+    signal: controller.signal,
   });
+
+  clearTimeout(timeout);
 
   if (!res.ok) {
     let errorMsg = `Error ${res.status}`;

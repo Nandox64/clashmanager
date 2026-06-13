@@ -22,9 +22,9 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <AuthGuard>
       <OnboardingModal />
-      <div className="min-h-screen">
+      <div className="min-h-dynamic">
         <Sidebar />
-        <main className="lg:ml-64 pb-20 lg:pb-0 min-h-screen relative">
+        <main className="lg:ml-64 pb-24 lg:pb-0 min-h-dynamic relative">
           <img src="/logoclashroyale.png" alt="" className="absolute top-4 right-4 w-[180px] h-[135px] object-contain shrink-0 pointer-events-none z-10 hidden lg:block" />
           <div className="max-w-7xl mx-auto p-4 pt-16 lg:pt-6">{children}</div>
         </main>

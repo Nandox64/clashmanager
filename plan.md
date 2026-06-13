@@ -183,4 +183,110 @@ Una vez cacheados, el SW los sirve **para siempre** hasta bump de `SW_VERSION`.
 - Resultados (errores, mazos cargados) movidos ANTES del botón dentro de un contenedor `flex-1`.
 - Botones con `mt-4` para que queden alineados en la parte inferior de las 3 cards.
 
+### Sesión 10h — lanza.png en Miembros en Riesgo ✅
+- `lanza.png` agregado al card `Miembros en Riesgo` del dashboard.
+- Posicionado `absolute bottom-2 right-2` con opacidad 30% y `pointer-events-none`, visible en ambos estados (con y sin miembros en riesgo).
+
 - Build verificado: `pnpm --filter @clashmanager/web build` compila correctamente.
+
+---
+
+## Sesión 11 — Bugfixes, seguridad, branding y optimizaciones 🛡️
+
+### Branding y UI ✅
+- **Clash Manager → logo_cm.webp**: Todo texto "Clash Manager" en UI reemplazado por el logo `logo_cm.webp` (sidebar, login, mobile bar).
+- **Metadata renombrada**: `layout.tsx`, `manifest.json`, `war-decks/page.tsx` ahora usan "CLASE⚔️PRO".
+- **test-icon.png eliminado**: Icono no referenciado eliminado de `public/`.
+- **Hamburger dorado**: Los botones toggle (abrir/cerrar menú) ahora usan `bg-metallic-gold` + `animate-metallic-shimmer` para coincidir con el diseño del logo.
+
+### Seguridad: Auth en API routes ✅
+- `POST /api/settings`: ahora requiere autenticación (Bearer token).
+- `POST /api/recruits`: ahora requiere autenticación.
+- `GET/POST /api/firebase/sync`: ahora requieren autenticación.
+- Patrón `getUserUid` reutilizado (mismo que `profile/route.ts`) para todas las rutas.
+
+### Bugfixes ✅
+- **useClanData hook**: estado global mutable (`pollingStarted`, `fetching`, `lastFetchTime`) reemplazado por refs. `setInterval` ahora se limpia en `useEffect` cleanup. Se agregó `removeEventListener` para `visibilitychange`.
+- **SW_VERSION sincronizado**: `pwa-register.tsx` actualizado de v6 a v7 para coincidir con `sw.js`.
+- **`as any` cast eliminado**: `firebase/load/route.ts:84` reemplazado por type assertion segura `as { updatedAt?: number }`.
+- **console.log eliminado**: `AuthContext.tsx` ya no expone estado interno en consola del navegador.
+- **fetchCR timeout**: `cr-api.ts` ahora tiene AbortController con timeout de 30s.
+- **RoleGuard**: ya no muestra spinner infinito para no-autorizados; ahora muestra mensaje "No tienes permisos".
+- **selectedMember**: dead code eliminado del store (estado, setter e initial value).
+
+### Code quality ✅
+- **AI routes**: `trophy-path-deck/route.ts` y `load-war-decks/route.ts` ahora importan `getToken`, `encodeTag` y `BASE_URL` desde `cr-api.ts` en vez de redefinirlos.
+- **`BASE_URL` y `encodeTag` exportados** desde `lib/cr-api.ts` para reutilización.
+
+### Archivos modificados (14)
+| Archivo | Cambio |
+|---------|--------|
+| `sidebar.tsx` | Reemplazo texto+icono por logo_cm.webp; hamburger shimmer |
+| `login/page.tsx` | Reemplazo texto+icono por logo_cm.webp; unused import |
+| `verify-email/page.tsx` | Texto "Clash Manager" → "CLASE⚔️PRO" |
+| `layout.tsx` | Metadata title actualizado |
+| `war-decks/page.tsx` | Metadata title actualizado |
+| `manifest.json` | name/short_name actualizados |
+| `premium.css` | (sin cambios, shimmer ya compatible) |
+| `api/settings/route.ts` | Auth check en POST |
+| `api/recruits/route.ts` | Auth check en POST |
+| `api/firebase/sync/route.ts` | Auth check en GET+POST |
+| `api/firebase/load/route.ts` | Fix `as any` cast |
+| `lib/cr-api.ts` | Export BASE_URL, encodeTag; fetch timeout |
+| `hooks/use-clan-data.ts` | Refs en vez de vars globales; cleanup interval |
+| `components/pwa-register.tsx` | SW_VERSION 6→7 |
+| `contexts/AuthContext.tsx` | Eliminados console.log |
+| `components/auth/role-guard.tsx` | Denied message en vez de spinner |
+| `lib/store.ts` | Eliminado selectedMember dead code |
+| `api/ai/trophy-path-deck/route.ts` | Eliminadas funciones duplicadas |
+| `api/ai/load-war-decks/route.ts` | Importa desde cr-api.ts |
+| `public/test-icon.png` | Archivo eliminado |
+
+---
+
+## Sesión 12 — Fix recursos online, títulos unificados, scroll móvil 🎨
+
+### Bugfix: Imágenes de recursos no visibles en producción ✅
+- **Causa raíz**: `apps/web/public/uploads/` estaba en `.gitignore`, por lo que las imágenes pre-cargadas no se desplegaban en producción.
+- **Fix**: Eliminada la entrada del `.gitignore` por completo. Ahora todos los archivos se trackean y despliegan normalmente.
+
+### UI: divisor2.png ✅
+- **Problema**: Separador decorativo muy abajo (`my-6`).
+- **Fix**: Cambiado a `my-4` para reducir el espacio vertical.
+
+### UI: Título "Recursos" ✅
+- **Problema**: El CardTitle "Recursos" era más pequeño que otros títulos de página.
+- **Fix**: Cambiado a `text-xl font-black` para igualar el tamaño de los demás títulos.
+
+### UI: Sombra unificada en títulos ✅
+- **Problema**: Solo la página Regalos tenía `text-shadow` con contorno negro. Los demás títulos no tenían sombra.
+- **Fix**: 
+  - Nueva utility CSS `text-title-shadow` en `globals.css` con opacidad reducida (`rgba(0,0,0,0.5)` con glow `rgba(0,0,0,0.35)`).
+  - Aplicada a todos los h1 de página: Dashboard, Logros, Mazos de Guerra, Regalos, Miembros, Estadísticas, Reclutamiento, Perfil, Ajustes.
+  - Eliminado el `titleOutline` inline de gifts (reemplazado por la utility).
+
+### Bugfix: Salto scroll en móvil ✅
+- **Problema**: `min-h-screen` (100vh) incluye la barra del navegador móvil, causando reflow al ocultarse.
+- **Fix**: 
+  - Nueva utility `min-h-dynamic` con `min-height: 100dvh` en `globals.css`.
+  - `app-shell.tsx`: wrapper y `<main>` cambiados a `min-h-dynamic`.
+  - `pb-20` → `pb-24` para mejor espacio sobre el BottomTabs.
+
+### Archivos modificados (16)
+| Archivo | Cambio |
+|---------|--------|
+| `.gitignore` | Ignora solo archivos nuevos, trackea pre-cargados |
+| `globals.css` | Nuevas utilities `text-title-shadow` y `min-h-dynamic` |
+| `app-shell.tsx` | `min-h-screen` → `min-h-dynamic`; `pb-20` → `pb-24` |
+| `gifts/page.tsx` | Sombra via utility; divisor `my-6`→`my-4`; Recursos `text-xl`; eliminado titleOutline |
+| `dashboard/dashboard-grid.tsx` | `text-title-shadow` agregado |
+| `war-decks/war-decks-client.tsx` | `text-title-shadow` agregado; drop-shadow eliminado |
+| `achievements/page.tsx` | `text-title-shadow` agregado |
+| `members/page.tsx` | `text-title-shadow` agregado |
+| `analytics/page.tsx` | `text-title-shadow` agregado |
+| `recruitment/page.tsx` | `text-title-shadow` agregado |
+| `profile/page.tsx` | `text-title-shadow` agregado |
+| `settings/page.tsx` | `text-title-shadow` agregado |
+| `public/uploads/mobile/*` | Archivos forzados a git |
+| `public/uploads/pc/*` | Archivos forzados a git |
+| `public/uploads/qr/*` | Archivos forzados a git |

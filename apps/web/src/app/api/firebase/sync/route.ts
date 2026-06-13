@@ -26,7 +26,19 @@ import {
 import { computeAchievements } from "@/lib/achievements";
 import { transformToWeeklyStats } from "@/lib/cr-transform";
 import type { Member } from "@clashmanager/shared";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, adminAuth } from "@/lib/firebase-admin";
+
+async function getUserUid(request: Request): Promise<string | null> {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
+    if (adminAuth) {
+      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
+    }
+  }
+  return null;
+}
 
 async function sync() {
   const { clan, riverRaceLog, currentRiverRace, localWarRanking } = await getClanFull();
@@ -118,7 +130,11 @@ async function sync() {
   };
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const uid = await getUserUid(request);
+  if (!uid) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
   try {
     const result = await sync();
     return NextResponse.json({ success: true, ...result });
@@ -131,7 +147,11 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const uid = await getUserUid(request);
+  if (!uid) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
   try {
     const result = await sync();
     return NextResponse.json({ success: true, ...result });

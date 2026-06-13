@@ -2,18 +2,6 @@ import { NextResponse } from "next/server";
 import { getPlayer } from "@/lib/cr-api";
 import { deduplicateCards } from "@/lib/cards";
 
-const BASE_URL = "https://proxy.royaleapi.dev/v1";
-
-function getToken(): string {
-  const token = process.env.CR_API_TOKEN;
-  if (!token) throw new Error("CR_API_TOKEN no configurado en .env.local");
-  return token;
-}
-
-function encodeTag(tag: string): string {
-  return "%23" + tag.replace("#", "");
-}
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const playerTag = searchParams.get("playerTag");

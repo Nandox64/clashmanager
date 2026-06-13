@@ -1,16 +1,5 @@
 import { NextResponse } from "next/server";
-
-const BASE_URL = "https://proxy.royaleapi.dev/v1";
-
-function getToken(): string {
-  const token = process.env.CR_API_TOKEN;
-  if (!token) throw new Error("CR_API_TOKEN no configurado en .env.local");
-  return token;
-}
-
-function encodeTag(tag: string): string {
-  return "%23" + tag.replace("#", "");
-}
+import { getToken, encodeTag, BASE_URL } from "@/lib/cr-api";
 
 /**
  * Obtiene los mazos de guerra del jugador desde el battlelog.

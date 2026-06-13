@@ -226,7 +226,7 @@ export default function SettingsPage() {
         <IdentificationBanner />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-clash-text">Ajustes</h1>
+            <h1 className="text-xl font-bold text-clash-text text-title-shadow">Ajustes</h1>
             <p className="text-sm text-clash-muted mt-0.5">
               Configuración del clan y automatización
             </p>

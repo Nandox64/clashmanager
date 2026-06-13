@@ -57,8 +57,13 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32" />
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+          <span className="text-red-400 text-2xl font-bold">!</span>
+        </div>
+        <p className="text-sm text-clash-muted text-center max-w-xs">
+          No tienes permisos para acceder a esta sección. Solo líder y co-líder pueden ver esta página.
+        </p>
       </div>
     );
   }

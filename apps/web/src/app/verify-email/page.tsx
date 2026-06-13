@@ -74,7 +74,7 @@ export default function VerifyEmailPage() {
           <div className="text-center">
             <h1 className="text-xl font-bold text-clash-text">Verifica tu correo</h1>
             <p className="text-sm text-clash-muted mt-2">
-              Para usar Clash Manager, necesitas verificar tu dirección de correo electrónico.
+              Para usar CLASE⚔️PRO, necesitas verificar tu dirección de correo electrónico.
             </p>
           </div>
 

@@ -81,7 +81,7 @@ export async function GET(request: Request) {
   const cached = await cachePromise;
 
   if (cached) {
-    const updatedAt = (cached.clan as any).updatedAt || 0;
+    const updatedAt = (cached.clan as { updatedAt?: number })?.updatedAt ?? 0;
     const fresh = Date.now() - updatedAt < CACHE_FRESH_MS;
 
     if (useCache) {

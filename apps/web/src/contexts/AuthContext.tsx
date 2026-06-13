@@ -49,25 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[AuthContext] isConfigured:", isConfigured, "auth:", !!auth);
     if (isConfigured && auth) {
-      console.log("[AuthContext] Setting up onAuthStateChanged...");
       const unsub = onAuthStateChanged(auth, (user) => {
-        console.log("[AuthContext] onAuthStateChanged fired, user:", !!user);
         setFirebaseUser(user);
         setIsLoading(false);
       });
       const timeout = setTimeout(() => {
-        console.log("[AuthContext] Auth timeout reached (5s), forcing isLoading=false");
         setIsLoading(false);
       }, 5000);
       return () => {
-        console.log("[AuthContext] Cleanup");
         unsub();
         clearTimeout(timeout);
       };
     } else {
-      console.log("[AuthContext] No Firebase Auth, using mock mode");
       setIsLoading(false);
     }
   }, []);

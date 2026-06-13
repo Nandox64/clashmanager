@@ -65,7 +65,6 @@ interface ClanState {
   rules: AutomationRule[];
   events: ClanEvent[];
   logs: LogEntry[];
-  selectedMember: Member | null;
   localWarRank: number | null;
   localWarRankChange: number;
   localWarTrophies: number | null;
@@ -92,7 +91,7 @@ interface ClanState {
   setRules: (rules: AutomationRule[]) => void;
   setEvents: (events: ClanEvent[]) => void;
   setLogs: (logs: LogEntry[]) => void;
-  setSelectedMember: (member: Member | null) => void;
+
   setLocalWarRank: (rank: number | null) => void;
   setLocalWarRankChange: (change: number) => void;
   setLocalWarTrophies: (trophies: number | null) => void;
@@ -116,7 +115,6 @@ export const useClanStore = create<ClanState>((set) => ({
   rules: [],
   events: [],
   logs: [],
-  selectedMember: null,
   localWarRank: null,
   localWarRankChange: 0,
   localWarTrophies: null,
@@ -138,7 +136,7 @@ export const useClanStore = create<ClanState>((set) => ({
   setRules: (rules) => set({ rules }),
   setEvents: (events) => set({ events }),
   setLogs: (logs) => set({ logs }),
-  setSelectedMember: (member) => set({ selectedMember: member }),
+
   setLocalWarRank: (rank) => set({ localWarRank: rank }),
   setLocalWarRankChange: (change) => set({ localWarRankChange: change }),
   setLocalWarTrophies: (trophies) => set({ localWarTrophies: trophies }),

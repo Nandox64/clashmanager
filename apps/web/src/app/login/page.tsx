@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Swords, Mail, Smartphone, CheckCircle } from "lucide-react";
+import { Mail, Smartphone, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -112,7 +112,7 @@ export default function LoginPage() {
   }
 
   if (mode === "verify" && createdUser) {
-    const waMsg = encodeURIComponent(`Hola, acabo de crear mi cuenta en Clash Manager con el email: ${createdUser.email}. Por favor verifica mi registro.`);
+    const waMsg = encodeURIComponent(`Hola, acabo de crear mi cuenta en CLASE⚔️PRO con el email: ${createdUser.email}. Por favor verifica mi registro.`);
     const waLink = `https://wa.me/?text=${waMsg}`;
 
     return (
@@ -170,9 +170,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-sm p-8">
         <div className="flex flex-col items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-metallic-gold animate-metallic-shimmer flex items-center justify-center">
-            <Swords size={32} className="text-white" />
-          </div>
+          <img
+            src="/logo_cm.webp"
+            alt="Clase Pro"
+            className="w-48 h-auto object-contain"
+          />
 
           <img
             src="/logo_clase_pro.png"
@@ -181,7 +183,6 @@ export default function LoginPage() {
           />
 
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-clash-text">Clash Manager</h1>
             <p className="text-sm text-clash-muted mt-1">
               Gestiona tu clan como un profesional
             </p>

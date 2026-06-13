@@ -34,10 +34,6 @@ const tabs: { id: Tab; label: string; title: string; help: string; icon: typeof 
   { id: "ruleta", label: "Ruleta", title: "RULETA DE PREMIOS", help: "Gira la ruleta durante eventos activos y revisa las reglas antes de participar.", icon: Trophy },
 ];
 
-const titleOutline = {
-  textShadow: "0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000, 0 0 10px rgba(0,0,0,0.8)",
-};
-
 function formatDate(ts: number) {
   const d = new Date(ts);
   return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
@@ -201,25 +197,25 @@ export default function GiftsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-white" style={titleOutline}>Regalos</h1>
+        <h1 className="text-2xl font-black text-white text-title-shadow">Regalos</h1>
         <p className="text-sm text-clash-muted mt-0.5">
           Fondos de pantalla y códigos QR para canjear recompensas
         </p>
       </div>
 
-      <img src="/divisor2.png" alt="" className="h-auto mx-auto my-6 max-w-xs" />
+      <img src="/divisor2.png" alt="" className="h-auto mx-auto my-4 max-w-xs" />
 
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-white font-black" style={titleOutline}>Recursos</CardTitle>
+            <CardTitle className="text-white text-xl font-black text-title-shadow">Recursos</CardTitle>
             <p className="text-xs text-clash-dimmed mt-0.5">
               Biblioteca del clan para compartir imágenes, códigos QR y eventos de ruleta en un solo lugar. Sube recursos ligeros, identifica quién los aportó y conserva solo contenido útil para la comunidad.
             </p>
           </div>
         </CardHeader>
 
-        <div className="flex gap-1 p-1 rounded-lg bg-glass mb-4">
+        <div className="flex gap-1 p-1 rounded-lg bg-glass mb-4 overflow-x-auto scrollbar-premium">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -227,14 +223,14 @@ export default function GiftsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 justify-center whitespace-nowrap ${
                   isActive
                     ? "bg-metallic-gold text-black shadow-sm"
                     : "text-clash-text hover:text-metallic-gold"
                 }`}
               >
-                <Icon size={16} />
-                {tab.label}
+                <Icon size={15} className="shrink-0" />
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -264,7 +260,7 @@ export default function GiftsPage() {
               </button>
             </div>
             <div className="rounded-xl border border-clash-border bg-glass p-4">
-              <h2 className="text-base font-black tracking-[0.18em] text-white" style={titleOutline}>{activeTabConfig.title}</h2>
+              <h2 className="text-base font-black tracking-[0.18em] text-white text-title-shadow">{activeTabConfig.title}</h2>
               <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
               <p className="text-xs text-clash-dimmed mt-2">
                 {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
@@ -277,7 +273,7 @@ export default function GiftsPage() {
 
         {activeTab === "ruleta" && (
           <div className="mb-4 rounded-xl border border-clash-border bg-glass p-4">
-            <h2 className="text-base font-black tracking-[0.18em] text-white" style={titleOutline}>{activeTabConfig.title}</h2>
+            <h2 className="text-base font-black tracking-[0.18em] text-white text-title-shadow">{activeTabConfig.title}</h2>
             <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
           </div>
         )}

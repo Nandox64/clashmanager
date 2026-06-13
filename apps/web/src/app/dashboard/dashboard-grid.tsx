@@ -69,7 +69,7 @@ export function DashboardGrid() {
       <IdentificationBanner />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-clash-text">Dashboard</h1>
+          <h1 className="text-xl font-bold text-clash-text text-title-shadow">Dashboard</h1>
           <p className="text-sm text-clash-muted mt-0.5">
             Centro de control • {clan.name}
           </p>

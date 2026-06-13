@@ -186,7 +186,7 @@ export function WarDecksClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-clash-gold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">Mazos de Guerra</h1>
+        <h1 className="text-2xl font-extrabold text-clash-gold tracking-wider text-title-shadow">Mazos de Guerra</h1>
         <p className="text-base text-clash-muted mt-1">
           Genera 4 mazos óptimos para cada miembro del clan
         </p>
