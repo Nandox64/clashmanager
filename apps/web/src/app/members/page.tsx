@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { daysAgo, getActivityColor } from "@/lib/utils";
-import { ROLE_LABELS, STATUS_LABELS } from "@clashmanager/shared";
+import { ROLE_LABELS } from "@clashmanager/shared";
 import { getCachedRole } from "@/lib/profile-cache";
 import { Search, RefreshCw, UserPlus, Check, X, Clock } from "lucide-react";
 import { toast } from "sonner";
