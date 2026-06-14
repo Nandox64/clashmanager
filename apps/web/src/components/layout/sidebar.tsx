@@ -121,18 +121,18 @@ export function Sidebar() {
         style={sidebarStyle}
       >
         {/* Header / Logo */}
-        <div className="flex flex-col items-center gap-3 p-5">
-          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[180px] h-auto object-contain" />
+        <div className="flex flex-col items-center gap-2 p-4 pt-5">
+          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[160px] h-auto object-contain" />
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-38 h-38 object-contain"
+            className="w-28 h-28 object-contain"
           />
         </div>
         <div className="separator-gold mx-5" />
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-0.5">
+        <nav className="flex-1 flex flex-col justify-evenly px-3 py-1 min-h-0">
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -144,12 +144,12 @@ export function Sidebar() {
                 className={cn("nav-item", isActive && "active")}
               >
                 <span
-                  className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-all ${
+                  className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all ${
                     isActive ? "bg-metallic-gold animate-metallic-shimmer" : ""
                   }`}
                   style={!isActive ? { background: theme.border } : undefined}
                 >
-                  <Icon size={18} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
+                  <Icon size={16} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
                 </span>
                 <span className={`flex-1 text-sm ${isActive ? "text-[var(--pm-gold)]" : ""}`}>{item.label}</span>
               </Link>

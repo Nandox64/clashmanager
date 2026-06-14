@@ -15,11 +15,11 @@ import { Destacados } from "@/components/dashboard/destacados";
 import { LoadingProgress } from "@/components/dashboard/loading-progress";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
-import { Trophy, Users, Activity, Shield, RefreshCw, Database } from "lucide-react";
+import { Trophy, Users, Activity, Shield, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { IdentificationBanner } from "@/components/onboarding/identification-banner";
 import { barContainerStyle, barTrackStyle, barFillStyle } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 /** Formatea milisegundos a texto legible ("hace 5 min", "hace 1 hora", etc.) */
@@ -42,6 +42,35 @@ export function DashboardGrid() {
   const loaded = useClanStore((s) => s.loaded);
   const cacheAge = useClanStore((s) => s.cacheAge);
   const { isMock } = useAuth();
+  const loadingToastRef = useRef<string | number | null>(null);
+  const wasLoadingRef = useRef(false);
+  const cacheShownRef = useRef(false);
+
+  useEffect(() => {
+    if (fromCache && cacheAge !== null && !cacheShownRef.current) {
+      cacheShownRef.current = true;
+      toast.info(`Mostrando datos cacheados (${formatAge(cacheAge)})`, {
+        duration: 3000,
+        icon: "📦",
+      });
+    }
+  }, [fromCache, cacheAge]);
+
+  useEffect(() => {
+    if (loading && !wasLoadingRef.current) {
+      wasLoadingRef.current = true;
+      loadingToastRef.current = toast.loading("Actualizando datos...");
+    } else if (!loading && wasLoadingRef.current) {
+      wasLoadingRef.current = false;
+      if (loadingToastRef.current) {
+        toast.dismiss(loadingToastRef.current);
+        loadingToastRef.current = null;
+      }
+      if (!error) {
+        toast.success("Datos actualizados", { duration: 2000 });
+      }
+    }
+  }, [loading, error]);
 
   const activeMembers = members.filter((m) => m.status === "active").length;
   const avgTrophies = members.length > 0
@@ -77,25 +106,7 @@ export function DashboardGrid() {
             Monitorea el rendimiento, actividad y logros de tu clan en tiempo real
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Badge "Cacheado" — visible mientras se muestran datos de localStorage */}
-          {fromCache && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-[11px] font-medium text-blue-400 animate-fade-in">
-              <Database size={12} />
-              Cacheado
-              {cacheAge !== null && (
-                <span className="text-blue-400/60 ml-0.5">
-                  ({formatAge(cacheAge)})
-                </span>
-              )}
-            </span>
-          )}
-
-          {loading && (
-            <span className="text-xs text-clash-muted animate-pulse">
-              Actualizando...
-            </span>
-          )}
+        <div className="flex items-center">
           <button
             onClick={refetch}
             disabled={loading}

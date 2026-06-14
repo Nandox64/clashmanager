@@ -27,9 +27,9 @@ interface UploadedItem extends Wallpaper {
 
 
 const tabs: { id: Tab; label: string; title: string; help: string; icon: typeof Smartphone }[] = [
-  { id: "mobile", label: "Móvil", title: "RECURSOS PARA MÓVIL", help: "Imágenes verticales recomendadas para celular (9:16).", icon: Smartphone },
-  { id: "pc", label: "PC", title: "RECURSOS PARA COMPUTADOR", help: "Imágenes horizontales recomendadas para computador (16:9).", icon: Monitor },
-  { id: "qr", label: "Códigos", title: "CÓDIGOS QR DE RECOMPENSAS", help: "Códigos QR para escanear desde Clash Royale.", icon: Gift },
+  { id: "mobile", label: "Móvil", title: "RECURSOS PARA MÓVIL", help: "Vertical 9:16 · Máx 3MB por imagen.", icon: Smartphone },
+  { id: "pc", label: "PC", title: "RECURSOS PARA COMPUTADOR", help: "Horizontal 16:9 · Máx 3MB por imagen.", icon: Monitor },
+  { id: "qr", label: "Códigos", title: "CÓDIGOS QR DE RECOMPENSAS", help: "Captura clara sin recortes · Máx 3MB.", icon: Gift },
 ];
 
 function formatDate(ts: number) {
@@ -208,7 +208,7 @@ export default function GiftsPage() {
           <div>
             <CardTitle className="text-page-title text-xl font-black">Recursos</CardTitle>
             <p className="text-xs text-clash-dimmed mt-0.5">
-              Biblioteca del clan para compartir imágenes, códigos QR y eventos de ruleta en un solo lugar. Sube recursos ligeros, identifica quién los aportó y conserva solo contenido útil para la comunidad.
+              Biblioteca del clan para compartir fondos, códigos QR y ver quién los aportó.
             </p>
           </div>
         </CardHeader>
@@ -259,11 +259,6 @@ export default function GiftsPage() {
           <div className="rounded-xl border border-clash-border bg-glass p-4">
             <h2 className="text-page-title text-base font-black tracking-[0.18em]">{activeTabConfig.title}</h2>
             <p className="text-xs text-clash-dimmed mt-1">{activeTabConfig.help}</p>
-            <p className="text-xs text-clash-dimmed mt-2">
-              {activeTab === "mobile" && "Formato vertical 9:16 · Máximo 3MB por imagen."}
-              {activeTab === "pc" && "Instrucción: sube imágenes horizontales para computador en formato 16:9."}
-              {activeTab === "qr" && "Instrucción: sube capturas claras del código para que pueda escanearse sin recortes."}
-            </p>
           </div>
         </div>
 

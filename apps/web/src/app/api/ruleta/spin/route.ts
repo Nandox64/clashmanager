@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getRuletaConfig, saveRuletaConfig, getRuletaSpin, saveRuletaSpin, addRuletaWinner, batchWrite } from "@/lib/firestore-service";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getRuletaConfig, getRuletaSpin, batchWrite } from "@/lib/firestore-service";
+import { getUserUid } from "@/lib/api-utils";
 import type { RuletaSpin, RuletaWinner } from "@/lib/firestore-service";
 
 const SEGMENTS = [
@@ -22,18 +22,6 @@ const FREE_WEIGHTS: Record<string, number> = {
 const EVENT_WEIGHTS: Record<string, number> = {
   "oro-1k": 6, "oro-10k": 5, "gemas-500": 4, "gemas-1200": 2.5, "pass": 0.5, "no-ganar": 82,
 };
-
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
-    if (adminAuth) {
-      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
-    }
-  }
-  return null;
-}
 
 function pickPrize(config: { prizeCounts: Record<string, number>; passAwarded: boolean; eventActive: boolean }): { prize: string; segmentIndex: number } {
   const weights = config.eventActive ? { ...EVENT_WEIGHTS } : { ...FREE_WEIGHTS };
@@ -77,13 +65,16 @@ export async function POST(request: Request) {
   const body = await request.json();
   const displayName = body.displayName || "Anónimo";
 
-  let config = await getRuletaConfig(clanTag);
+  const [rawConfig, prev] = await Promise.all([
+    getRuletaConfig(clanTag),
+    getRuletaSpin(clanTag, uid),
+  ]);
+
+  let config = rawConfig;
   if (!config) {
     // Default config for free mode — no event active
     config = { eventActive: false, eventName: "", maxWinners: 3, prizeCounts: { "oro-1k": 0, "oro-10k": 0, "gemas-500": 0, "gemas-1200": 0, pass: 0 }, passAwarded: false, eventStartedAt: null };
   }
-
-  const prev = await getRuletaSpin(clanTag, uid);
   const isNewEvent = !prev || prev.eventStartedAt !== config.eventStartedAt;
 
   if (config.eventActive) {

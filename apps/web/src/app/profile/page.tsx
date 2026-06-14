@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useClanStore } from "@/lib/store";
 import { useProfile } from "@/hooks/use-profile";
+import { useAuth } from "@/contexts/AuthContext";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, setCachedRole } from "@/lib/profile-cache";
 import { ROLE_LABELS, ROLE_HIERARCHY } from "@clashmanager/shared";
 import { UserCircle, Camera, Save, Shield, CheckCircle } from "lucide-react";
@@ -19,6 +20,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default function ProfilePage() {
   const { profile, loading, saveProfile, refetch } = useProfile();
+  const { user, isMock } = useAuth();
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,19 +48,38 @@ export default function ProfilePage() {
 
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 1024 * 1024) {
       toast.error("La imagen no debe superar 1MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setPhoto(dataUrl);
-    };
-    reader.readAsDataURL(file);
+
+    const token = await user?.getIdToken();
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : { Authorization: isMock ? "Bearer mock-mode" : "" };
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/profile/upload", {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Error al subir imagen");
+      }
+      const data = await res.json();
+      setPhoto(data.url);
+      toast.success("Foto subida correctamente");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al subir imagen");
+    }
   };
 
   const handleSave = async () => {

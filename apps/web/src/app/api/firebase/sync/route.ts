@@ -26,19 +26,8 @@ import {
 import { computeAchievements } from "@/lib/achievements";
 import { transformToWeeklyStats } from "@/lib/cr-transform";
 import type { Member } from "@clashmanager/shared";
-import { adminDb, adminAuth } from "@/lib/firebase-admin";
-
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
-    if (adminAuth) {
-      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
-    }
-  }
-  return null;
-}
+import { adminDb } from "@/lib/firebase-admin";
+import { getUserUid } from "@/lib/api-utils";
 
 async function sync() {
   const { clan, riverRaceLog, currentRiverRace, localWarRanking } = await getClanFull();

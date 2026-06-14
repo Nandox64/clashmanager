@@ -290,3 +290,83 @@ Una vez cacheados, el SW los sirve **para siempre** hasta bump de `SW_VERSION`.
 | `public/uploads/mobile/*` | Archivos forzados a git |
 | `public/uploads/pc/*` | Archivos forzados a git |
 | `public/uploads/qr/*` | Archivos forzados a git |
+
+---
+
+## Sesión 13 — Optimización de rendimiento integral 🚀
+
+### Problema
+Las API routes de la app sufrían latencia extrema (10-20s) por cold starts + lecturas secuenciales + sync pesado en cada carga de página.
+
+### Diagnóstico
+
+| # | Endpoint | Latencia | Causa raíz |
+|---|----------|----------|------------|
+| 1 | `GET /api/firebase/load` | 5-15s | Llamado por TODAS las páginas. Sync completo: 4 CR API calls + 8 Firestore writes + 5 reads |
+| 2 | `GET\|POST /api/firebase/sync` | 5-10s | Reads secuenciales + auth + 4 CR API calls |
+| 3 | Settings page | 5-20s | 4 API calls separadas en carga (/load + /profile + /settings + linked-profiles) |
+| 4 | `POST /api/ruleta/spin` | 3-18s | 2 reads secuenciales + cold start |
+| 5 | Ruleta page | 3-15s | 3 API calls paralelas = 3 cold starts |
+
+### Cambios implementados
+
+#### 1. Shared utility `getUserUid` ✅
+- **Nuevo**: `src/lib/api-utils.ts` con función `getUserUid()` compartida
+- Eliminadas 7 copias duplicadas del mismo código en rutas API
+- Archivos actualizados: `config/route.ts`, `state/route.ts`, `spin/route.ts`, `sync/route.ts`, `profile/route.ts`, `settings/route.ts`, `recruits/route.ts`
+
+#### 2. Endpoint combinado `/api/ruleta/init` ✅
+- Un solo `GET /api/ruleta/init` devuelve `{ config, state, winners }` en 1 serverless call
+- Reemplaza 3 llamadas separadas (config + state + winners)
+- Resultado: 1 cold start en vez de 3
+
+#### 3. Parallelizar reads en ruleta/spin ✅
+- `getRuletaConfig` + `getRuletaSpin` ahora corren con `Promise.all`
+- Reduce ~200-1000ms por spin request
+
+#### 4. Endpoint ligero `/api/init` ✅
+- Nueva ruta `GET /api/init` que solo lee de Firestore (5 lecturas paralelas)
+- Sin CR API calls, sin escrituras
+- Reemplaza a `/api/firebase/load` para carga de página normal
+
+#### 5. Optimizado `use-clan-data.ts` ✅
+- Usa `/api/init` en vez de `/api/firebase/load` para carga rápida
+- Solo usa fuerza completa (`?force=1`) en sync manual
+- Poll interval reducido de 60s → 120s
+
+#### 6. Cleanup de código ✅
+- Eliminado `getUserUid` duplicado en 7 archivos
+- Eliminado import de `adminAuth` donde ya no se necesita
+
+### Bugfix: Cold start en ruleta (1er intento falla) ✅
+- **Síntoma**: La ruleta falla en el primer intento, funciona en el segundo, luego es inmediata.
+- **Causa raíz**: `verifyIdToken()` bloquea el endpoint combinado `/api/ruleta/init` antes de empezar las lecturas Firestore. En cold start (función serverless fría), el timeout de 10s de Vercel Hobby se excede.
+- **Fix 1**: Auth y Firestore reads ahora corren en paralelo (`uidPromise` + `getRuletaConfig`/`getRuletaWinners` en `Promise.all`). Si auth falla, config+winners se devuelven igual.
+- **Fix 2**: Frontend ahora tiene timeout de 15s en `fetchState` con **retry automático** (1 reintento tras 2s si falla). Esto cubre el caso donde el cold start excede el timeout pero la función se calienta para el reintento.
+
+### Archivos creados (3)
+| Archivo | Descripción |
+|---------|-------------|
+| `lib/api-utils.ts` | Función `getUserUid()` compartida |
+| `app/api/ruleta/init/route.ts` | Endpoint combinado ruleta |
+| `app/api/init/route.ts` | Endpoint ligero de carga |
+
+### Archivos modificados (9)
+| Archivo | Cambio |
+|---------|--------|
+| `api/ruleta/config/route.ts` | Import `getUserUid` desde utils |
+| `api/ruleta/state/route.ts` | Import `getUserUid` + `Promise.all` |
+| `api/ruleta/spin/route.ts` | Import `getUserUid` + `Promise.all` |
+| `api/firebase/sync/route.ts` | Import `getUserUid` desde utils |
+| `api/profile/route.ts` | Import `getUserUid` desde utils |
+| `api/settings/route.ts` | Import `getUserUid` desde utils |
+| `api/recruits/route.ts` | Import `getUserUid` desde utils |
+| `hooks/use-clan-data.ts` | Usa `/api/init` en vez de `/api/firebase/load`; poll 120s |
+| `components/ruleta/ruleta-section.tsx` | 1 fetch a `/api/ruleta/init` en vez de 3; timeout 15s + retry |
+
+### Resultados esperados
+- **Carga de página**: ~500ms en vez de 5-15s (cache de Firestore, sin CR API)
+- **Ruleta**: ~1-2s en vez de 3-15s (1 cold start vs 3). Con retry, incluso si el primer cold start falla, se recupera en 2s.
+- **Spin**: ~200-500ms menos por request (reads paralelos)
+- **Settings**: Menos latencia porque /load ahora es rápido
+- **Polling**: 120s en vez de 60s = mitad de syncs automáticos

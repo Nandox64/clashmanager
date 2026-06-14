@@ -7,7 +7,7 @@ import { playSpinTick, playWinSound, playLoseSound, playCountdownBeep } from "@/
 import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId } from "@/lib/profile-cache";
-import { Loader2, Gift } from "lucide-react";
+import { Loader2, Gift, X } from "lucide-react";
 
 interface SpinResult {
   prize: string;
@@ -49,28 +49,32 @@ export function RuletaSection() {
   const linkedMember = members.find((m) => m.uid === linkedId);
   const displayName = linkedMember?.displayName || user?.displayName || "Anónimo";
 
-  const fetchState = useCallback(async () => {
+  const fetchState = useCallback(async (retries = 1) => {
     const token = await user?.getIdToken();
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : { Authorization: "Bearer mock-mode" };
 
     try {
-      const [configRes, stateRes, winnersRes] = await Promise.all([
-        fetch("/api/ruleta/config", { headers }),
-        fetch("/api/ruleta/state", { headers }),
-        fetch("/api/ruleta/winners", { headers }),
-      ]);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const config = await configRes.json();
-      const state = await stateRes.json();
-      const w = await winnersRes.json();
+      const res = await fetch("/api/ruleta/init", { headers, signal: controller.signal });
+      clearTimeout(timeoutId);
 
-      setEventActive(config.eventActive ?? false);
-      setSpinsRemaining(state.spinsRemaining ?? -1);
-      setWon(state.won ?? false);
-      setPrize(state.prize ?? null);
-      setWinners(Array.isArray(w) ? w : []);
+      if (!res.ok) throw new Error("Error al cargar estado");
+      const data = await res.json();
+
+      setEventActive(data.config?.eventActive ?? false);
+      setSpinsRemaining(data.state?.spinsRemaining ?? -1);
+      setWon(data.state?.won ?? false);
+      setPrize(data.state?.prize ?? null);
+      setWinners(Array.isArray(data.winners) ? data.winners : []);
     } catch {
-      setLastResult({ prize: "error", label: "Error al cargar estado", segmentIndex: 0, won: false });
+      if (retries > 0) {
+        // Cold start fallback: reintentar después de 2s
+        setTimeout(() => fetchState(0), 2000);
+      } else {
+        setLastResult({ prize: "error", label: "Error al cargar estado", segmentIndex: 0, won: false });
+      }
     }
   }, [user]);
 
@@ -272,26 +276,40 @@ export function RuletaSection() {
             </ul>
           </div>
 
-          {/* Last result */}
+          {/* Last result — modal overlay */}
           {lastResult && !spinning && countdown === null && (
-            <div className={`p-6 rounded-xl text-center ${lastResult.won ? "bg-green-500/15 border-2 border-green-400/50 shadow-lg shadow-green-500/10 animate-pulse" : lastResult.prize === "error" ? "bg-red-500/10 border border-red-500/30" : "bg-glass border border-clash-border"}`}>
-              {lastResult.won && <p className="text-4xl mb-2">🏆</p>}
-              <p className={`text-2xl font-extrabold ${lastResult.won ? "text-green-400" : lastResult.prize === "error" ? "text-red-400" : "text-clash-text"}`}>
-                {lastResult.label}
-              </p>
-              {lastResult.won && (
-                <>
-                  <p className="text-clash-muted mt-3">
-                    Premio: <span className="text-metallic-gold font-bold text-xl">{lastResult.label}</span>
-                  </p>
-                  <p className="text-lg font-bold text-green-400 mt-3 animate-bounce drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]">
-                    ¡Felicidades!
-                  </p>
-                </>
-              )}
-              {eventActive && lastResult.won && (
-                <p className="text-sm text-clash-muted mt-2">Contacta al líder para recibir tu premio.</p>
-              )}
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] animate-fade-in p-4">
+              <div className={`relative w-full max-w-sm p-6 rounded-xl text-center ${lastResult.won ? "bg-green-500/15 border-2 border-green-400/50 shadow-lg shadow-green-500/10" : lastResult.prize === "error" ? "bg-red-500/10 border border-red-500/30" : "bg-glass border border-clash-border"}`}>
+                <button
+                  onClick={() => setLastResult(null)}
+                  className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-white/10 transition-colors text-clash-muted"
+                >
+                  <X size={18} />
+                </button>
+                {lastResult.won && <p className="text-5xl mb-3">🏆</p>}
+                <p className={`text-2xl font-extrabold ${lastResult.won ? "text-green-400" : lastResult.prize === "error" ? "text-red-400" : "text-clash-text"}`}>
+                  {lastResult.label}
+                </p>
+                {lastResult.won && (
+                  <>
+                    <p className="text-clash-muted mt-3">
+                      Premio: <span className="text-metallic-gold font-bold text-xl">{lastResult.label}</span>
+                    </p>
+                    <p className="text-lg font-bold text-green-400 mt-3 animate-bounce drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]">
+                      ¡Felicidades!
+                    </p>
+                  </>
+                )}
+                {eventActive && lastResult.won && (
+                  <p className="text-sm text-clash-muted mt-2">Contacta al líder para recibir tu premio.</p>
+                )}
+                <button
+                  onClick={() => setLastResult(null)}
+                  className="mt-4 w-full py-2.5 rounded-xl bg-metallic-gold text-black text-sm font-bold hover:brightness-110 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           )}
         </div>

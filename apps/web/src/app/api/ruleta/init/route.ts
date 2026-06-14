@@ -1,32 +1,37 @@
 import { NextResponse } from "next/server";
-import { getRuletaConfig, getRuletaSpin } from "@/lib/firestore-service";
+import { getRuletaConfig, getRuletaSpin, getRuletaWinners } from "@/lib/firestore-service";
 import { getUserUid } from "@/lib/api-utils";
 
 export async function GET(request: Request) {
   const clanTag = process.env.CLAN_TAG;
   if (!clanTag) return NextResponse.json({ error: "CLAN_TAG no configurado" }, { status: 400 });
 
-  const uid = await getUserUid(request);
-  if (!uid) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  // Auth y Firestore en paralelo para no bloquear cold start en verifyIdToken
+  const uidPromise = getUserUid(request).catch(() => null);
 
-  const [config, spin] = await Promise.all([
+  const [config, winners] = await Promise.all([
     getRuletaConfig(clanTag),
-    getRuletaSpin(clanTag, uid),
+    getRuletaWinners(clanTag),
   ]);
-  const eventActive = config?.eventActive ?? false;
 
+  const uid = await uidPromise;
+
+  let spin = null;
   let spinsRemaining = 0;
   let won = false;
   let prize: string | null = null;
 
+  if (uid) {
+    spin = await getRuletaSpin(clanTag, uid).catch(() => null);
+  }
+
+  const eventActive = config?.eventActive ?? false;
+
   if (!eventActive) {
-    spinsRemaining = -1; // free mode: unlimited
+    spinsRemaining = -1;
   } else if (spin) {
     if (spin.eventStartedAt !== config?.eventStartedAt) {
-      // new event, reset
       spinsRemaining = 2;
-      won = false;
-      prize = null;
     } else {
       won = spin.won;
       prize = spin.prize;
@@ -36,5 +41,9 @@ export async function GET(request: Request) {
     spinsRemaining = 2;
   }
 
-  return NextResponse.json({ eventActive, spinsRemaining, won, prize });
+  return NextResponse.json({
+    config,
+    state: { eventActive, spinsRemaining, won, prize },
+    winners,
+  });
 }

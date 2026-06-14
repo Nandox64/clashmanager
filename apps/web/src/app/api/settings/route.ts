@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
-import { getRules, getEvents, getLogs, saveRules, saveEvents, saveLocalWarRank, saveLocalWarTrophies, saveClanScaling, getClanScaling, getLocalWarRank, getLocalWarTrophies, batchWrite } from "@/lib/firestore-service";
-import { adminDb, adminAuth } from "@/lib/firebase-admin";
-import type { ClanScalingConfig } from "@/lib/firestore-service";
-
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
-    if (adminAuth) {
-      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
-    }
-  }
-  return null;
-}
+import { getRules, getEvents, getLogs, getClanScaling, getLocalWarRank, getLocalWarTrophies, batchWrite } from "@/lib/firestore-service";
+import { adminDb } from "@/lib/firebase-admin";
+import { getUserUid } from "@/lib/api-utils";
 
 export async function GET() {
   const clanTag = process.env.CLAN_TAG;

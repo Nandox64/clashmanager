@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRuletaConfig, saveRuletaConfig } from "@/lib/firestore-service";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getUserUid } from "@/lib/api-utils";
 import type { RuletaConfig } from "@/lib/firestore-service";
 
 const DEFAULT_CONFIG: RuletaConfig = {
@@ -11,18 +11,6 @@ const DEFAULT_CONFIG: RuletaConfig = {
   passAwarded: false,
   prizeCounts: { "oro-1k": 0, "oro-10k": 0, "gemas-500": 0, "gemas-1200": 0, pass: 0 },
 };
-
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
-    if (adminAuth) {
-      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
-    }
-  }
-  return null;
-}
 
 export async function GET() {
   const clanTag = process.env.CLAN_TAG;

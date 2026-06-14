@@ -1,27 +1,7 @@
 import { NextResponse } from "next/server";
-import { getLinkedProfiles, getMemberByUid, getProfile, getProfileByLinkedMember, saveProfile, saveMemberLink, batchWrite } from "@/lib/firestore-service";
-import { adminAuth } from "@/lib/firebase-admin";
-import type { UserProfileDoc } from "@/lib/firestore-service";
+import { getLinkedProfiles, getMemberByUid, getProfile, getProfileByLinkedMember, batchWrite } from "@/lib/firestore-service";
+import { getUserUid } from "@/lib/api-utils";
 import type { BatchOperation } from "@/lib/firestore-service";
-
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) {
-      return token.replace("mock-", "");
-    }
-    if (adminAuth) {
-      try {
-        const decoded = await adminAuth.verifyIdToken(token);
-        return decoded.uid;
-      } catch {
-        return null;
-      }
-    }
-  }
-  return null;
-}
 
 export async function GET(request: Request) {
   const clanTag = process.env.CLAN_TAG;

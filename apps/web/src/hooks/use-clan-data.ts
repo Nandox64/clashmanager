@@ -9,8 +9,8 @@ import {
   getClanCacheAge,
 } from "@/lib/clan-cache";
 
-const POLL_INTERVAL = 60_000;
-const FETCH_TIMEOUT = 120_000;
+const POLL_INTERVAL = 120_000;
+const FETCH_TIMEOUT = 60_000;
 
 /** TTL del caché cliente: 1 hora */
 const CLIENT_CACHE_TTL = 60 * 60 * 1000;
@@ -110,15 +110,34 @@ async function fetchFromApi(force = false) {
 
   useClanStore.setState({ progressPhase: "loading-api" });
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  let controller = new AbortController();
+  let timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
   try {
-    const url = force ? "/api/firebase/load?force=1" : "/api/firebase/load";
+    const url = force ? "/api/firebase/load?force=1" : "/api/init";
 
-    useClanStore.setState({ progressPhase: "syncing" });
+    if (force) {
+      useClanStore.setState({ progressPhase: "syncing" });
+    }
 
     const res = await fetch(url, { signal: controller.signal });
+
+    if (res.status === 404 && !force) {
+      // No cached data — fall back to full sync
+      useClanStore.setState({ progressPhase: "syncing" });
+      controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), 120_000);
+      const syncRes = await fetch("/api/firebase/load", { signal: controller.signal });
+      if (!syncRes.ok) {
+        const err = await syncRes.json().catch(() => ({ error: "Error desconocido" }));
+        throw new Error(err.error || `HTTP ${syncRes.status}`);
+      }
+      const syncData = await syncRes.json();
+      applyApiData(syncData);
+      useClanStore.setState({ progressPhase: "ready" });
+      return;
+    }
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: "Error desconocido" }));
       throw new Error(err.error || `HTTP ${res.status}`);

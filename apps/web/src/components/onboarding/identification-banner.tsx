@@ -25,28 +25,37 @@ export function IdentificationBanner() {
   if (dismissed || !loaded || linkedId) return null;
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
-      <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0">
-        <UserCircle size={16} className="text-yellow-400" />
-      </div>
-      <p className="text-xs text-clash-text flex-1">
-        No te has identificado con un miembro del clan.{' '}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] animate-fade-in p-4">
+      <div className="relative w-full max-w-sm p-6 rounded-xl bg-gradient-to-b from-yellow-500/15 to-amber-500/10 border border-yellow-500/30 text-center">
+        <button
+          onClick={handleDismiss}
+          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-white/10 transition-colors text-clash-muted"
+        >
+          <X size={18} />
+        </button>
+        <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
+          <UserCircle size={24} className="text-yellow-400" />
+        </div>
+        <p className="text-sm text-clash-text mb-4">
+          No te has identificado con un miembro del clan. Vincula tu cuenta para acceder a todas las funciones.
+        </p>
         <Link
           href="/profile"
-          className="text-metallic-gold hover:underline font-medium inline-flex items-center gap-0.5"
           onClick={handleDismiss}
+          className="block w-full py-2.5 rounded-xl bg-metallic-gold text-black text-sm font-bold hover:brightness-110 transition-colors text-center"
         >
-          Ve a Perfil
-          <ArrowRight size={12} />
-        </Link>{' '}
-        para vincular tu cuenta.
-      </p>
-      <button
-        onClick={handleDismiss}
-        className="p-1 rounded-lg hover:bg-glass transition-colors text-clash-muted shrink-0"
-      >
-        <X size={14} />
-      </button>
+          <span className="inline-flex items-center gap-1.5">
+            Ir a Perfil
+            <ArrowRight size={16} />
+          </span>
+        </Link>
+        <button
+          onClick={handleDismiss}
+          className="mt-3 text-xs text-clash-muted hover:text-clash-text transition-colors"
+        >
+          Ahora no
+        </button>
+      </div>
     </div>
   );
 }
