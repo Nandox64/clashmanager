@@ -370,3 +370,63 @@ Las API routes de la app sufrían latencia extrema (10-20s) por cold starts + le
 - **Spin**: ~200-500ms menos por request (reads paralelos)
 - **Settings**: Menos latencia porque /load ahora es rápido
 - **Polling**: 120s en vez de 60s = mitad de syncs automáticos
+
+---
+
+## Sesión 14 — Mejoras mobile, upload de perfil y UI 🚀
+
+### Bugfix: Ruleta resultado rompe layout en mobile ✅
+- **Problema**: El resultado del premio aparecía inline en la columna derecha, empujando contenido y desacomodando el BottomTabs.
+- **Fix**: Convertido a **modal overlay fixed** con fondo semitransparente, botón de cerrar (X + "Cerrar"). No afecta scroll ni layout.
+
+### Bugfix: Dashboard mensajes inline causan saltos ✅
+- **Problema**: Los textos "Cacheado", "Actualizando..." y el banner de vinculación aparecían/desaparecían inline, moviendo el contenido.
+- **Fix**: 
+  - "Cacheado" y "Actualizando..." reemplazados por **toasts con sonner** (📦 cache toast, loading toast, success toast).
+  - **IdentificationBanner** convertido de banner inline a **modal popup** centrado con opciones "Ir a Perfil" y "Ahora no".
+
+### UI: Títulos separados de la barra superior ✅
+- **Fix**: `pt-16` → `pt-20` (y `lg:pt-6` → `lg:pt-8`) en `app-shell.tsx` para dar más espacio entre la barra móvil y el contenido.
+
+### UI: Sidebar sin scroll ✅
+- **Problema**: El menú lateral mostraba scroll cuando los items no cabían verticalmente.
+- **Fix**: 
+  - Nav items distribuyen con `flex flex-col justify-evenly`.
+  - Iconos reducidos (18→16px, wrappers 10→9).
+  - Padding de items reducido (`0.5rem 0.75rem` → `0.4rem 0.6rem`).
+  - Logos del header más compactos (`max-w[180px]` → `max-w[160px]`, `w-38` → `w-28`).
+
+### Feature: Upload persistente de fotos de perfil ✅
+- **Problema**: Las fotos de perfil se guardaban como data URL base64 en Firestore, sin persistencia real.
+- **Fix**: 
+  - Nueva API `POST /api/profile/upload` — sube archivo a `public/uploads/profile/`, devuelve URL.
+  - Profile page ahora sube la imagen al servidor y guarda la ruta en Firestore.
+  - Carpeta `public/uploads/profile/` creada.
+  - Límite 1MB, solo imágenes (jpg, png, webp, gif).
+
+### UI: Descripciones de upload consolidadas ✅
+- **Problema**: Textos redundantes entre help del tab e instrucciones inferiores en Gifts.
+- **Fix**: 
+  - Eliminado bloque de instrucciones redundante en gifts.
+  - Unificado tamaño máximo en help de cada tab (ej: "Vertical 9:16 · Máx 3MB por imagen.").
+  - Descripción del CardHeader de Recursos simplificada.
+  - Perfil ya mostraba "máx 1MB" correctamente.
+
+### Archivos creados (2)
+| Archivo | Descripción |
+|---------|-------------|
+| `app/api/profile/upload/route.ts` | API para subir imágenes de perfil |
+| `public/uploads/profile/` | Carpeta para fotos de perfil |
+
+### Archivos modificados (9)
+| Archivo | Cambio |
+|---------|--------|
+| `components/ruleta/ruleta-section.tsx` | Resultado inline → modal overlay; import X |
+| `app/dashboard/dashboard-grid.tsx` | Spans "Cacheado"/"Actualizando" → toasts sonner; import useRef |
+| `components/onboarding/identification-banner.tsx` | Banner inline → modal popup |
+| `components/layout/app-shell.tsx` | `pt-16` → `pt-20`, `lg:pt-6` → `lg:pt-8` |
+| `components/layout/sidebar.tsx` | Nav `flex justify-evenly`; iconos/padding reducidos; logos compactos |
+| `app/styles/premium.css` | Nav-item padding reducido |
+| `app/profile/page.tsx` | Upload vía API en vez de data URL; import useAuth |
+| `app/gifts/page.tsx` | Help tabs unificado con tamaño; textos redundantes eliminados |
+| `plan.md` | Documentación de Sesión 14 |

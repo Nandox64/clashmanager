@@ -121,6 +121,8 @@ export function DashboardGrid() {
         </div>
       </div>
 
+      <img src="/banner.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain" />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card className="p-4">
           <div className="grid grid-cols-2 gap-4">
