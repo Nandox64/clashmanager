@@ -101,15 +101,20 @@
 
 .nav-item:hover {
   color: var(--pm-gold);
-  background: hsla(45, 90%, 55%, 0.12);
+  background: hsla(45, 90%, 55%, 0.1);
+}
+
+.nav-item:hover .nav-icon {
+  color: var(--pm-gold);
+  filter: brightness(1.2);
 }
 
 .nav-item.active {
   color: var(--pm-gold);
-  background: hsla(45, 90%, 55%, 0.18);
+  background: hsla(45, 90%, 55%, 0.15);
 }
 
-/* Active left bar */
+/* Active left bar - subtle */
 .nav-item.active::before {
   content: "";
   position: absolute;
@@ -119,21 +124,23 @@
   width: 3px;
   border-radius: 0 3px 3px 0;
   background: linear-gradient(to bottom, var(--pm-gold), var(--pm-bronze));
-  box-shadow: 0 0 8px var(--pm-gold);
+  box-shadow: 0 0 6px var(--pm-gold);
 }
 
 /* ── Toggle button (mobile) ── */
 .toggle-btn {
-  background: var(--pm-gold);
+  background: linear-gradient(135deg, var(--pm-gold), var(--pm-bronze));
+  background-size: 200% 100%;
+  animation: metallic-shimmer 3s ease-in-out infinite;
   color: hsl(220, 20%, 9%);
   border: none;
   border-radius: 0.5rem;
   padding: 0.5rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  transition: background 0.2s, transform 0.15s;
+  transition: transform 0.15s, box-shadow 0.2s;
 }
 .toggle-btn:hover {
-  background: var(--pm-bronze);
   transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.4);
 }

@@ -28,7 +28,7 @@ export function ComparativaJugadores() {
       <img
         src="/duende.png"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none -z-10"
+        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
       />
       <div className="relative z-10 space-y-3">
         {topEffort.map((member, i) => (

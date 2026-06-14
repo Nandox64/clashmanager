@@ -88,10 +88,10 @@ export function Sidebar() {
       <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 lg:hidden" style={mobileBarStyle}>
         <button
           onClick={() => setIsOpen(true)}
-          className="toggle-btn flex items-center justify-center shrink-0 bg-metallic-gold animate-metallic-shimmer"
+          className="toggle-btn flex items-center justify-center shrink-0"
           aria-label="Open menu"
         >
-          <Menu size={20} />
+          <Menu size={20} className="text-[#0d1117]" />
         </button>
         <img src="/logo_cm.webp" alt="Clase Pro" className="h-8 w-auto object-contain" />
         <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
@@ -145,11 +145,11 @@ export function Sidebar() {
               >
                 <span
                   className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-all ${
-                    isActive ? "bg-metallic-gold" : ""
+                    isActive ? "bg-metallic-gold animate-metallic-shimmer" : ""
                   }`}
                   style={!isActive ? { background: theme.border } : undefined}
                 >
-                  <Icon size={16} className={isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"} />
+                  <Icon size={16} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
                 </span>
                 <span className={`flex-1 text-sm ${isActive ? "text-[var(--pm-gold)]" : ""}`}>{item.label}</span>
               </Link>

@@ -23,7 +23,7 @@ export function TopDonadores() {
       <img
         src="/cofre1.png"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none -z-10"
+        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
       />
       <div className="relative z-10 space-y-2">
         {top.map((member, i) => (

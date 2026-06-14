@@ -269,7 +269,7 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        {profileLoading ? (
+        {profileLoading && !profile ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center space-y-3">
               <img src="/carga4.gif" alt="Cargando..." className="w-24 h-24 mx-auto" />

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  getCachedLinkedMemberId,
+  getCachedProfilePhoto,
   setCachedLinkedMemberId,
   setCachedProfilePhoto,
 } from "@/lib/profile-cache";
@@ -62,6 +64,10 @@ export function useProfile() {
       const data = await res.json();
       const p = data.profile ?? null;
       setProfileState(p);
+      if (p) {
+        setCachedLinkedMemberId(p.linkedMemberId);
+        setCachedProfilePhoto(p.photoURL);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
     } finally {
@@ -70,6 +76,20 @@ export function useProfile() {
   }, [user, isMock, authProfile?.uid]);
 
   useEffect(() => {
+    // Hydration inmediata desde cache
+    const cachedId = getCachedLinkedMemberId();
+    const cachedPhoto = getCachedProfilePhoto();
+    if (cachedId) {
+      setProfileState({
+        uid: "",
+        displayName: "",
+        photoURL: cachedPhoto || "",
+        linkedMemberId: cachedId,
+        linkedAt: Date.now(),
+      });
+      setLoading(false);
+    }
+    // Luego fetch real para datos completos
     fetchProfile();
   }, [fetchProfile]);
 
