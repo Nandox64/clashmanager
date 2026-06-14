@@ -22,7 +22,7 @@ export function TopCopas() {
       <img
         src="/copa.png"
         alt=""
-        className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-65 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 top-26 h-60 object-cover opacity-65 pointer-events-none"
       />
       <div className="relative z-10 space-y-2">
         {top.map((member, i) => (

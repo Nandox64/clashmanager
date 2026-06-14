@@ -65,21 +65,6 @@ export function MiembrosRiesgo() {
   }
 
   const total = Object.values(grouped).reduce((s, arr) => s + arr.length, 0);
-  if (total === 0) {
-    return (
-      <Card className="relative overflow-hidden">
-        <CardHeader>
-          <div>
-            <CardTitle>Miembros en Riesgo</CardTitle>
-            <p className="text-xs text-clash-muted mt-0.5">Jugadores que requieren atención</p>
-          </div>
-          <AlertTriangle size={16} className="text-green-400" />
-        </CardHeader>
-        <img src="/lanza.png" alt="" className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none" />
-        <p className="relative z-10 text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>
-      </Card>
-    );
-  }
 
   return (
     <Card className="relative overflow-hidden">
@@ -90,54 +75,60 @@ export function MiembrosRiesgo() {
             Inactivos, donaciones bajas o poca participación en guerra
           </p>
         </div>
-        <AlertTriangle size={16} className="text-red-400" />
+        <AlertTriangle size={16} className={total === 0 ? "text-green-400" : "text-red-400"} />
       </CardHeader>
       <img src="/lanza.png" alt="" className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none" />
       <div className="relative z-10 space-y-4">
-        {SECTIONS.map((section) => {
-          const items = grouped[section.key];
-          if (items.length === 0) return null;
-          return (
-            <div key={section.key}>
-              <h4 className="text-xs font-semibold text-clash-muted px-1 mb-1.5 flex items-center gap-1.5">
-                <span>{section.icon}</span>
-                {section.title}
-                <span className="text-clash-muted/50 font-normal ml-auto">{items.length}</span>
-              </h4>
-              <div className="space-y-1">
-                {items.slice(0, 4).map(({ member, daysSinceActive, severity }) => {
-                  const badgeVariant = severity === "inactive" ? "danger" : section.key === "donations" ? "warning" : "default";
-                  const badgeLabel = severity === "inactive" ? "Inactivo" : severity === "risk" ? "Inactividad" : section.key === "donations" ? "Donaciones" : "Guerra";
-                  return (
-                    <div
-                      key={member.uid}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass/30 transition-colors"
-                    >
-                      <Avatar name={member.displayName} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-clash-text drop-shadow-sm">
-                          {member.displayName}
-                        </p>
-                        <p className="text-xs text-clash-muted drop-shadow-sm">
-                          Don.: {member.weeklyStats?.donationsGiven ?? 0} · Guerra:{" "}
-                          {member.weeklyStats?.warParticipation ?? 0}%
-                          {daysSinceActive > 0 && (
-                            <span className={`ml-1.5 ${getActivityColor(daysSinceActive)}`}>
-                              · {daysAgo(member.lastActiveAt)}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <Badge variant={badgeVariant} size="sm">
-                        {badgeLabel}
-                      </Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        {total === 0 ? (
+          <p className="text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>
+        ) : (
+          <>
+            {SECTIONS.map((section) => {
+              const items = grouped[section.key];
+              if (items.length === 0) return null;
+              return (
+                <div key={section.key}>
+                  <h4 className="text-xs font-semibold text-clash-muted px-1 mb-1.5 flex items-center gap-1.5">
+                    <span>{section.icon}</span>
+                    {section.title}
+                    <span className="text-clash-muted/50 font-normal ml-auto">{items.length}</span>
+                  </h4>
+                  <div className="space-y-1">
+                    {items.slice(0, 4).map(({ member, daysSinceActive, severity }) => {
+                      const badgeVariant = severity === "inactive" ? "danger" : section.key === "donations" ? "warning" : "default";
+                      const badgeLabel = severity === "inactive" ? "Inactivo" : severity === "risk" ? "Inactividad" : section.key === "donations" ? "Donaciones" : "Guerra";
+                      return (
+                        <div
+                          key={member.uid}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass/30 transition-colors"
+                        >
+                          <Avatar name={member.displayName} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate text-clash-text drop-shadow-sm">
+                              {member.displayName}
+                            </p>
+                            <p className="text-xs text-clash-muted drop-shadow-sm">
+                              Don.: {member.weeklyStats?.donationsGiven ?? 0} · Guerra:{" "}
+                              {member.weeklyStats?.warParticipation ?? 0}%
+                              {daysSinceActive > 0 && (
+                                <span className={`ml-1.5 ${getActivityColor(daysSinceActive)}`}>
+                                  · {daysAgo(member.lastActiveAt)}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          <Badge variant={badgeVariant} size="sm">
+                            {badgeLabel}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
     </Card>
   );
