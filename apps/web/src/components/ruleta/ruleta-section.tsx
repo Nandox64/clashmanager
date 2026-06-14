@@ -145,7 +145,7 @@ export function RuletaSection() {
       ...(token ? { Authorization: `Bearer ${token}` } : { Authorization: "Bearer mock-mode" }),
     };
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       const res = await fetch("/api/ruleta/spin", {
@@ -167,8 +167,13 @@ export function RuletaSection() {
       pendingResultRef.current = data;
     } catch (err) {
       clearTimeout(timeoutId);
-      console.error("[Ruleta] Spin exception:", err);
-      pendingResultRef.current = { prize: "error", label: "Error de conexión — intenta de nuevo", segmentIndex: 0, won: false };
+      if (err instanceof Error && err.name === "AbortError") {
+        console.warn("[Ruleta] Spin timeout (30s)");
+        pendingResultRef.current = { prize: "error", label: "La ruleta tardó demasiado — intenta de nuevo", segmentIndex: 0, won: false };
+      } else {
+        console.error("[Ruleta] Spin exception:", err);
+        pendingResultRef.current = { prize: "error", label: "Error de conexión — intenta de nuevo", segmentIndex: 0, won: false };
+      }
     }
   };
 

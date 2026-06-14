@@ -26,9 +26,9 @@ export function ComparativaJugadores() {
         <Trophy size={16} className="text-metallic-gold animate-icon-shine" />
       </CardHeader>
       <img
-        src="/duende.png"
+        src="/wing.png"
         alt=""
-        className="absolute inset-x-0 bottom-0 top-26 h-40 object-cover opacity-65 pointer-events-none"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-50 object-cover opacity-65 pointer-events-none"
       />
       <div className="relative z-10 space-y-3">
         {topEffort.map((member, i) => (

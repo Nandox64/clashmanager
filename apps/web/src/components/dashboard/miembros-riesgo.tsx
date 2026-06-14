@@ -77,7 +77,7 @@ export function MiembrosRiesgo() {
         </div>
         <AlertTriangle size={16} className={total === 0 ? "text-green-400" : "text-red-400"} />
       </CardHeader>
-      <img src="/lanza.png" alt="" className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none" />
+      <img src="/lanzadardos1.webp" alt="" className="absolute bottom-0 left-1/2 -translate-x-1/2 h-50 object-cover opacity-75 pointer-events-none" />
       <div className="relative z-10 space-y-4">
         {total === 0 ? (
           <p className="text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>

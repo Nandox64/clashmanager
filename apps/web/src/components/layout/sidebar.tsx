@@ -93,9 +93,9 @@ export function Sidebar() {
         >
           <Menu size={20} className="text-[#0d1117]" />
         </button>
-        <img src="/logo_cm.webp" alt="Clase Pro" className="h-8 w-auto object-contain" />
+        <img src="/logo_cm.webp" alt="Clase Pro" className="h-12 w-auto object-contain" />
         <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
-          <span className="text-[10px] truncate block" style={{ color: "var(--pm-text)" }}>
+          <span className="text-[12px] truncate block" style={{ color: "var(--pm-text)" }}>
             {clanName}
           </span>
         </div>
@@ -126,7 +126,7 @@ export function Sidebar() {
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-28 h-28 object-contain"
+            className="w-38 h-38 object-contain"
           />
         </div>
         <div className="separator-gold mx-5" />
@@ -144,12 +144,12 @@ export function Sidebar() {
                 className={cn("nav-item", isActive && "active")}
               >
                 <span
-                  className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-all ${
+                  className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-all ${
                     isActive ? "bg-metallic-gold animate-metallic-shimmer" : ""
                   }`}
                   style={!isActive ? { background: theme.border } : undefined}
                 >
-                  <Icon size={16} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
+                  <Icon size={18} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
                 </span>
                 <span className={`flex-1 text-sm ${isActive ? "text-[var(--pm-gold)]" : ""}`}>{item.label}</span>
               </Link>
@@ -187,8 +187,8 @@ export function Sidebar() {
                   {displayName}
                 </p>
                 <div className="flex items-center gap-1 text-[10px]"
-                     style={{ color: "var(--pm-muted)" }}>
-                  <Shield size={9} style={{ color: "var(--pm-gold)" }} />
+                     style={{ color: "var(--pm-gold)" }}>
+                  <Shield size={12} style={{ color: "var(--pm-text)" }} />
                   <span>{userRole ? ROLE_LABELS[userRole as keyof typeof ROLE_LABELS] : "Miembro"}</span>
                   <span>•</span>
                   <span>{clanTag}</span>
@@ -201,7 +201,7 @@ export function Sidebar() {
                   style={{ color: "var(--pm-text)" }}
                   title="Cerrar sesión"
                 >
-                  <LogOut size={15} />
+                  <LogOut size={18} />
                 </button>
               )}
             </div>
