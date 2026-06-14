@@ -115,7 +115,9 @@ export default function SettingsPage() {
   const fetchLinkedProfiles = async () => {
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch("/api/profile?linked=1", { headers });
+      const memberUid = linkedMember?.uid;
+      const url = memberUid ? `/api/profile?linked=1&memberUid=${memberUid}` : "/api/profile?linked=1";
+      const res = await fetch(url, { headers });
       if (!res.ok) throw new Error("Error al cargar vinculaciones");
       const data = await res.json();
       setLinkedProfiles(data.profiles ?? []);

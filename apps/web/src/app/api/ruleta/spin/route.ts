@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRuletaConfig, saveRuletaConfig, getRuletaSpin, saveRuletaSpin, addRuletaWinner } from "@/lib/firestore-service";
+import { getRuletaConfig, saveRuletaConfig, getRuletaSpin, saveRuletaSpin, addRuletaWinner, batchWrite } from "@/lib/firestore-service";
 import { adminAuth } from "@/lib/firebase-admin";
 import type { RuletaSpin, RuletaWinner } from "@/lib/firestore-service";
 
@@ -111,9 +111,11 @@ export async function POST(request: Request) {
     spinsUsed: isNewEvent ? 1 : prev.spinsUsed + 1,
     lastSpinAt: Date.now(),
   };
-  await saveRuletaSpin(clanTag, uid, spin);
 
-  // Update config counts if won
+  const operations: import("@/lib/firestore-service").BatchOperation[] = [
+    { type: "set", collection: "ruletaSpins", docId: uid, data: spin },
+  ];
+
   if (isWin && config.eventActive) {
     const counts = { ...config.prizeCounts };
     if (result.prize === "pass") {
@@ -122,17 +124,14 @@ export async function POST(request: Request) {
     const pKey = result.prize as keyof typeof counts;
     counts[pKey] = (counts[pKey] || 0) + 1;
     config.prizeCounts = counts;
-    await saveRuletaConfig(clanTag, config);
 
-    // Add winner
-    const winner: RuletaWinner = {
-      uid,
-      displayName,
-      prize: result.prize,
-      awardedAt: Date.now(),
-    };
-    await addRuletaWinner(clanTag, winner);
+    operations.push(
+      { type: "set", collection: "settings", docId: "ruleta", data: config },
+      { type: "set", collection: "ruletaWinners", docId: uid, data: { uid, displayName, prize: result.prize, awardedAt: Date.now() } }
+    );
   }
+
+  await batchWrite(clanTag, operations);
 
   return NextResponse.json({
     prize: result.prize,

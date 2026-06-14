@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getLinkedProfiles, getMemberByUid, getProfile, getProfileByLinkedMember, saveProfile, saveMemberLink } from "@/lib/firestore-service";
+import { getLinkedProfiles, getMemberByUid, getProfile, getProfileByLinkedMember, saveProfile, saveMemberLink, batchWrite } from "@/lib/firestore-service";
 import { adminAuth } from "@/lib/firebase-admin";
 import type { UserProfileDoc } from "@/lib/firestore-service";
+import type { BatchOperation } from "@/lib/firestore-service";
 
 async function getUserUid(request: Request): Promise<string | null> {
   const authHeader = request.headers.get("authorization");
@@ -35,12 +36,20 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   if (url.searchParams.get("linked") === "1") {
-    const profile = await getProfile(clanTag, uid);
+    const memberUid = url.searchParams.get("memberUid");
+    
+    const [profile, linkedMember] = await Promise.all([
+      getProfile(clanTag, uid),
+      memberUid ? getMemberByUid(clanTag, memberUid) : (async () => {
+        const p = await getProfile(clanTag, uid);
+        return p?.linkedMemberId ? getMemberByUid(clanTag, p.linkedMemberId) : null;
+      })()
+    ]);
+
     if (!profile?.linkedMemberId) {
       return NextResponse.json({ error: "No vinculado" }, { status: 403 });
     }
-    const linkedMember = await getMemberByUid(clanTag, profile.linkedMemberId);
-    if (linkedMember?.role !== "leader") {
+    if (!linkedMember || linkedMember.role !== "leader") {
       return NextResponse.json({ error: "Solo el líder puede ver vinculaciones" }, { status: 403 });
     }
     return NextResponse.json({ profiles: await getLinkedProfiles(clanTag) });
@@ -69,14 +78,15 @@ export async function POST(request: Request) {
         ? body.linkedMemberId
         : (existing?.linkedMemberId ?? null);
 
+    let linkedProfile: import("@/lib/firestore-service").UserProfileDoc | null = null;
     if (nextLinkedMemberId) {
-      const linkedProfile = await getProfileByLinkedMember(clanTag, nextLinkedMemberId);
+      linkedProfile = await getProfileByLinkedMember(clanTag, nextLinkedMemberId);
       if (linkedProfile && linkedProfile.uid !== uid) {
         return NextResponse.json({ error: "Ese miembro ya está vinculado a otro perfil" }, { status: 409 });
       }
     }
 
-    const profile: UserProfileDoc = {
+    const profile: import("@/lib/firestore-service").UserProfileDoc = {
       uid,
       displayName: body.displayName ?? existing?.displayName ?? "",
       photoURL: body.photoURL ?? existing?.photoURL ?? "",
@@ -88,8 +98,14 @@ export async function POST(request: Request) {
       email: body.email !== undefined ? body.email : (existing?.email ?? null),
     };
 
-    await saveProfile(clanTag, profile);
-    if (nextLinkedMemberId) await saveMemberLink(clanTag, nextLinkedMemberId, uid);
+    const operations: import("@/lib/firestore-service").BatchOperation[] = [
+      { type: "set", collection: "profiles", docId: uid, data: profile },
+    ];
+    if (nextLinkedMemberId) {
+      operations.push({ type: "set", collection: "memberLinks", docId: nextLinkedMemberId, data: { firebaseUid: uid, linkedAt: Date.now() } });
+    }
+    await batchWrite(clanTag, operations);
+
     return NextResponse.json({ profile });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error interno";

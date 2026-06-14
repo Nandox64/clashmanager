@@ -582,3 +582,27 @@ export async function clearRuletaWinners(clanTag: string) {
   snap.docs.forEach((doc) => batch.delete(doc.ref));
   await batch.commit();
 }
+
+export type BatchOperation =
+  | { type: "set"; collection: string; docId: string; data: Record<string, any> }
+  | { type: "update"; collection: string; docId: string; data: Record<string, any> }
+  | { type: "delete"; collection: string; docId: string };
+
+export async function batchWrite(clanTag: string, operations: BatchOperation[]) {
+  if (!adminDb) throw new Error("Firebase Admin no inicializado");
+  const ref = getClanDocRef(clanTag);
+  const batch = adminDb.batch();
+
+  for (const op of operations) {
+    const docRef = ref.collection(op.collection).doc(op.docId);
+    if (op.type === "set") {
+      batch.set(docRef, { ...op.data, updatedAt: Date.now() }, { merge: true });
+    } else if (op.type === "update") {
+      batch.update(docRef, { ...op.data, updatedAt: Date.now() });
+    } else if (op.type === "delete") {
+      batch.delete(docRef);
+    }
+  }
+
+  await batch.commit();
+}

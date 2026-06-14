@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRules, getEvents, getLogs, saveRules, saveEvents, saveLocalWarRank, saveLocalWarTrophies, saveClanScaling, getClanScaling, getLocalWarRank, getLocalWarTrophies } from "@/lib/firestore-service";
+import { getRules, getEvents, getLogs, saveRules, saveEvents, saveLocalWarRank, saveLocalWarTrophies, saveClanScaling, getClanScaling, getLocalWarRank, getLocalWarTrophies, batchWrite } from "@/lib/firestore-service";
 import { adminDb, adminAuth } from "@/lib/firebase-admin";
 import type { ClanScalingConfig } from "@/lib/firestore-service";
 
@@ -50,11 +50,17 @@ export async function POST(request: Request) {
   }
   try {
     const body = await request.json();
-    if (body.rules) await saveRules(clanTag, body.rules);
-    if (body.events) await saveEvents(clanTag, body.events);
-    if (body.warRank !== undefined) await saveLocalWarRank(clanTag, body.warRank);
-    if (body.warTrophies !== undefined) await saveLocalWarTrophies(clanTag, body.warTrophies);
-    if (body.scaling) await saveClanScaling(clanTag, body.scaling as ClanScalingConfig);
+    const operations: import("@/lib/firestore-service").BatchOperation[] = [];
+
+    if (body.rules) operations.push({ type: "set", collection: "rules", docId: "rules", data: { rules: body.rules, updatedAt: Date.now() } });
+    if (body.events) operations.push({ type: "set", collection: "events", docId: "events", data: { events: body.events, updatedAt: Date.now() } });
+    if (body.warRank !== undefined) operations.push({ type: "update", collection: "settings", docId: "war", data: { localWarRank: body.warRank } });
+    if (body.warTrophies !== undefined) operations.push({ type: "update", collection: "settings", docId: "war", data: { localWarTrophies: body.warTrophies } });
+    if (body.scaling) operations.push({ type: "update", collection: "settings", docId: "clan", data: { scaling: body.scaling } });
+
+    if (operations.length > 0) {
+      await batchWrite(clanTag, operations);
+    }
     return NextResponse.json({ success: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error interno";

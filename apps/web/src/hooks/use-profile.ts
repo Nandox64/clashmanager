@@ -123,6 +123,8 @@ export function useProfile() {
           setCachedLinkedMemberId(result.profile.linkedMemberId);
           setCachedProfilePhoto(result.profile.photoURL);
         }
+        // Refetch to ensure sync with Firestore
+        await fetchProfile();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error");
         throw err;
@@ -130,7 +132,7 @@ export function useProfile() {
         setLoading(false);
       }
     },
-    [user, isMock, authProfile?.uid]
+    [user, isMock, authProfile?.uid, fetchProfile]
   );
 
   return { profile, loading, error, saveProfile, refetch: fetchProfile };
