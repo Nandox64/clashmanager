@@ -23,24 +23,24 @@ export function TopDonadores() {
       <img
         src="/cofre1.png"
         alt=""
-        className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-55 pointer-events-none"
       />
       <div className="relative z-10 space-y-2">
         {top.map((member, i) => (
           <div
             key={member.uid}
-            className="flex items-center gap-3 p-2 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass/30 transition-colors"
           >
-            <span className="w-5 text-center text-sm font-bold font-mono text-clash-muted">
+            <span className="w-5 text-center text-sm font-bold font-mono text-clash-muted drop-shadow-sm">
               {i + 1}
             </span>
             <Avatar name={member.displayName} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate text-clash-text">
+              <p className="text-sm font-medium truncate text-clash-text drop-shadow-sm">
                 {member.displayName}
               </p>
             </div>
-            <span className="font-mono text-sm font-semibold text-metallic-silver animate-metallic-shimmer">
+            <span className="font-mono text-sm font-semibold text-metallic-silver animate-metallic-shimmer drop-shadow-sm">
               {member.weeklyStats.donationsGiven}
             </span>
           </div>

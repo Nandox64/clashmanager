@@ -28,27 +28,27 @@ export function ComparativaJugadores() {
       <img
         src="/duende.png"
         alt=""
-        className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 top-26 h-40 object-cover opacity-65 pointer-events-none"
       />
       <div className="relative z-10 space-y-3">
         {topEffort.map((member, i) => (
           <div
             key={member.uid}
-            className="flex items-center gap-3 p-3 rounded-lg bg-glass"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-glass/30 transition-colors"
           >
-            <span className="text-sm font-bold font-mono text-metallic-gold w-6">
+            <span className="text-sm font-bold font-mono text-metallic-gold w-6 drop-shadow-sm">
               #{i + 1}
             </span>
             <Avatar name={member.displayName} size="sm" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-clash-text truncate">
+              <p className="text-sm font-medium text-clash-text truncate drop-shadow-sm">
                 {member.displayName}
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs font-mono">
-              <span className="text-green-400">🏆{formatNumber(member.trophies)}</span>
-              <span className="text-metallic-silver">📦{formatNumber(member.donations)}</span>
-              <span className="text-metallic-gold">{member.weeklyStats?.warParticipation ?? 0}%</span>
+              <span className="text-green-400 drop-shadow-sm">🏆{formatNumber(member.trophies)}</span>
+              <span className="text-metallic-silver drop-shadow-sm">📦{formatNumber(member.donations)}</span>
+              <span className="text-metallic-gold drop-shadow-sm">{member.weeklyStats?.warParticipation ?? 0}%</span>
             </div>
           </div>
         ))}

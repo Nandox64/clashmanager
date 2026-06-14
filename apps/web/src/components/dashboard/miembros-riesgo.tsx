@@ -67,7 +67,7 @@ export function MiembrosRiesgo() {
   const total = Object.values(grouped).reduce((s, arr) => s + arr.length, 0);
   if (total === 0) {
     return (
-      <Card className="relative">
+      <Card className="relative overflow-hidden">
         <CardHeader>
           <div>
             <CardTitle>Miembros en Riesgo</CardTitle>
@@ -75,8 +75,8 @@ export function MiembrosRiesgo() {
           </div>
           <AlertTriangle size={16} className="text-green-400" />
         </CardHeader>
-        <p className="text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>
-        <img src="/lanza.png" alt="" className="absolute bottom-2 right-2 w-10 h-auto object-contain opacity-30 pointer-events-none" />
+        <img src="/lanza.png" alt="" className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none" />
+        <p className="relative z-10 text-sm text-clash-muted text-center py-6">Sin miembros en riesgo ✅</p>
       </Card>
     );
   }
@@ -111,14 +111,14 @@ export function MiembrosRiesgo() {
                   return (
                     <div
                       key={member.uid}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass/30 transition-colors"
                     >
                       <Avatar name={member.displayName} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-clash-text">
+                        <p className="text-sm font-medium truncate text-clash-text drop-shadow-sm">
                           {member.displayName}
                         </p>
-                        <p className="text-xs text-clash-muted">
+                        <p className="text-xs text-clash-muted drop-shadow-sm">
                           Don.: {member.weeklyStats?.donationsGiven ?? 0} · Guerra:{" "}
                           {member.weeklyStats?.warParticipation ?? 0}%
                           {daysSinceActive > 0 && (
