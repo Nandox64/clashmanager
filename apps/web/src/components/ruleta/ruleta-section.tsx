@@ -41,6 +41,7 @@ export function RuletaSection() {
   const [lastResult, setLastResult] = useState<SpinResult | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [spinTrigger, setSpinTrigger] = useState(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingResultRef = useRef<SpinResult | null>(null);
 
@@ -110,6 +111,7 @@ export function RuletaSection() {
       if (result) setLastResult(result);
       return;
     }
+    setSpinTrigger((t) => t + 1);
     setSpinning(true);
     setCurrentResult(result);
     setLastResult(result);
@@ -153,14 +155,19 @@ export function RuletaSection() {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
+      console.log("[Ruleta] Spin response status:", res.status);
       if (!res.ok) {
         const err = await res.json();
+        console.error("[Ruleta] Spin error:", err);
         pendingResultRef.current = { prize: "error", label: err.error || "Error", segmentIndex: 0, won: false };
         return;
       }
-      pendingResultRef.current = await res.json();
-    } catch {
+      const data = await res.json();
+      console.log("[Ruleta] Spin result:", data);
+      pendingResultRef.current = data;
+    } catch (err) {
       clearTimeout(timeoutId);
+      console.error("[Ruleta] Spin exception:", err);
       pendingResultRef.current = { prize: "error", label: "Error de conexión — intenta de nuevo", segmentIndex: 0, won: false };
     }
   };
@@ -217,6 +224,7 @@ export function RuletaSection() {
           <RuletaWheel
             spinning={spinning}
             resultIndex={currentResult?.segmentIndex ?? null}
+            spinTrigger={spinTrigger}
           />
 
           <button

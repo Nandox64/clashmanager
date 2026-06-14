@@ -92,7 +92,7 @@ export function MiembrosRiesgo() {
         </div>
         <AlertTriangle size={16} className="text-red-400" />
       </CardHeader>
-      <img src="/lanza.png" alt="" className="absolute bottom-0 right-0 w-32 h-auto opacity-20 pointer-events-none" />
+      <img src="/lanza.png" alt="" className="absolute inset-x-0 bottom-0 top-16 h-40 object-cover opacity-5 pointer-events-none" />
       <div className="relative z-10 space-y-4">
         {SECTIONS.map((section) => {
           const items = grouped[section.key];

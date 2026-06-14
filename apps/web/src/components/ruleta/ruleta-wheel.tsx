@@ -12,19 +12,22 @@ const SIZE = 400;
 interface RuletaWheelProps {
   spinning: boolean;
   resultIndex: number | null;
+  spinTrigger: number;
 }
 
-export function RuletaWheel({ spinning, resultIndex }: RuletaWheelProps) {
+export function RuletaWheel({ spinning, resultIndex, spinTrigger }: RuletaWheelProps) {
   const [rotation, setRotation] = useState(0);
   const [spinCount, setSpinCount] = useState(0);
 
   useEffect(() => {
+    console.log("[RuletaWheel] Props:", { spinning, resultIndex, spinTrigger, rotation });
     if (resultIndex === null) return;
+    console.log("[RuletaWheel] Animating to segment:", resultIndex, "trigger:", spinTrigger);
     const segCenter = resultIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
     const next = spinCount + 1;
     setSpinCount(next);
     setRotation(360 * 5 * next + (360 - segCenter));
-  }, [resultIndex]);
+  }, [resultIndex, spinTrigger]);
 
   return (
     <div className="relative inline-block">
