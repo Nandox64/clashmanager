@@ -24,8 +24,6 @@ import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
 import { ROLE_LABELS } from "@clashmanager/shared";
 import { getPageTheme } from "./page-theme";
-import { RefreshCw } from "lucide-react";
-import { forceSyncData } from "@/hooks/use-clan-data";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard",   icon: LayoutDashboard },
@@ -157,17 +155,6 @@ export function Sidebar() {
               </Link>
             );
           })}
-
-          <button
-            onClick={() => forceSyncData()}
-            className="nav-item mt-2"
-            title="Sincronizar datos del clan"
-          >
-            <span className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: "var(--pm-border)" }}>
-              <RefreshCw size={16} style={{ color: "var(--pm-text)" }} />
-            </span>
-            <span className="flex-1 text-sm" style={{ color: "var(--pm-muted)" }}>Sincronizar</span>
-          </button>
         </nav>
 
         <div className="separator-gold mx-5" />
