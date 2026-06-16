@@ -813,23 +813,24 @@ Las API routes de la app sufrían latencia extrema (10-20s) por cold starts + le
 
 ---
 
-## Sesión 27 — Deploy y actualización final del plan ✅
+## Sesión 28 — Limpieza de Git e historial y remoción del botón de sincronización 🚀
 
-### Features implementadas ✅
+### Features y ajustes implementados ✅
 
-#### 1. Deploy actualizado
-- **Problema**: Necesidad de un deploy limpio después de múltiples cambios.
-- **Solución**: `git push` para actualizar Vercel con todos los cambios.
+#### 1. Limpieza de historial en Git
+- **Problema**: El historial de Git contenía muchos commits ruidosos acumulados durante el desarrollo inicial.
+- **Solución**: Se creó una rama huérfana (`--orphan`), se consolidó todo el código en un único commit limpio (`feat: initial release with all features up to session 27`), se borró la antigua rama `main` y se realizó un `push -f` a GitHub. Vercel redesplegó la aplicación basándose en este estado limpio.
 
-#### 2. Actualizar plan.md
-- **Problema**: plan.md estaba desactualizado.
-- **Solución**: Agregar nuevas sesiones (22-27) documentando los cambios recientes.
+#### 2. Remoción del botón "Sincronizar" del menú lateral
+- **Problema**: El botón ocupaba espacio innecesario, desplazaba verticalmente otros elementos clave y desacomodaba el menú lateral en dispositivos móviles.
+- **Solución**: Se eliminó el botón del sidebar y sus importaciones asociadas (`RefreshCw`, `forceSyncData`). La app ya maneja la carga y actualización autónoma al iniciarse.
+- **Archivo**: `components/layout/sidebar.tsx`
 
 ### Archivos modificados (2)
 | Archivo | Cambio |
 |---------|--------|
-| `plan.md` | Agregar sesiones 22-27 |
-| (cualquier archivo de código) | Commit con los cambios anteriores |
+| `components/layout/sidebar.tsx` | Eliminación de botón de sincronizar manual e importaciones |
+| `plan.md` | Documentación de la Sesión 28 |
 
 ---
 
@@ -843,6 +844,7 @@ Se implementaron múltiples mejoras:
 4. **Perfil**: Vinculación de miembro con verificación de duplicados
 5. **Email**: Problema de verificación (autorizado domains)
 6. **Types**: Fix de TypeScript para Winner interface
-7. **Deploy**: Vercel actualizado con todos los cambios
+7. **Deploy**: Vercel actualizado con todos los cambios y variables de entorno (`GEMINI_API_KEY`, etc.) configuradas.
+8. **Git**: Historial limpio desde cero y remoción del botón de sincronización.
 
 El sistema ahora tiene mejor UI/UX, persistencia de datos correcta, y verificación robusta de duplicados.`
