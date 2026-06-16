@@ -1,0 +1,146 @@
+/* =============================================
+   premium.css — Sidebar metallic premium design
+   ============================================= */
+
+:root {
+  --pm-gold:    hsl(45, 90%, 55%);
+  --pm-bronze:  hsl(30, 85%, 45%);
+  --pm-shadow:  hsl(210, 15%, 25%);
+  --pm-bg:      hsl(220, 35%, 14%);
+  --pm-surface: hsl(220, 30%, 17%);
+  --pm-border:  hsla(0, 0%, 100%, 0.04);
+  --pm-text:    hsl(40, 30%, 92%);
+  --pm-muted:   hsl(220, 10%, 55%);
+  --pm-w:       260px;
+}
+
+/* ── Sidebar container ── */
+.premium-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--pm-w);
+  display: flex;
+  flex-direction: column;
+  background: hsla(220, 35%, 14%, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--pm-border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  overflow-y: auto;
+  z-index: 40;
+  scrollbar-width: thin;
+  scrollbar-color: hsla(45, 90%, 55%, 0.2) transparent;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Desktop — siempre visible */
+@media (min-width: 1024px) {
+  .premium-sidebar {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Top gold shimmer accent */
+.premium-sidebar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--pm-gold),
+    var(--pm-bronze),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ── Card gold top border ── */
+.card-premium {
+  position: relative;
+}
+.card-premium::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: linear-gradient(90deg, transparent, var(--pm-gold), var(--pm-bronze), transparent);
+  pointer-events: none;
+}
+
+/* ── Nav item ── */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--pm-text);
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.separator-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pm-gold), var(--pm-bronze), transparent);
+  border: none;
+}
+
+.nav-item:hover {
+  color: var(--pm-gold);
+  background: hsla(45, 90%, 55%, 0.1);
+}
+
+.nav-item:hover .nav-icon {
+  color: var(--pm-gold);
+  filter: brightness(1.2);
+}
+
+.nav-item.active {
+  color: var(--pm-gold);
+  background: hsla(45, 90%, 55%, 0.15);
+}
+
+/* Active left bar - subtle */
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(to bottom, var(--pm-gold), var(--pm-bronze));
+  box-shadow: 0 0 6px var(--pm-gold);
+}
+
+/* ── Toggle button (mobile) ── */
+.toggle-btn {
+  background: linear-gradient(135deg, var(--pm-gold), var(--pm-bronze));
+  background-size: 200% 100%;
+  animation: metallic-shimmer 3s ease-in-out infinite;
+  color: hsl(220, 20%, 9%);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.4);
+}
