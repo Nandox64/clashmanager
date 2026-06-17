@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, Monitor, Gift, ExternalLink, Upload, Loader2, Trash2, User } from "lucide-react";
+import { Smartphone, Monitor, Gift, ExternalLink, Upload, Loader2, Trash2, User, Download } from "lucide-react";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedRole } from "@/lib/profile-cache";
 import { toast } from "sonner";
@@ -170,6 +170,31 @@ export default function GiftsPage() {
     );
   };
 
+  const handleDownload = async (url: string, name: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
+  const renderDownloadBtn = (item: UploadedItem) => (
+    <button
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDownload(item.url, item.name).catch(() => {}); }}
+      className="p-2 rounded-full bg-black/60 text-white hover:bg-metallic-gold hover:text-black transition-all"
+      title="Descargar"
+    >
+      <Download size={16} />
+    </button>
+  );
+
   const renderDeleteBtn = (item: UploadedItem) => {
     if (!isLeader || !item.slug) return null;
     return (
@@ -263,7 +288,7 @@ export default function GiftsPage() {
 
         <div>
           {activeTab === "mobile" && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {allMobile.map((item) => {
                 const upItem = item as UploadedItem;
                 return (
@@ -277,9 +302,10 @@ export default function GiftsPage() {
                     <div className="aspect-[9/16] bg-glass-card flex items-center justify-center overflow-hidden">
                       <img src={item.url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     </div>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="p-3 rounded-full bg-metallic-gold text-black hover:brightness-110 transition-all">
-                        <ExternalLink size={20} />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      {renderDownloadBtn(upItem)}
+                      <span className="p-2 rounded-full bg-black/60 text-white hover:bg-metallic-gold hover:text-black transition-all cursor-default">
+                        <ExternalLink size={16} />
                       </span>
                     </div>
                     {renderDeleteBtn(upItem)}
@@ -296,7 +322,7 @@ export default function GiftsPage() {
             </div>
           )}
           {activeTab === "pc" && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {allPc.map((item) => {
                 const upItem = item as UploadedItem;
                 return (
@@ -310,9 +336,10 @@ export default function GiftsPage() {
                     <div className="aspect-video bg-glass-card flex items-center justify-center overflow-hidden">
                       <img src={item.url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     </div>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="p-3 rounded-full bg-metallic-gold text-black hover:brightness-110 transition-all">
-                        <ExternalLink size={20} />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      {renderDownloadBtn(upItem)}
+                      <span className="p-2 rounded-full bg-black/60 text-white hover:bg-metallic-gold hover:text-black transition-all cursor-default">
+                        <ExternalLink size={16} />
                       </span>
                     </div>
                     {renderDeleteBtn(upItem)}
@@ -330,7 +357,7 @@ export default function GiftsPage() {
           )}
           {activeTab === "qr" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {allQr.map((item) => {
                   const upItem = item as UploadedItem;
                   return (
@@ -340,6 +367,9 @@ export default function GiftsPage() {
                     >
                       <div className="aspect-square bg-glass-card flex items-center justify-center overflow-hidden">
                         <img src={item.url} alt={item.name} className="w-full h-full object-contain p-4" loading="lazy" />
+                      </div>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {renderDownloadBtn(upItem)}
                       </div>
                       {renderDeleteBtn(upItem)}
                       <div className="p-2 text-center">

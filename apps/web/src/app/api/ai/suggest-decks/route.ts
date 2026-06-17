@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
 import { getPlayer } from "@/lib/cr-api";
-import { deduplicateCards, stripEvolution, findCard } from "@/lib/cards";
+import { deduplicateCards, stripEvolution, findCard, CARDS } from "@/lib/cards";
 import { getAIDecks, type DeckGenType } from "@/lib/ai-client";
 import { findBestDecks } from "@/lib/archetype-matcher";
 import { CRApiClientError } from "@/lib/cr-api";
 import { getUserUid, checkRateLimit } from "@/lib/api-utils";
+
+export const maxDuration = 30;
+
+function parseCount(text: string): number | null {
+  const numberMatch = text.match(/(\d+)\s*(mazo|deck)/i);
+  if (numberMatch) {
+    const n = parseInt(numberMatch[1], 10);
+    if (n >= 1 && n <= 4) return n;
+  }
+  if (/\bun\s+(mazo|deck)\b/i.test(text) || /\buna\s+(mazo|deck)\b/i.test(text)) return 1;
+  return null;
+}
+
+function findCardNames(text: string): string[] {
+  const lower = text.toLowerCase();
+  return CARDS.filter((c) => lower.includes(c.name.toLowerCase())).map((c) => c.name);
+}
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +42,9 @@ export async function POST(req: Request) {
     }
 
     const type: DeckGenType = ["war", "trophy", "boat"].includes(rawType) ? rawType : "war";
-    const requestedCount = type === "trophy" ? 1 : 4;
+    const parsedCount = userInstructions ? parseCount(userInstructions) : null;
+    const forceCards = userInstructions ? findCardNames(userInstructions) : undefined;
+    const requestedCount = parsedCount ?? (forceCards?.length ? 1 : type === "trophy" ? 1 : 4);
 
     const player = await getPlayer(playerTag);
 
@@ -61,7 +80,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const aiDecks = await getAIDecks(playerCards, type, userInstructions);
+    const aiDecks = await getAIDecks(playerCards, type, userInstructions, requestedCount, forceCards);
 
     if (aiDecks && aiDecks.length > 0) {
       return NextResponse.json({

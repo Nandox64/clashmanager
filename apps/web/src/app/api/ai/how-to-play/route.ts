@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { deckName, cards, question } = body;
+    const { deckName, cards, question, type = "war" } = body;
 
     if (!cards || cards.length === 0) {
       return NextResponse.json({ error: "No hay cartas en el mazo" }, { status: 400 });
@@ -26,9 +26,36 @@ export async function POST(req: Request) {
     const deckInfo = deckName ? `Mazo: "${deckName}"\n` : "";
     const userQuestion = question ? `\nPregunta adicional: ${question}` : "";
 
-    const prompt = `Eres un coach experto de Clash Royale. El jugador tiene este mazo:
+    const typeLabels: Record<string, string> = {
+      war: "GUERRA DE CLANES",
+      trophy: "CAMINO DE TROFEOS (LADDER)",
+      boat: "GUERRA DE BARCOS",
+    };
+    const modeLabel = typeLabels[type] || "CLASH ROYALE";
+
+    const typeInstructions: Record<string, string> = {
+      war: `Este mazo es para GUERRA DE CLANES (4v4). Concéntrate en:
+- Sinergia con compañeros de equipo (no es 1v1)
+- Cartas versátiles que funcionen en varios escenarios
+- Estrategia de equipo: cuándo apoyar y cuándo defender`,
+      trophy: `Este mazo es para CAMINO DE TROFEOS (LADDER 1v1). Concéntrate en:
+- Meta actual de ladder y counter matchups comunes
+- Ciclo eficiente para partidas 1v1
+- Cómo enfrentar mazos populares en el meta`,
+      boat: `Este mazo es para GUERRA DE BARCOS (contra la máquina). Concéntrate en:
+- El oponente es una IA con patrones predecibles
+- Prioriza estructuras defensivas sólidas y contraataque
+- Los duelos de barcos son contra bots, no contra humanos
+- Estrategia de desgaste: gana por tiempo si no puedes destruir`,
+    };
+    const modeSpecific = typeInstructions[type] || typeInstructions.war;
+
+    const prompt = `Eres un coach experto de Clash Royale especializado en ${modeLabel}. El jugador tiene este mazo:
 
 ${deckInfo}Cartas: ${cardList}
+
+MODO: ${modeLabel}
+${modeSpecific}
 
 Responde en ESPAÑOL con una guía práctica de cómo jugar este mazo:
 1. **Apertura** — ¿qué carta jugar al empezar?

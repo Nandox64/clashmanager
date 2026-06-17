@@ -14,7 +14,7 @@ interface PlayerCardData {
   rarity: string;
 }
 
-async function callGemini(prompt: string, maxTokens = 2048): Promise<string | null> {
+async function callGemini(prompt: string, maxTokens = 2048, signal?: AbortSignal): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.warn("[AI] GEMINI_API_KEY no configurada");
@@ -31,6 +31,7 @@ async function callGemini(prompt: string, maxTokens = 2048): Promise<string | nu
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.4, maxOutputTokens: maxTokens },
         }),
+        signal,
       }
     );
 
@@ -50,7 +51,7 @@ async function callGemini(prompt: string, maxTokens = 2048): Promise<string | nu
   }
 }
 
-async function callGroq(prompt: string, systemPrompt?: string, maxTokens = 2048): Promise<string | null> {
+async function callGroq(prompt: string, systemPrompt?: string, maxTokens = 2048, signal?: AbortSignal): Promise<string | null> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     console.warn("[AI] GROQ_API_KEY no configurada");
@@ -74,6 +75,7 @@ async function callGroq(prompt: string, systemPrompt?: string, maxTokens = 2048)
         temperature: 0.4,
         max_tokens: maxTokens,
       }),
+      signal,
     });
 
     if (!res.ok) {
@@ -94,12 +96,14 @@ async function callGroq(prompt: string, systemPrompt?: string, maxTokens = 2048)
 
 export async function callAI(
   prompt: string,
-  options?: { systemPrompt?: string; maxTokens?: number }
+  options?: { systemPrompt?: string; maxTokens?: number; signal?: AbortSignal }
 ): Promise<{ text: string; provider: string } | null> {
-  const geminiResult = await callGemini(prompt, options?.maxTokens);
+  const geminiResult = await callGemini(prompt, options?.maxTokens, options?.signal);
   if (geminiResult) return { text: geminiResult, provider: "gemini" };
 
-  const groqResult = await callGroq(prompt, options?.systemPrompt, options?.maxTokens);
+  if (options?.signal?.aborted) return null;
+
+  const groqResult = await callGroq(prompt, options?.systemPrompt, options?.maxTokens, options?.signal);
   if (groqResult) return { text: groqResult, provider: "groq" };
 
   return null;
@@ -107,7 +111,7 @@ export async function callAI(
 
 export type DeckGenType = "war" | "trophy" | "boat";
 
-function buildPrompt(type: DeckGenType, playerCards: PlayerCardData[], userInstructions?: string): string {
+function buildPrompt(type: DeckGenType, playerCards: PlayerCardData[], userInstructions?: string, count?: number, forceCards?: string[]): string {
   const cardList = playerCards
     .sort((a, b) => b.level / b.maxLevel - a.level / a.maxLevel)
     .slice(0, 30)
@@ -120,11 +124,28 @@ function buildPrompt(type: DeckGenType, playerCards: PlayerCardData[], userInstr
     ? `\nInstrucciones adicionales del jugador:\n${userInstructions}\n`
     : "";
 
+  const deckCount = count ?? (type === "trophy" ? 1 : 4);
+  const isSingle = deckCount === 1;
+
   const sharedRules = `- Cada mazo debe tener EXACTAMENTE 8 cartas
 - Prioriza cartas con nivel más alto
 - Costo de elixir balanceado (2.5 a 4.5)
 - Sinergia entre cartas
 - Nombres de arquetipos conocidos (Hog 2.6, Golem Beatdown, etc.)`;
+
+  const noRepeatRule = isSingle
+    ? ""
+    : "\nIMPORTANTE: NINGUNA CARTA PUEDE REPETIRSE ENTRE LOS MAZOS. Cada carta del inventario puede aparecer como máximo en un solo mazo.";
+
+  const forceSection = forceCards?.length
+    ? `\nIMPORTANTE: Los mazos DEBEN incluir estas cartas: ${forceCards.join(", ")}.\n`
+    : "";
+
+  const modeInstructions: Record<DeckGenType, string> = {
+    war: `para GUERRA DE CLANES`,
+    trophy: `para CAMINO DE TROFEOS (ladder). El mazo debe estar optimizado para la meta actual de ladder y para subir copas eficientemente`,
+    boat: `para GUERRA DE BARCOS. Prioriza arquitecturas defensivas sólidas y contraataque, típicas del modo guerra de barcos`,
+  };
 
   const fieldDef = `Para cada mazo incluye UN CAMPO "howToPlay" con una explicación detallada de cómo jugarlo: apertura, ciclo óptimo, sinergias clave, cómo defender contra mazos comunes.`;
 
@@ -139,54 +160,31 @@ function buildPrompt(type: DeckGenType, playerCards: PlayerCardData[], userInstr
   }
 ]`;
 
-  const typeInstructions: Record<DeckGenType, string> = {
-    war: `Eres un experto en Clash Royale. Sugiere 4 MAZOS para GUERRA DE CLANES usando SOLO las cartas que el jugador tiene.
-IMPORTANTE: NINGUNA CARTA PUEDE REPETIRSE ENTRE LOS 4 MAZOS. Cada carta del inventario puede aparecer como máximo en un solo mazo.
-
+  return `Eres un experto en Clash Royale. Sugiere ${deckCount} MAZO${isSingle ? "" : "S"} ${modeInstructions[type]} usando SOLO las cartas que el jugador tiene.${noRepeatRule}
+${forceSection}
 Cartas del jugador:
 ${cardList}
 ${userSection}
 REGLAS:
 ${sharedRules}
 ${fieldDef}
-${jsonExample}`,
-
-    trophy: `Eres un experto en Clash Royale. Sugiere 1 MAZO para CAMINO DE TROFEOS (ladder) usando SOLO las cartas que el jugador tiene.
-El mazo debe estar optimizado para la meta actual de ladder y para subir copas eficientemente.
-
-Cartas del jugador:
-${cardList}
-${userSection}
-REGLAS:
-${sharedRules}
-${fieldDef}
-${jsonExample}`,
-
-    boat: `Eres un experto en Clash Royale. Sugiere 4 MAZOS para GUERRA DE BARCOS usando SOLO las cartas que el jugador tiene.
-IMPORTANTE: NINGUNA CARTA PUEDE REPETIRSE ENTRE LOS 4 MAZOS. Cada carta del inventario puede aparecer como máximo en un solo mazo.
-Prioriza arquitecturas defensivas sólidas y contraataque, típicas del modo guerra de barcos.
-
-Cartas del jugador:
-${cardList}
-${userSection}
-REGLAS:
-${sharedRules}
-${fieldDef}
-${jsonExample}`,
-  };
-
-  return typeInstructions[type];
+${jsonExample}`;
 }
 
 export async function getAIDecks(
   playerCards: PlayerCardData[],
   type: DeckGenType,
-  userInstructions?: string
+  userInstructions?: string,
+  count?: number,
+  forceCards?: string[]
 ): Promise<AIDeck[] | null> {
-  const prompt = buildPrompt(type, playerCards, userInstructions);
-  const maxDecks = type === "trophy" ? 1 : 4;
+  const prompt = buildPrompt(type, playerCards, userInstructions, count, forceCards);
+  const maxDecks = count ?? (type === "trophy" ? 1 : 4);
 
-  const result = await callAI(prompt, { maxTokens: 2048 });
+  const controller = new AbortController();
+  const aiTimeout = setTimeout(() => controller.abort(), 10_000);
+  const result = await callAI(prompt, { maxTokens: 2048, signal: controller.signal });
+  clearTimeout(aiTimeout);
   if (!result) return null;
 
   try {

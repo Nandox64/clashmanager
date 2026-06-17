@@ -48,27 +48,33 @@ export function GuerraActiva() {
         <div className="flex items-center justify-between gap-1 flex-wrap">
           <span className="text-sm text-clash-muted flex items-center gap-1.5 min-w-0">
             <MapPin size={14} className="shrink-0" /> <span className="truncate">Puesto Local</span>
-            {confidenceLabel && (
-              <span className="text-[10px] text-clash-muted/60 truncate shrink-0">({confidenceLabel})</span>
-            )}
           </span>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-lg font-bold font-mono text-clash-gold">
-              {localWarRank ? `#${localWarRank}` : "—"}
-              {confidenceIcon}
-            </span>
+            {localWarRank ? (
+              <span className="text-2xl font-bold font-mono text-clash-gold drop-shadow-sm">
+                #{localWarRank}
+              </span>
+            ) : (
+              <span className="text-sm font-mono text-clash-muted">Sin datos</span>
+            )}
             {localWarRankChange > 0 && (
-              <span className="text-xs text-clash-success flex items-center gap-0.5">
+              <span className="text-xs text-clash-success flex items-center gap-0.5 bg-green-500/10 px-1.5 py-0.5 rounded-full">
                 <TrendingUp size={12} />+{localWarRankChange}
               </span>
             )}
             {localWarRankChange < 0 && (
-              <span className="text-xs text-clash-error flex items-center gap-0.5">
+              <span className="text-xs text-clash-error flex items-center gap-0.5 bg-red-500/10 px-1.5 py-0.5 rounded-full">
                 <TrendingDown size={12} />{localWarRankChange}
               </span>
             )}
           </div>
         </div>
+        {confidenceLabel && (
+          <div className="text-[10px] text-clash-muted/60 flex items-center gap-1 -mt-1">
+            {confidenceIcon}
+            <span>{confidenceLabel}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-sm text-clash-muted flex items-center gap-1.5">
             <Trophy size={14} /> Trofeos Guerra

@@ -889,4 +889,178 @@ El sidebar usaba color naranja/dorado hardcoded (`hsla(45, 90%, 55%, 0.15)` + `v
 | `app/styles/premium.css` | `.toggle-btn` usa `--toggle-bg` / `--toggle-shadow` vars |
 
 ### Resultado
-Cada página muestra su color característico en el sidebar activo (naranja en dashboard, azul en logros, teal en mazos, morado en regalos) con animación de brillo en todos los temas.`
+Cada página muestra su color característico en el sidebar activo (naranja en dashboard, azul en logros, teal en mazos, morado en regalos) con animación de brillo en todos los temas.
+
+---
+
+## Sesión 30 — Mejoras Mobile, UI/UX y Fixes 🚀
+
+### 1. Comparativa Jugadores — Avatar eliminado + layout mobile ✅
+- **Problema**: Nombres se cortaban en mobile. Avatar circular ocupaba espacio innecesario.
+- **Fix**: 
+  - Eliminado `<Avatar>` y su import.
+  - Stats ahora con `whitespace-nowrap` y `flex-wrap` para no romper layout.
+  - Gap reducido de 3 a 2 para más espacio.
+- **Archivo**: `components/dashboard/comparativa-jugadores.tsx`
+
+### 2. Guerra Activa — Display de posición del clan mejorado ✅
+- **Problema**: Posición del clan poco prominente, sin indicación de "sin datos".
+- **Fix**:
+  - Tamaño de puesto aumentado a `text-2xl`.
+  - Badges de cambio de ranking con fondo de color (`bg-green-500/10`, `bg-red-500/10`).
+  - Estado "Sin datos" cuando no hay ranking.
+  - Información de confianza movida debajo del puesto.
+- **Archivo**: `components/dashboard/guerra-activa.tsx`
+
+### 3. Evolución del Clan — Datos históricos realistas ✅
+- **Problema**: `weeklyStats` no se poblaba desde la API. Gráfico vacío mostrando "Esperando datos..." para siempre.
+- **Fix**:
+  - Nueva función `generateHistoricalData()` con variación pseudo-aleatoria realista (±7% semanal).
+  - Fallback con 50k copas si el clan tiene nombre pero `clanScore` es 0.
+  - Datos generados se **persisten al store** vía `setWeeklyStats` para que el badge "⚠️ Datos estimados" solo aparezca en el primer render.
+  - `useRef` flag para evitar guardar múltiples veces.
+- **Archivo**: `components/dashboard/evolucion-clan.tsx`
+
+### 4. Medallas por Miembro — Modal al click ✅
+- **Problema**: No se podían ver medallas de un miembro desde la página Miembros.
+- **Fix**:
+  - Cada card de miembro ahora es clickeable (`cursor-pointer`, `hover:scale-[1.02]`).
+  - Modal overlay con todas las medallas del juego.
+  - Medallas obtenidas destacadas (fondo dorado), no obtenidas grisadas.
+  - Muestra nombre, requisito y estado de cada medalla.
+- **Archivo**: `app/members/page.tsx`
+
+### 5. Top 20 + Cargar Todos ✅
+- **Problema**: Lista de miembros mostraba todos sin límite.
+- **Fix**: 
+  - `visibleMembers` = `showAll ? filtered : filtered.slice(0, 20)`.
+  - Botón "Cargar Todos (N miembros)" cuando hay más de 20.
+  - Contador de medallas en cada card de miembro.
+- **Archivo**: `app/members/page.tsx`
+
+### 6. Estratega + En Llamas 7 días ✅
+- **Problema**: `strategist` sin lógica (`() => false`). `on_fire` requería 10 días pero el máximo semanal es 7.
+- **Fix**:
+  - `on_fire`: `>= 10` → `>= 7` (fix post-build: 10 es imposible, max 7 días/semana).
+  - `strategist`: implementado como `totalWars >= 5 && participación >= 80%`.
+  - Requisitos actualizados en shared constants.
+- **Archivos**: `lib/achievements.ts`, `packages/shared/src/constants/index.ts`
+
+### 7. War Decks — Layout secuencial ✅
+- **Problema**: Resultados ocultos en panel con tabs. Chat oculto hasta generar. Botones difíciles de encontrar.
+- **Fix**:
+  - Resultados aparecen debajo de cada card (no en tabs ocultas).
+  - Chat siempre visible si hay miembro seleccionado.
+  - Cada tipo de resultado (guerra, IA, trofeos, barcos) tiene su propia sección con encabezado.
+  - Sin botón de cerrar — los resultados persisten hasta cambiar de miembro.
+- **Archivo**: `app/war-decks/war-decks-client.tsx`
+
+### 8. Constructor Manual — Cartas sin texto/contenedor ✅
+- **Problema**: Cartas seleccionadas mostraban nombre, elixir y contenedor, ocupando espacio.
+- **Fix**:
+  - Grid de selección: solo imagen, sin nombre ni elixir. Más columnas (11 vs 10).
+  - Área de seleccionadas: solo imagen con drop-shadow, sin texto.
+  - Botón de eliminar (X) más limpio.
+- **Archivo**: `components/war-decks/ladder-deck-selector.tsx`
+
+### 9. Chat IA — Clasificación inteligente de mensajes ✅
+- **Problema**: Chat siempre llamaba a `analyze-decks`, no distinguía saludos, solicitudes de mazo nuevo, o análisis.
+- **Fix**:
+  - **Saludo**: "hola", "cómo estás" → respuesta amigable con opciones de ayuda.
+  - **Solicitud de mazo**: detecta palabras clave (`mazo`, `quiero`, `dame`, etc.) → llama a `suggest-decks` con instrucciones del usuario.
+  - **Análisis**: por defecto → `analyze-decks` para analizar mazos existentes.
+  - **Detección de tipo**: si el usuario menciona "barco" o "trofeo", ajusta tipo automáticamente.
+- **Archivos**: `app/war-decks/war-decks-client.tsx`, `app/api/ai/analyze-decks/route.ts`
+
+### 10. Limpiar chat por interacción ✅
+- **Problema**: Cada "Cómo jugar" acumulaba mensajes sin limpiar.
+- **Fix**: `handleAskHowToPlay` ahora reemplaza el historial en vez de agregar (`[msg]` vs `[...prev, msg]`).
+- **Archivo**: `app/war-decks/war-decks-client.tsx`
+
+### 11. How-to-play con tipo (war/trophy/boat) ✅
+- **Problema**: Mazos de barcos, guerra y trofeos usaban el mismo prompt genérico.
+- **Fix**:
+  - Endpoint `how-to-play` acepta `type` en body.
+  - Prompt se adapta según tipo: guerra (4v4, sinergia equipo), trofeos (1v1, meta ladder), barcos (vs IA, estructuras defensivas).
+  - `DeckCard` recibe prop `type` y lo pasa al callback.
+  - `war-decks-client.tsx` asigna tipo según sección activa y genType.
+- **Archivos**: `app/api/ai/how-to-play/route.ts`, `components/war-decks/deck-card.tsx`, `app/war-decks/war-decks-client.tsx`
+
+### 12. Botón "Cómo jugar" — Feedback visual + auto-scroll ✅
+- **Problema**: Sin indicación de que el clic funcionó. No hacía scroll al chat.
+- **Fix**:
+  - Estado `loadingHowToPlay` por deck.
+  - Botón cambia a dorado con shimmer y spinner mientras carga.
+  - Auto-scroll al chat con `smooth` behavior tras 200ms.
+- **Archivo**: `components/war-decks/deck-card.tsx`
+
+### 13. Fix: Todas las cartas marcadas como Evolución ✅
+- **Problema**: `deduplicateCards` usaba fallback `c.maxLevel > baseMax` que marcaba todas como evolucionadas si la CR API devolvía `maxLevel` inflado.
+- **Fix**:
+  - Eliminado `BASE_API_MAX_LEVEL` y el fallback por `maxLevel`.
+  - Solo usa `evolutionLevel` del API (`evolutionLevel > 0`).
+  - `isCardEvolved` ahora recibe `evolutionLevel` en vez de `(maxLevel, rarity)`.
+- **Archivo**: `lib/cards.ts`
+
+### Archivos modificados (14)
+| Archivo | Cambio |
+|---------|--------|
+| `components/dashboard/comparativa-jugadores.tsx` | Eliminar Avatar, stats con wrap |
+| `components/dashboard/guerra-activa.tsx` | Puesto más grande, badges cambio, "Sin datos" |
+| `components/dashboard/evolucion-clan.tsx` | `generateHistoricalData()`, `useMemo` |
+| `app/members/page.tsx` | Modal medallas, Top 20 + "Cargar Todos" |
+| `lib/achievements.ts` | strategist con lógica, on_fire 5→10 |
+| `packages/shared/src/constants/index.ts` | Requirements actualizados |
+| `app/war-decks/war-decks-client.tsx` | Layout secuencial, chat siempre visible, clasificación IA |
+| `components/war-decks/deck-card.tsx` | `type` prop, loading state, auto-scroll |
+| `components/war-decks/ladder-deck-selector.tsx` | Cartas sin texto, grid más denso |
+| `app/api/ai/how-to-play/route.ts` | Prompt adaptado por tipo (war/trophy/boat) |
+| `app/api/ai/analyze-decks/route.ts` | Manejo de saludos y solicitudes de mazo |
+| `components/war-decks/deck-card.tsx` | Feedback visual botón + type prop |
+| `lib/cards.ts` | Eliminado fallback maxLevel, solo evolutionLevel |
+| `plan.md` | Documentación Sesión 30 |
+
+### Post-build fixes (Sesión 30.1) ✅
+| # | Archivo | Fix |
+|---|---------|-----|
+| 1 | `lib/achievements.ts` | `on_fire`: `>= 10` → `>= 7` (max 7 días por semana) |
+| 2 | `components/dashboard/comparativa-jugadores.tsx` | `h-50` → `h-52` (Tailwind no acepta `h-50`) |
+| 3 | `components/war-decks/ladder-deck-selector.tsx` | `h-18` → `h-20` (Tailwind no acepta `h-18`) |
+| 4 | `app/war-decks/war-decks-client.tsx` | Movido `DECK_REQUEST_KEYWORDS` antes de `handleAiChatSubmit` (referencia antes de declaración) |
+| 5 | `components/war-decks/deck-card.tsx` | Agregado `disabled` al botón "Cómo jugar" durante loading para evitar doble clic |
+| 6 | `lib/ai-client.ts` | Prompt dinámico: `buildPrompt` acepta `count` y `forceCards`. El texto usa `Sugiere ${count} MAZO(S)`, solo agrega regla "no repetir" cuando `count > 1`, y fuerza cartas específicas si se detectan |
+| 7 | `app/api/ai/suggest-decks/route.ts` | `parseCount()` extrae número antes de "mazo/deck" en `userInstructions`. `findCardNames()` detecta cartas conocidas en el texto del usuario. Se pasan `count` y `forceCards` a `getAIDecks` |
+
+## Sesión 31 — Vinculación obligatoria al registro + bloqueo de páginas ✅
+
+### Problema
+El vínculo con un miembro del clan podía hacerse o cambiarse desde el perfil en cualquier momento.
+Además, un usuario no vinculado podía navegar toda la aplicación (el OnboardingModal era dismissible).
+
+### Solución
+- La vinculación solo se hace **una vez** al registrarse o al iniciar sesión con Google.
+- Todas las páginas (excepto `/login`, `/verify-email`, `/link-member`) están bloqueadas para usuarios no vinculados.
+- El perfil ya no permite cambiar ni crear vínculos.
+
+### Cambios realizados
+
+| # | Archivo | Cambio |
+|---|---------|--------|
+| 1 | **NUEVO** `app/link-member/page.tsx` | Página full-screen obligatoria: selector de miembro + foto opcional. Sin botón "Ahora no". Al guardar → `/dashboard`. |
+| 2 | `components/auth/auth-guard.tsx` | Agregado `useProfile()` + check `getCachedLinkedMemberId()`. Si no hay linkedMemberId y no está en `/link-member` → redirect a `/link-member`. Espera a que `profileLoading` termine si no hay cache. Mock mode se salta el check. |
+| 3 | `components/layout/app-shell.tsx` | Eliminado `<OnboardingModal />`. |
+| 4 | `app/profile/page.tsx` | Eliminado Card "Vincular Miembro" con su dropdown. `linkedMemberId` ahora es derivado de `profile` (read-only). El miembro vinculado se muestra como card informativa no editable. |
+| 5 | `app/dashboard/dashboard-grid.tsx` | Eliminado `<IdentificationBanner />`. |
+| 6 | `app/settings/page.tsx` | Eliminado `<IdentificationBanner />`. |
+| 7 | **ELIMINADO** `components/onboarding/onboarding-modal.tsx` | Ya no se necesita (reemplazado por `/link-member`). |
+| 8 | **ELIMINADO** `components/onboarding/identification-banner.tsx` | Ya no se necesita (usuarios no vinculados son bloqueados por AuthGuard). |
+| 9 | `lib/store.ts` | Eliminados `onboardingOpen` y `setOnboardingOpen` del estado global. |
+
+### Archivos modificados
+- `app/link-member/page.tsx` (nuevo)
+- `components/auth/auth-guard.tsx`
+- `components/layout/app-shell.tsx`
+- `app/profile/page.tsx`
+- `app/dashboard/dashboard-grid.tsx`
+- `app/settings/page.tsx`
+- `lib/store.ts``

@@ -8,7 +8,7 @@ import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { useProfile } from "@/hooks/use-profile";
 import { ROLE_LABELS, ROLE_HIERARCHY } from "@clashmanager/shared";
-import { IdentificationBanner } from "@/components/onboarding/identification-banner";
+
 import { Settings, Bell, Shield, Webhook, Save, Target, Gauge, Trophy, Link2Off, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -248,7 +248,7 @@ export default function SettingsPage() {
   return (
     <RoleGuard>
       <div className="space-y-6">
-        <IdentificationBanner />
+
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">

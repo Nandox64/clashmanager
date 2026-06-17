@@ -37,10 +37,10 @@ export function Confetti({ active }: { active: boolean }) {
     return () => clearTimeout(timer);
   }, [active]);
 
-  if (particles.length === 0) return null;
+  const empty = particles.length === 0;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+    <div className={`fixed inset-0 pointer-events-none z-50 overflow-hidden ${empty ? "invisible" : ""}`}>
       {particles.map((p) => (
         <div
           key={p.id}

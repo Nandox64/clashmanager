@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Brain, Share2, Check, BookOpen } from "lucide-react";
-import { ElixirIcon } from "@/components/ui/elixir-icon";
-import { findCard, getCardImageUrl, getDeckShareLink } from "@/lib/cards";
+import { getCardImageUrl, getDeckShareLink } from "@/lib/cards";
 
 interface CardData {
   name: string;
@@ -23,15 +22,17 @@ interface DeckCardProps {
     isAI: boolean;
     howToPlay?: string;
   };
-  onAskHowToPlay?: (deck: DeckCardProps["deck"]) => void;
+  type?: "war" | "trophy" | "boat";
+  onAskHowToPlay?: (deck: DeckCardProps["deck"], type?: string) => void;
 }
 
 function toCardData(card: string | CardData): CardData {
   return typeof card === "string" ? { name: card } : card;
 }
 
-export function DeckCard({ deck, onAskHowToPlay }: DeckCardProps) {
+export function DeckCard({ deck, type = "war", onAskHowToPlay }: DeckCardProps) {
   const [copied, setCopied] = useState(false);
+  const [loadingHowToPlay, setLoadingHowToPlay] = useState<string | null>(null);
 
   const handleShare = async () => {
     const cardNames = deck.cards.map((c) => toCardData(c).name);
@@ -48,62 +49,47 @@ export function DeckCard({ deck, onAskHowToPlay }: DeckCardProps) {
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="font-semibold text-lg text-clash-text">{deck.name}</h3>
-          <p className="text-xs text-clash-muted mt-0.5">{deck.description}</p>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-sm text-clash-text truncate">{deck.name}</h3>
+          <p className="text-[10px] text-clash-muted truncate">{deck.description}</p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-metallic-gold text-[10px] font-bold text-black">
+            <Sparkles size={8} className="text-black" /> {deck.elixirAvg.toFixed(1)} ⌀
+          </span>
+          {deck.isAI ? (
+            <Badge variant="info" size="sm"><Sparkles size={8} className="mr-0.5" /> IA</Badge>
+          ) : (
+            <Badge variant="info" size="sm"><Brain size={8} className="mr-0.5" /> Arquetipo</Badge>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-1.5 mb-3 flex-wrap">
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-metallic-gold text-[11px] font-bold text-black">
-          <Sparkles size={10} className="text-black" /> {deck.elixirAvg.toFixed(1)} ⌀
-        </span>
-        {deck.isAI ? (
-          <Badge variant="info">
-            <Sparkles size={10} className="mr-1" /> IA
-          </Badge>
-        ) : (
-          <Badge variant="info">
-            <Brain size={10} className="mr-1" /> Arquetipo
-          </Badge>
-        )}
-      </div>
-
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {deck.cards.map((raw) => {
           const card = toCardData(raw);
-          const info = findCard(card.name);
-          const elixir = info?.elixir ?? card.elixir;
           const evolved = card.isEvolved === true;
           const imgSrc = evolved ? getCardImageUrl(card.name, true) : (card.iconUrl || getCardImageUrl(card.name));
           return (
             <div
               key={card.name}
-              className="flex flex-col items-center bg-glass rounded-lg overflow-hidden"
+              className="relative bg-glass rounded overflow-hidden"
             >
-              <div className="relative w-full aspect-[3/4]">
-                <img
-                  src={imgSrc}
-                  alt={card.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    if (evolved) {
-                      e.currentTarget.src = card.iconUrl || getCardImageUrl(card.name, false);
-                      e.currentTarget.onerror = null;
-                    }
-                  }}
-                />
-              </div>
-              {elixir != null && (
-                <span className="flex items-center gap-1 py-1">
-                  <ElixirIcon size={9} />
-                  <span className="text-[10px] font-medium text-purple-300">{elixir}</span>
-                  {evolved && (
-                    <span className="text-[8px] font-bold bg-purple-600 text-white px-1 rounded-sm leading-tight">
-                      EVO
-                    </span>
-                  )}
+              <img
+                src={imgSrc}
+                alt={card.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  if (evolved) {
+                    e.currentTarget.src = card.iconUrl || getCardImageUrl(card.name, false);
+                    e.currentTarget.onerror = null;
+                  }
+                }}
+              />
+              {evolved && (
+                <span className="absolute bottom-0 left-0 right-0 text-[7px] font-bold bg-purple-600 text-white text-center leading-tight py-px">
+                  EVO
                 </span>
               )}
             </div>
@@ -111,22 +97,38 @@ export function DeckCard({ deck, onAskHowToPlay }: DeckCardProps) {
         })}
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-2">
         <button
           onClick={handleShare}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-yellow-400/40 text-xs font-medium hover:brightness-110 transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-yellow-400/40 text-[11px] font-medium hover:brightness-110 transition-all"
         >
           {copied ? (
-            <><Check size={14} /> Copiado</>
+            <><Check size={12} /> Copiado</>
           ) : (
-            <><Share2 size={14} /> Enviar</>
+            <><Share2 size={12} /> Enviar</>
           )}
         </button>
-        <button
-          onClick={() => onAskHowToPlay?.(deck)}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-glass border border-white/20 text-xs text-clash-text hover:bg-white/10 transition-all"
+          <button
+            onClick={async () => {
+              setLoadingHowToPlay(deck.name);
+              await onAskHowToPlay?.(deck, type);
+              setLoadingHowToPlay(null);
+              setTimeout(() => {
+                document.querySelector(".ai-chat-area")?.scrollTo({ top: 9999, behavior: "smooth" });
+              }, 200);
+            }}
+            disabled={loadingHowToPlay === deck.name}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+              loadingHowToPlay === deck.name
+                ? "bg-metallic-gold text-black border border-yellow-400/40 animate-metallic-shimmer"
+                : "bg-glass text-clash-text hover:bg-white/10 animate-rainbow-border"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <BookOpen size={14} /> Cómo jugar
+          {loadingHowToPlay === deck.name ? (
+            <><img src="/carga4.gif" alt="" className="w-3.5 h-3.5" /> Cargando...</>
+          ) : (
+            <><BookOpen size={12} /> Cómo jugar</>
+          )}
         </button>
       </div>
     </Card>

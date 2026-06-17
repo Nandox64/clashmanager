@@ -8,6 +8,16 @@ import { findCard, stripEvolution } from "@/lib/cards";
  * Usa la API de cartas (/v1/cards) para traducir ID → nombre inglés → findCard → elixir.
  * Cruza con el perfil del jugador para detectar evoluciones.
  */
+const FILTER_OPTIONS = ["all", "war", "boat"] as const;
+type DeckFilter = (typeof FILTER_OPTIONS)[number];
+
+function battleTypeMatches(bt: string, filter: DeckFilter): boolean {
+  if (filter === "all") return bt === "riverRacePvP" || bt === "riverRaceDuelColosseum" || bt === "boatBattle";
+  if (filter === "war") return bt === "riverRacePvP" || bt === "riverRaceDuelColosseum";
+  if (filter === "boat") return bt === "boatBattle";
+  return false;
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const playerTagEncoded = searchParams.get("playerTag");
@@ -15,8 +25,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Falta playerTag" }, { status: 400 });
   }
   const playerTag = decodeURIComponent(playerTagEncoded);
+  const rawFilter = searchParams.get("type") || "all";
+  const filter: DeckFilter = FILTER_OPTIONS.includes(rawFilter as DeckFilter) ? (rawFilter as DeckFilter) : "all";
   const token = getToken();
   const isDev = process.env.NODE_ENV === "development";
+
+  const labelFilter = filter === "war" ? "Guerra" : filter === "boat" ? "Barco" : "Guerra y Barco";
 
   try {
     const apiCardMap = await getApiCardMap();
@@ -65,6 +79,8 @@ export async function GET(req: Request) {
       profileFetched: !!player,
       evolvedCards: [...evolvedBaseNames],
       totalPlayerCards: player?.cards?.length ?? 0,
+      filter,
+      totalBattlesScanned: battlelog.length,
     };
 
     const seen = new Set<string>();
@@ -72,7 +88,7 @@ export async function GET(req: Request) {
 
     for (const b of battlelog) {
       if (warDecks.length >= 4) break;
-      if (b.type !== "riverRacePvP" && b.type !== "riverRaceDuelColosseum" && b.type !== "boatBattle") continue;
+      if (!battleTypeMatches(b.type, filter)) continue;
 
       let deckCards: any[] = [];
       if (b.team?.[0]?.cards) deckCards = b.team[0].cards;

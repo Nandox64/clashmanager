@@ -40,7 +40,7 @@ const MEDAL_CHECKERS: {
     medalId: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 5,
+    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 7,
   },
   {
     medalId: "diamond",
@@ -62,7 +62,10 @@ const MEDAL_CHECKERS: {
     medalId: "strategist",
     name: "Estratega",
     icon: "🧠",
-    check: () => false,
+    check: (m) => {
+      const pct = m.totalWars > 0 ? (m.warsParticipated / m.totalWars) * 100 : 0;
+      return m.totalWars >= 5 && pct >= 80;
+    },
   },
 ];
 

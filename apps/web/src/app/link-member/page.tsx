@@ -1,12 +1,18 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useClanStore } from "@/lib/store";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/use-profile";
-import { getCachedLinkedMemberId, setCachedLinkedMemberId, setCachedProfilePhoto, setCachedRole } from "@/lib/profile-cache";
+import {
+  getCachedLinkedMemberId,
+  setCachedLinkedMemberId,
+  setCachedProfilePhoto,
+  setCachedRole,
+} from "@/lib/profile-cache";
 import { ROLE_LABELS } from "@clashmanager/shared";
-import { UserCircle, Camera, X } from "lucide-react";
+import { UserCircle, Camera, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -34,74 +40,42 @@ async function getAuthHeaders(
   return {};
 }
 
-export function OnboardingModal() {
+export default function LinkMemberPage() {
   const { user, isMock, profile: authProfile } = useAuth();
-  const { profile: serverProfile } = useProfile();
+  const { profile: serverProfile, loading: profileLoading } = useProfile();
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
-  const setOnboardingOpen = useClanStore((s) => s.setOnboardingOpen);
+  const router = useRouter();
 
-  const [open, setOpen] = useState(false);
   const [photo, setPhoto] = useState("");
   const [linkedMemberId, setLinkedMemberId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [fetching, setFetching] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const shownThisLoad = useRef(false);
-
-  // Auto-cerrar si el perfil remoto ya tiene vinculación
-  useEffect(() => {
-    if (serverProfile?.linkedMemberId && open) {
-      setCachedLinkedMemberId(serverProfile.linkedMemberId);
-      setCachedProfilePhoto(serverProfile.photoURL ?? "");
-      setOpen(false);
-      setOnboardingOpen(false);
-      shownThisLoad.current = true;
-    }
-  }, [serverProfile?.linkedMemberId, open, setOnboardingOpen]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!loaded || !user && !isMock) return;
-    if (shownThisLoad.current) return;
+    if (profileLoading) return;
+    if (!loaded) return;
 
     const cachedId = getCachedLinkedMemberId();
-    if (cachedId) {
-      setFetching(false);
+    const serverId = serverProfile?.linkedMemberId;
+
+    if (cachedId || serverId) {
+      router.push("/dashboard");
       return;
     }
 
-    // Si ya hay perfil remoto con link, no mostrar modal
-    if (serverProfile?.linkedMemberId) {
-      setCachedLinkedMemberId(serverProfile.linkedMemberId);
-      setCachedProfilePhoto(serverProfile.photoURL ?? "");
-      shownThisLoad.current = true;
-      setFetching(false);
-      return;
-    }
-
-    shownThisLoad.current = true;
-    setOpen(true);
-    setOnboardingOpen(true);
-    setFetching(false);
-  }, [loaded, user, isMock, setOnboardingOpen, serverProfile?.linkedMemberId]);
+    setReady(true);
+  }, [profileLoading, loaded, serverProfile?.linkedMemberId, router]);
 
   useEffect(() => {
-    if (open) {
+    if (ready) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
     return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
+  }, [ready]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,8 +111,7 @@ export function OnboardingModal() {
       const linked = members.find((m) => m.uid === linkedMemberId);
       setCachedRole(linked?.role ?? null);
       toast.success("Perfil vinculado correctamente");
-      setOpen(false);
-      setOnboardingOpen(false);
+      router.push("/dashboard");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al guardar");
     } finally {
@@ -146,34 +119,30 @@ export function OnboardingModal() {
     }
   };
 
-  const handleDismiss = () => {
-    setOpen(false);
-    setOnboardingOpen(false);
-  };
-
-  if (!open || fetching) return null;
+  if (!ready) {
+    return (
+      <div className="min-h-dynamic flex items-center justify-center">
+        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32" />
+      </div>
+    );
+  }
 
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="w-full max-w-lg mx-4 bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-clash-border">
-          <div>
-            <h2 className="text-lg font-bold text-metallic-gold">¡Bienvenido!</h2>
-            <p className="text-xs text-clash-muted mt-0.5">
-              Para usar la app, vincúlate con un miembro del clan
-            </p>
+    <div className="min-h-dynamic flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
+        <div className="p-5 sm:p-6 border-b border-clash-border text-center">
+          <div className="w-14 h-14 rounded-full bg-metallic-gold/20 flex items-center justify-center mx-auto mb-3">
+            <Shield size={28} className="text-metallic-gold" />
           </div>
-          <button
-            onClick={handleDismiss}
-            className="p-1.5 rounded-lg hover:bg-glass transition-colors text-clash-muted"
-          >
-            <X size={18} />
-          </button>
+          <h1 className="text-xl font-bold text-metallic-gold">Vincula tu cuenta</h1>
+          <p className="text-sm text-clash-muted mt-1">
+            Selecciona tu miembro del clan para acceder a la aplicación
+          </p>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-5 sm:p-6 space-y-5">
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
               {photo ? (
@@ -206,7 +175,7 @@ export function OnboardingModal() {
 
           <div className="space-y-1.5">
             <label className="text-xs text-clash-muted font-medium">
-              Selecciona tu miembro del clan <span className="text-red-400">*</span>
+              Tu miembro del clan <span className="text-red-400">*</span>
             </label>
             <select
               value={linkedMemberId ?? ""}
@@ -251,21 +220,19 @@ export function OnboardingModal() {
               </span>
             </div>
           )}
+
+          <p className="text-xs text-clash-dimmed text-center">
+            Esta vinculación te identificará dentro del clan y no podrá cambiarse después.
+          </p>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-5 border-t border-clash-border">
-          <button
-            onClick={handleDismiss}
-            className="px-4 py-2 text-sm text-clash-muted hover:text-clash-text transition-colors"
-          >
-            Ahora no
-          </button>
+        <div className="p-5 sm:p-6 border-t border-clash-border">
           <button
             onClick={handleSave}
             disabled={saving || !linkedMemberId}
-            className="px-5 py-2 rounded-lg bg-metallic-gold animate-metallic-shimmer text-black border border-clash-border text-sm font-medium hover:brightness-110 disabled:opacity-50 transition-all"
+            className="w-full py-2.5 rounded-xl bg-metallic-gold animate-metallic-shimmer text-black text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all"
           >
-            {saving ? "Guardando..." : "Vincular"}
+            {saving ? "Vinculando..." : "Vincular y acceder"}
           </button>
         </div>
       </div>

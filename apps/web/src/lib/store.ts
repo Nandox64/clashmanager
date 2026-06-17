@@ -105,10 +105,6 @@ interface ClanState {
   setProgressPhase: (phase: ProgressPhase) => void;
   setFromCache: (fromCache: boolean, cacheAge?: number | null) => void;
 
-  /** True mientras OnboardingModal está abierto — IdentificationBanner lo consulta para no solaparse */
-  onboardingOpen: boolean;
-  setOnboardingOpen: (open: boolean) => void;
-
   /** Timestamp de la última actualización exitosa */
   lastFetchedAt: number | null;
   setLastFetchedAt: (ts: number) => void;
@@ -136,7 +132,6 @@ export const useClanStore = create<ClanState>((set) => ({
   progressPhase: "idle",
   fromCache: false,
   cacheAge: null,
-  onboardingOpen: false,
   lastFetchedAt: null,
   setLastFetchedAt: (ts) => set({ lastFetchedAt: ts }),
   setClan: (clan) => set({ clan }),
@@ -161,5 +156,4 @@ export const useClanStore = create<ClanState>((set) => ({
   setLoaded: (loaded) => set({ loaded }),
   setProgressPhase: (phase) => set({ progressPhase: phase }),
   setFromCache: (fromCache, cacheAge = null) => set({ fromCache, cacheAge }),
-  setOnboardingOpen: (open) => set({ onboardingOpen: open }),
 }));

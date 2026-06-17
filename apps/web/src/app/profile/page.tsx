@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useClanStore } from "@/lib/store";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCachedLinkedMemberId, getCachedProfilePhoto, setCachedRole } from "@/lib/profile-cache";
-import { ROLE_LABELS, ROLE_HIERARCHY } from "@clashmanager/shared";
+import { getCachedLinkedMemberId, getCachedProfilePhoto } from "@/lib/profile-cache";
+import { ROLE_LABELS } from "@clashmanager/shared";
 import { UserCircle, Camera, Save, Shield, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,19 +25,16 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [photo, setPhoto] = useState(profile?.photoURL ?? getCachedProfilePhoto());
-  const [linkedMemberId, setLinkedMemberId] = useState<string | null>(
-    profile?.linkedMemberId ?? getCachedLinkedMemberId()
-  );
   const [firstName, setFirstName] = useState(profile?.firstName ?? "");
   const [lastName, setLastName] = useState(profile?.lastName ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
   const [saving, setSaving] = useState(false);
+  const linkedMemberId = profile?.linkedMemberId ?? getCachedLinkedMemberId();
 
   useEffect(() => {
     if (profile) {
       setPhoto(profile.photoURL ?? "");
-      setLinkedMemberId(profile.linkedMemberId);
       setFirstName(profile.firstName ?? "");
       setLastName(profile.lastName ?? "");
       setPhone(profile.phone ?? "");
@@ -114,7 +111,7 @@ export default function ProfilePage() {
           <h1 className="text-page-title text-2xl">Perfil</h1>
         </div>
         <p className="text-sm text-clash-muted mt-0.5">
-          Personaliza tu perfil y vincúlate a un miembro del clan
+          Personaliza tu perfil
         </p>
       </div>
 
@@ -169,20 +166,18 @@ export default function ProfilePage() {
         </div>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle className="text-metallic-gold">Vincular Miembro</CardTitle>
-            <p className="text-xs text-clash-dimmed mt-0.5">
-              {linkedMemberId
-                ? "Miembro vinculado actualmente. Puedes cambiarlo si lo deseas."
-                : "Selecciona tu miembro del clan para identificarte"}
-            </p>
-          </div>
-          <Shield size={16} className="text-metallic-gold" />
-        </CardHeader>
-        <div className="space-y-4">
-          {linkedMemberId && linkedMember && (
+      {linkedMemberId && linkedMember && (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-metallic-gold">Miembro Vinculado</CardTitle>
+              <p className="text-xs text-clash-dimmed mt-0.5">
+                Tu vinculación se realizó al registrarte y no puede modificarse desde aquí
+              </p>
+            </div>
+            <Shield size={16} className="text-metallic-gold" />
+          </CardHeader>
+          <div className="space-y-4 px-5 pb-5">
             <div className="p-4 rounded-lg bg-glass border border-clash-border space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle size={14} className="text-green-400" />
@@ -231,34 +226,9 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-          )}
-
-          <p className="text-xs text-clash-dimmed">
-            {linkedMemberId ? "Cambiar a otro miembro:" : "Selecciona un miembro:"}
-          </p>
-          <select
-            value={linkedMemberId ?? ""}
-            onChange={(e) => {
-              const val = e.target.value || null;
-              setLinkedMemberId(val);
-              if (val) {
-                const linked = members.find((m) => m.uid === val);
-                setCachedRole(linked?.role ?? null);
-              } else {
-                setCachedRole(null);
-              }
-            }}
-            className="w-full rounded-lg border border-clash-border bg-glass px-2 py-1.5 text-xs sm:text-sm text-clash-text focus:outline-none focus:border-metallic-gold focus:ring-1 focus:ring-metallic-gold transition-colors"
-          >
-            <option value="">{linkedMemberId ? "-- Desvincular --" : "-- Seleccionar miembro --"}</option>
-            {members.map((m) => (
-              <option key={m.uid} value={m.uid}>
-                {m.displayName} — 🏆 {m.trophies.toLocaleString()}
-              </option>
-            ))}
-          </select>
-        </div>
-      </Card>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { daysAgo, getActivityColor } from "@/lib/utils";
-import { ROLE_LABELS } from "@clashmanager/shared";
+import { ROLE_LABELS, MEDALS } from "@clashmanager/shared";
+import type { Member } from "@clashmanager/shared";
 import { getCachedRole } from "@/lib/profile-cache";
-import { Search, RefreshCw, UserPlus, Check, X, Clock, Users } from "lucide-react";
+import { Search, RefreshCw, UserPlus, Check, X, Clock, Users, Award } from "lucide-react";
 import { toast } from "sonner";
 
 const roleOrder = ["leader", "coleader", "veteran", "member"];
@@ -28,6 +29,9 @@ export default function MembersPage() {
   const [recruits, setRecruits] = useState<typeof storeRecruits>([]);
   const [recruitLoading, setRecruitLoading] = useState(false);
   const [recruitError, setRecruitError] = useState<string | null>(null);
+  const achievements = useClanStore((s) => s.achievements);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const userRole = getCachedRole();
   const isLeader = userRole === "leader" || userRole === "coleader";
 
@@ -129,6 +133,8 @@ export default function MembersPage() {
         b.trophies - a.trophies
     );
 
+  const visibleMembers = showAll ? filtered : filtered.slice(0, 20);
+
   const roleCounts = members.reduce(
     (acc, m) => {
       acc[m.role] = (acc[m.role] || 0) + 1;
@@ -182,12 +188,13 @@ export default function MembersPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {filtered.map((member) => {
+        {visibleMembers.map((member) => {
           const daysSinceActive = Math.floor(
             (Date.now() - member.lastActiveAt) / (1000 * 60 * 60 * 24)
           );
+          const memberAchievements = achievements.filter((a) => a.memberId === member.uid);
           return (
-            <Card key={member.uid}>
+            <Card key={member.uid} className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => setSelectedMember(member)}>
               <div className="flex items-center gap-3">
                 <Avatar name={member.displayName} size="md" />
                 <div className="flex-1 min-w-0">
@@ -212,6 +219,9 @@ export default function MembersPage() {
                     <span>🏆 {member.trophies.toLocaleString()}</span>
                     <span>🎁 {member.weeklyStats?.donationsGiven ?? 0}</span>
                     <span>⚔️ {member.weeklyStats?.warParticipation ?? 0}%</span>
+                    {memberAchievements.length > 0 && (
+                      <span className="text-metallic-gold">{memberAchievements.length} 🏅</span>
+                    )}
                   </div>
                 </div>
                 <span
@@ -224,6 +234,65 @@ export default function MembersPage() {
           );
         })}
       </div>
+
+      {!showAll && filtered.length > 20 && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setShowAll(true)}
+            className="px-6 py-2 rounded-lg bg-glass border border-white/20 text-sm text-clash-muted hover:text-clash-text hover:border-white/40 transition-colors"
+          >
+            Cargar Todos ({filtered.length} miembros)
+          </button>
+        </div>
+      )}
+
+      {selectedMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedMember(null)}>
+          <div className="bg-glass border border-white/20 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-clash-border flex items-center justify-between bg-black/20">
+              <div className="flex items-center gap-2">
+                <Avatar name={selectedMember.displayName} size="sm" />
+                <div>
+                  <h3 className="font-bold text-white text-sm">{selectedMember.displayName}</h3>
+                  <p className="text-[10px] text-clash-muted">{ROLE_LABELS[selectedMember.role]}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedMember(null)} className="p-1 hover:bg-white/10 rounded-full transition-colors">
+                <X size={18} className="text-clash-muted" />
+              </button>
+            </div>
+            <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+              <div className="flex items-center gap-2 mb-3">
+                <Award size={14} className="text-clash-gold" />
+                <h4 className="text-xs font-semibold text-clash-text uppercase tracking-wider">Medallas</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {MEDALS.map((medal) => {
+                  const earned = achievements.some((a) => a.memberId === selectedMember.uid && a.type === medal.id);
+                  return (
+                    <div
+                      key={medal.id}
+                      className={`flex items-center gap-2 p-2 rounded-lg border ${
+                        earned
+                          ? "bg-metallic-gold/10 border-metallic-gold/30"
+                          : "bg-black/20 border-white/10 opacity-50"
+                      }`}
+                    >
+                      <span className="text-xl">{medal.icon}</span>
+                      <div>
+                        <p className={`text-xs font-medium ${earned ? "text-clash-text" : "text-clash-dimmed"}`}>
+                          {medal.name}
+                        </p>
+                        <p className="text-[9px] text-clash-dimmed">{medal.requirement}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isLeader && (
         <div className="space-y-6 pt-6 border-t border-clash-border">

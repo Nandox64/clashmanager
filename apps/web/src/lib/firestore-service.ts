@@ -580,7 +580,7 @@ export async function saveRuletaSpin(clanTag: string, uid: string, spin: RuletaS
 export async function getRuletaWinners(clanTag: string): Promise<RuletaWinner[]> {
   try {
     const ref = getClanDocRef(clanTag);
-    const snap = await ref.collection("ruletaWinners").orderBy("awardedAt", "desc").get();
+    const snap = await ref.collection("ruletaWinners").orderBy("awardedAt", "desc").limit(3).get();
     return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as RuletaWinner));
   } catch {
     return [];

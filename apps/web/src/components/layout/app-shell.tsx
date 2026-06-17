@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { BottomTabs } from "./bottom-tabs";
 import { AuthGuard } from "@/components/auth/auth-guard";
-import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 import { usePathname } from "next/navigation";
 
 interface AppShellProps {
@@ -21,7 +20,6 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <AuthGuard>
-      <OnboardingModal />
       <div className="min-h-dynamic">
         <Sidebar />
         <main className="lg:ml-64 pb-24 lg:pb-0 min-h-dynamic relative">

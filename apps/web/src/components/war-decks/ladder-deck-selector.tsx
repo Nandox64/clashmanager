@@ -153,7 +153,7 @@ export function LadderDeckSelector({ open, onClose, onSendToWarDecks }: LadderDe
                 <h4 className="text-xs font-medium text-clash-muted uppercase tracking-wider mb-2 px-1">
                   {RARITY_LABELS[rarity]} ({cards.length})
                 </h4>
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 lg:grid-cols-11 gap-1.5">
                   {cards.map((card) => {
                     const isSelected = selected.includes(card.name);
                     return (
@@ -161,7 +161,7 @@ export function LadderDeckSelector({ open, onClose, onSendToWarDecks }: LadderDe
                         key={card.name}
                         onClick={() => toggleCard(card.name)}
                         disabled={!isSelected && selected.length >= 8}
-                        className={`w-full flex flex-col items-center rounded-lg border transition-all py-1.5 ${
+                        className={`w-full rounded-lg border transition-all ${
                           isSelected
                             ? "border-metallic-gold bg-metallic-gold/20 scale-105"
                             : "border-transparent bg-black/20 hover:bg-white/5 opacity-70 hover:opacity-100"
@@ -174,13 +174,6 @@ export function LadderDeckSelector({ open, onClose, onSendToWarDecks }: LadderDe
                           loading="lazy"
                           onError={(e) => { e.currentTarget.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140'><rect fill='%23333' width='100' height='140' rx='8'/><text x='50' y='75' text-anchor='middle' fill='%23666' font-size='10'>?</text></svg>"; }}
                         />
-                        <span className="text-[10px] text-clash-text text-center leading-tight mt-1 truncate w-full px-0.5">
-                          {card.name}
-                        </span>
-                        <span className="flex items-center gap-0.5 mt-0.5">
-                          <ElixirIcon size={8} />
-                          <span className="text-[9px] text-purple-300 font-medium">{card.elixir}</span>
-                        </span>
                       </button>
                     );
                   })}
@@ -223,35 +216,26 @@ export function LadderDeckSelector({ open, onClose, onSendToWarDecks }: LadderDe
             </div>
           </div>
           {selected.length > 0 && (
-            <div className="flex items-center gap-2">
-              {selected.map((name) => {
-                const card = CARDS.find((c) => c.name === name);
-                return (
-                  <div
-                    key={name}
-                    className="relative flex flex-col items-center p-1 rounded-lg bg-black/30 border border-clash-border w-14"
+            <div className="flex items-center gap-1.5">
+              {selected.map((name) => (
+                <div
+                  key={name}
+                  className="relative w-14 h-20"
+                >
+                  <button
+                    onClick={() => toggleCard(name)}
+                    className="absolute -top-1 -right-1 z-10 w-4 h-4 rounded-full bg-red-500/80 flex items-center justify-center hover:bg-red-500 transition-colors"
                   >
-                    <button
-                      onClick={() => toggleCard(name)}
-                      className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500/80 flex items-center justify-center hover:bg-red-500 transition-colors"
-                    >
-                      <X size={8} className="text-white" />
-                    </button>
-                    <img
-                      src={getCardImageUrl(name)}
-                      alt={name}
-                      className="w-8 h-10 object-contain"
-                      onError={(e) => { e.currentTarget.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140'><rect fill='%23333' width='100' height='140' rx='8'/><text x='50' y='75' text-anchor='middle' fill='%23666' font-size='10'>?</text></svg>"; }}
-                    />
-                    <span className="text-[8px] text-clash-text text-center truncate w-full">
-                      {name}
-                    </span>
-                    <span className="text-[8px] text-purple-300 font-medium">
-                      {card?.elixir ?? "?"}⚡
-                    </span>
-                  </div>
-                );
-              })}
+                    <X size={8} className="text-white" />
+                  </button>
+                  <img
+                    src={getCardImageUrl(name)}
+                    alt={name}
+                    className="w-full h-full object-contain drop-shadow-lg"
+                    onError={(e) => { e.currentTarget.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140'><rect fill='%23333' width='100' height='140' rx='8'/><text x='50' y='75' text-anchor='middle' fill='%23666' font-size='10'>?</text></svg>"; }}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>

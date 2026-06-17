@@ -192,14 +192,6 @@ export function getDisplayLevel(apiLevel: number, rarity: string): number {
   }
 }
 
-const BASE_API_MAX_LEVEL: Record<string, number> = {
-  common: 14,
-  rare: 12,
-  epic: 9,
-  legendary: 6,
-  champion: 4,
-};
-
 export function deduplicateCards(
   cards: { name: string; level: number; maxLevel: number; iconUrls?: Record<string, string>; evolutionLevel?: number }[]
 ): RawPlayerCard[] {
@@ -216,15 +208,9 @@ export function deduplicateCards(
     const existing = map.get(baseName);
     
     // Determinar si la carta está evolucionada
-    let isEvolved = false;
-    if (c.evolutionLevel !== undefined) {
-      // Usar el evolutionLevel del API si está disponible
-      isEvolved = c.evolutionLevel > 0;
-    } else {
-      // Fallback al método anterior si no está disponible
-      const baseMax = BASE_API_MAX_LEVEL[rarity] ?? 14;
-      isEvolved = c.maxLevel > baseMax;
-    }
+    // Solo confiar en evolutionLevel del API; no adivinar por maxLevel
+    // (maxLevel inflado causa falsos positivos)
+    const isEvolved = c.evolutionLevel != null && c.evolutionLevel > 0;
 
     const card: RawPlayerCard = {
       name: baseName,
@@ -270,11 +256,9 @@ export function getDeckShareLink(cardNames: string[]): string {
 const CARD_IMAGE_BASE = "https://cdn.royaleapi.com/static/img/cards";
 
 export function isCardEvolved(
-  maxLevel: number | undefined,
-  rarity: string
+  evolutionLevel: number | undefined
 ): boolean {
-  const baseMax = BASE_API_MAX_LEVEL[rarity] ?? 14;
-  return maxLevel != null && maxLevel > baseMax;
+  return evolutionLevel != null && evolutionLevel > 0;
 }
 
 export function getCardImageUrl(name: string, isEvolvedFlag?: boolean): string {

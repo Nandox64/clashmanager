@@ -88,13 +88,13 @@ export const MEDALS = [
     id: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    requirement: "Racha de 7 días activo",
+    requirement: "10+ días activo en la semana",
   },
   {
     id: "strategist",
     name: "Estratega",
     icon: "🧠",
-    requirement: "Predecir resultado de guerra 5 veces",
+    requirement: "80%+ participación en 5+ guerras",
   },
 ] as const;
 

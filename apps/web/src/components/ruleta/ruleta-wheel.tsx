@@ -30,7 +30,7 @@ export function RuletaWheel({ spinning, resultIndex, spinTrigger }: RuletaWheelP
   }, [resultIndex, spinTrigger]);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block max-w-full">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
         <div className="w-0 h-0 border-l-[10px] border-r-[10px] border-t-[16px] border-l-transparent border-r-transparent border-t-red-500 drop-shadow-[0_0_6px_rgba(255,50,50,0.6)]" />
       </div>
@@ -38,7 +38,7 @@ export function RuletaWheel({ spinning, resultIndex, spinTrigger }: RuletaWheelP
       <div
         className="absolute -inset-6 rounded-full pointer-events-none z-0"
         style={{
-          background: "conic-gradient(from 0deg, transparent, rgba(255,215,0,0.4), transparent, rgba(255,215,0,0.2), transparent, rgba(255,215,0,0.4), transparent)",
+          background: "conic-gradient(from 0deg, transparent, rgba(255,107,107,0.8), transparent, rgba(72,219,251,0.8), transparent, rgba(162,155,254,0.8), transparent, rgba(85,239,196,0.8), transparent, rgba(255,165,2,0.8), transparent)",
           borderRadius: "50%",
           filter: "blur(12px)",
           animation: "glow-spin 4s linear infinite",
@@ -51,7 +51,7 @@ export function RuletaWheel({ spinning, resultIndex, spinTrigger }: RuletaWheelP
         alt="Ruleta"
         width={SIZE}
         height={SIZE}
-        className="rounded-full select-none relative z-[1]"
+        className="rounded-full select-none relative z-[1] max-w-full h-auto"
         draggable={false}
         style={{
           transform: `rotate(${rotation}deg)`,

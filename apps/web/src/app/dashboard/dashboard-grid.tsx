@@ -15,7 +15,7 @@ import { LoadingProgress } from "@/components/dashboard/loading-progress";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { Trophy, Users, Activity, Shield, RefreshCw } from "lucide-react";
-import { IdentificationBanner } from "@/components/onboarding/identification-banner";
+
 import { barContainerStyle, barTrackStyle, barFillStyle } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -71,7 +71,7 @@ export function DashboardGrid() {
 
   return (
     <div className="space-y-6">
-      <IdentificationBanner />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-page-title text-2xl">Dashboard</h1>

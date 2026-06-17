@@ -198,7 +198,7 @@ export function RuletaSection() {
     <div className="space-y-6">
       {/* Countdown overlay */}
       {countdown !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] overflow-y-auto">
           <div className="text-center">
             {countdown > 0 ? (
               <>
@@ -238,7 +238,7 @@ export function RuletaSection() {
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         {/* Column 1: Wheel */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6 overflow-hidden pt-6">
           <RuletaWheel
             spinning={spinning}
             resultIndex={currentResult?.segmentIndex ?? null}
@@ -248,7 +248,7 @@ export function RuletaSection() {
           <button
             onClick={handleSpin}
             disabled={!canSpin}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#B05E0E] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#B05E0E]/20"
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#B05E0E] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#B05E0E]/20 relative z-10 animate-pulse-glow"
           >
             {countdown !== null ? (
               <Loader2 size={20} className="animate-spin" />
@@ -332,11 +332,11 @@ export function RuletaSection() {
 
       {/* Last result — modal overlay */}
       {lastResult && !spinning && countdown === null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] animate-fade-in p-4">
-          <div className={`relative w-full max-w-sm min-h-[420px] flex flex-col items-center justify-center p-6 rounded-xl text-center bg-[url('/card.png')] bg-contain bg-center bg-no-repeat ${lastResult.prize === "error" ? "ring-2 ring-red-500/50" : ""}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] animate-fade-in p-4 overflow-y-auto">
+          <div className={`relative w-full max-w-md aspect-[504/308] flex flex-col items-center justify-center p-5 rounded-xl text-center bg-[url('/card.png')] bg-cover bg-center bg-no-repeat overflow-hidden ${lastResult.prize === "error" ? "ring-2 ring-red-500/50" : ""}`}>
             <button
               onClick={() => { dismissedErrorRef.current = true; setLastResult(null); }}
-              className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white"
+              className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-black/10 transition-colors text-black/60 hover:text-black"
             >
               <X size={18} />
             </button>
@@ -357,17 +357,17 @@ export function RuletaSection() {
             {eventActive && lastResult.won && (
               <p className="text-sm text-white/80 mt-2 [text-shadow:_0_1px_3px_rgb(0_0_0_/_60%)]">Contacta al líder para recibir tu premio.</p>
             )}
-            <div className="mt-4 w-full flex gap-2">
+            <div className="mt-4 flex justify-center gap-2">
               <button
                 onClick={() => { dismissedErrorRef.current = true; setLastResult(null); }}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-bold border border-white/20 hover:bg-white/20 transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-black/20 text-black text-sm font-bold border border-black/20 hover:bg-black/30 transition-colors"
               >
                 Cerrar
               </button>
               {lastResult.prize === "error" && (
                 <button
                   onClick={() => { dismissedErrorRef.current = false; setLastResult(null); setTimeout(() => fetchState(0), 300); }}
-                  className="flex-1 py-2.5 rounded-xl bg-metallic-gold text-black text-sm font-bold border border-yellow-400/40 hover:brightness-110 transition-colors"
+                  className="px-6 py-2.5 rounded-xl bg-metallic-gold text-black text-sm font-bold border border-yellow-400/40 hover:brightness-110 transition-colors"
                 >
                   Reintentar
                 </button>
