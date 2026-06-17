@@ -5,7 +5,7 @@ import { Trophy } from "lucide-react";
 
 export default function RuletaPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div>
         <div className="flex items-center gap-2">
           <Trophy size={24} className="text-[#ffd700]" />
@@ -16,7 +16,7 @@ export default function RuletaPage() {
         </p>
         </div>
 
-      <img src="/ruleta.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
+      <img src="/ruleta.png" alt="Banner" className="hidden lg:block w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
 
       <RuletaSection />
     </div>

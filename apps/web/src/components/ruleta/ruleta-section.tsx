@@ -195,7 +195,7 @@ export function RuletaSection() {
     : !spinning && countdown === null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Countdown overlay */}
       {countdown !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] overflow-y-auto">
@@ -236,9 +236,9 @@ export function RuletaSection() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-2 lg:items-start">
         {/* Column 1: Wheel */}
-        <div className="flex flex-col items-center gap-6 overflow-hidden pt-6">
+        <div className="flex flex-col items-center gap-4 lg:gap-6 pt-4 lg:pt-6">
           <RuletaWheel
             spinning={spinning}
             resultIndex={currentResult?.segmentIndex ?? null}

@@ -199,7 +199,7 @@ export function Sidebar() {
           <Menu size={20} className="text-[#0d1117]" />
         </button>
         <img src="/logo_cm.webp" alt="Clase Pro" className="h-12 w-auto object-contain" />
-        <div className="ml-auto min-w-0 max-w-24 overflow-hidden">
+          <div className="ml-auto min-w-0 max-w-32 lg:max-w-24 overflow-hidden">
           <span className="text-[12px] truncate block" style={{ color: "var(--pm-text)" }}>
             {clanName}
           </span>

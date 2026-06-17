@@ -22,7 +22,7 @@ export function AppShell({ children }: AppShellProps) {
     <AuthGuard>
       <div className="min-h-dynamic">
         <Sidebar />
-        <main className="lg:ml-64 pb-24 lg:pb-0 min-h-dynamic relative">
+        <main className="lg:ml-64 pb-24 lg:pb-0 min-h-dynamic relative overflow-x-hidden">
           <img src="/logoclashroyale.gif" alt="" className="absolute top-4 right-4 w-[180px] h-[135px] object-contain shrink-0 pointer-events-none z-10 hidden lg:block" />
           <div className="max-w-7xl mx-auto p-4 pt-20 lg:pt-8">{children}</div>
         </main>

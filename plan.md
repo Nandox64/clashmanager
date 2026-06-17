@@ -1,8 +1,8 @@
 # Plan del Proyecto — Clash Manager
 
-## Estado actual del código (Audit: 12/06/2026)
+## Estado actual del código (Audit: 17/06/2026)
 
-**Todas las features documentadas en ANTIGRAVITY.md están implementadas.** El `plan.md` anterior estaba desactualizado y mostraba como "Pendiente" lo que ya existía en el código.
+**Todas las sesiones hasta la 31 están implementadas.** Cada sesión se documenta abajo con sus cambios.
 
 ### Features implementadas ✅
 
@@ -14,17 +14,17 @@
 | 4 | Cache API granular `?use_cache=1` | `app/api/firebase/load/route.ts` |
 | 5 | Server pre-warm automático | `scripts/warmup.mjs`, `start.bat` |
 | 6 | Polling con pausa `visibilitychange` | `hooks/use-clan-data.ts` |
-| 7 | Rol cacheado inmediatamente | `onboarding-modal.tsx` → `setCachedRole()` on select |
+| 7 | Rol cacheado inmediatamente | `app/link-member/page.tsx` → `setCachedRole()` on select |
 | 8 | RoleGuard en pages | `components/auth/role-guard.tsx`, settings, recruitment |
 | 9 | Regalos upload/delete | `api/resources/{upload,list,delete}/route.ts` |
 | 10 | Login/Registro email+password | `app/login/page.tsx`, `AuthContext.signUpWithEmail` |
 | 11 | Perfil (firstName, lastName, phone) | `app/profile/page.tsx` |
 | 12 | Mazos de Guerra con preselección | `app/war-decks/war-decks-client.tsx` |
 | 13 | Ruleta (3 components + 4 APIs) | `components/ruleta/*`, `api/ruleta/{config,spin,state,winners}` |
-| 14 | AuthGuard → verify-email | `components/auth/auth-guard.tsx` |
+| 14 | AuthGuard → verify-email + link-member | `components/auth/auth-guard.tsx` |
 | 15 | Verify Email page | `app/verify-email/page.tsx` |
 | 16 | Sidebar CLASE⚔️PRO branding | `components/layout/sidebar.tsx` |
-| 17 | Identification Banner | `components/onboarding/identification-banner.tsx` |
+| 17 | Vinculación obligatoria al registro | `app/link-member/page.tsx`, `components/auth/auth-guard.tsx` |
 
 ---
 
