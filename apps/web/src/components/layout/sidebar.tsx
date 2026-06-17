@@ -23,7 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
 import { ROLE_LABELS } from "@clashmanager/shared";
-import { getPageTheme } from "./page-theme";
+import { getPageTheme, PageTheme } from "./page-theme";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard",   icon: LayoutDashboard },
@@ -73,14 +73,115 @@ export function Sidebar() {
   const initials = displayName ? displayName.slice(0, 2).toUpperCase() : "";
 
   const theme = getPageTheme(pathname);
+
+  const getNavActiveVars = (theme: PageTheme) => {
+    if (theme.accent === "#FF8C00") {
+      return {
+        "--nav-active-bg": "hsla(30, 100%, 50%, 0.15)",
+        "--nav-active-color": "#FF8C00",
+        "--nav-active-bar-start": "#FF8C00",
+        "--nav-active-bar-end": "#CC6600",
+      };
+    }
+    if (theme.accent === "#0088FF") {
+      return {
+        "--nav-active-bg": "hsla(216, 100%, 50%, 0.15)",
+        "--nav-active-color": "#0088FF",
+        "--nav-active-bar-start": "#0088FF",
+        "--nav-active-bar-end": "#0055CC",
+      };
+    }
+    if (theme.accent === "#00CCAA") {
+      return {
+        "--nav-active-bg": "hsla(174, 100%, 40%, 0.15)",
+        "--nav-active-color": "#00CCAA",
+        "--nav-active-bar-start": "#00CCAA",
+        "--nav-active-bar-end": "#009988",
+      };
+    }
+    if (theme.accent === "#A855F7") {
+      return {
+        "--nav-active-bg": "hsla(271, 81%, 65%, 0.15)",
+        "--nav-active-color": "#A855F7",
+        "--nav-active-bar-start": "#A855F7",
+        "--nav-active-bar-end": "#8B30CC",
+      };
+    }
+    return {
+      "--nav-active-bg": "hsla(45, 90%, 55%, 0.15)",
+      "--nav-active-color": "#FFD700",
+      "--nav-active-bar-start": "#FFD700",
+      "--nav-active-bar-end": "#B8860B",
+    };
+  };
+
+  const navActiveVars = getNavActiveVars(theme);
+
   const sidebarStyle = {
     background: theme.surface,
     borderRightColor: theme.border,
+    ...navActiveVars,
   } as React.CSSProperties;
   const mobileBarStyle = {
     background: theme.surface,
     borderBottomColor: theme.border,
   } as React.CSSProperties;
+
+  const getAccentClass = (theme: PageTheme): string => {
+    if (theme.accent === "#FF8C00") return "bg-accent-orange animate-accent-shimmer";
+    if (theme.accent === "#0088FF") return "bg-accent-blue animate-accent-shimmer";
+    if (theme.accent === "#00CCAA") return "bg-accent-teal animate-accent-shimmer";
+    if (theme.accent === "#A855F7") return "bg-accent-purple animate-accent-shimmer";
+    return "bg-metallic-gold animate-metallic-shimmer";
+  };
+
+  const getAccentStyles = (theme: PageTheme) => {
+    if (theme.accent === "#FF8C00") {
+      return {
+        accentClass: "bg-accent-orange animate-accent-shimmer",
+        accentHex: "#FF8C00",
+        accentDark: "#CC6600",
+        accentRgba: "rgba(255, 140, 0, 0.4)",
+        accentRgbaSubtle: "hsla(30, 100%, 50%, 0.06)",
+      };
+    }
+    if (theme.accent === "#0088FF") {
+      return {
+        accentClass: "bg-accent-blue animate-accent-shimmer",
+        accentHex: "#0088FF",
+        accentDark: "#0055CC",
+        accentRgba: "rgba(0, 136, 255, 0.4)",
+        accentRgbaSubtle: "hsla(216, 100%, 50%, 0.06)",
+      };
+    }
+    if (theme.accent === "#00CCAA") {
+      return {
+        accentClass: "bg-accent-teal animate-accent-shimmer",
+        accentHex: "#00CCAA",
+        accentDark: "#009988",
+        accentRgba: "rgba(0, 204, 170, 0.4)",
+        accentRgbaSubtle: "hsla(174, 100%, 40%, 0.06)",
+      };
+    }
+    if (theme.accent === "#A855F7") {
+      return {
+        accentClass: "bg-accent-purple animate-accent-shimmer",
+        accentHex: "#A855F7",
+        accentDark: "#8B30CC",
+        accentRgba: "rgba(168, 85, 247, 0.4)",
+        accentRgbaSubtle: "hsla(271, 81%, 65%, 0.06)",
+      };
+    }
+    return {
+      accentClass: "bg-metallic-gold animate-metallic-shimmer",
+      accentHex: "#FFD700",
+      accentDark: "#B8860B",
+      accentRgba: "rgba(212, 160, 23, 0.4)",
+      accentRgbaSubtle: "hsla(45, 90%, 55%, 0.06)",
+    };
+  };
+
+  const accent = getAccentStyles(theme);
 
   return (
     <>
@@ -89,6 +190,10 @@ export function Sidebar() {
         <button
           onClick={() => setIsOpen(true)}
           className="toggle-btn flex items-center justify-center shrink-0"
+          style={{
+            "--toggle-bg": `linear-gradient(135deg, ${accent.accentHex}, ${accent.accentDark})`,
+            "--toggle-shadow": `0 4px 16px ${accent.accentRgba}`,
+          } as React.CSSProperties}
           aria-label="Open menu"
         >
           <Menu size={20} className="text-[#0d1117]" />
@@ -145,13 +250,13 @@ export function Sidebar() {
               >
                 <span
                   className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all ${
-                    isActive ? "bg-metallic-gold animate-metallic-shimmer" : ""
+                    isActive ? accent.accentClass : ""
                   }`}
                   style={!isActive ? { background: theme.border } : undefined}
                 >
                   <Icon size={16} className={`nav-icon ${isActive ? "text-[#0d1117]" : "text-[var(--pm-text)]"}`} />
                 </span>
-                <span className={`flex-1 text-sm ${isActive ? "text-[var(--pm-gold)]" : ""}`}>{item.label}</span>
+                <span className={`flex-1 text-sm ${isActive ? "" : ""}`} style={isActive ? { color: accent.accentHex } : undefined}>{item.label}</span>
               </Link>
             );
           })}
@@ -163,18 +268,19 @@ export function Sidebar() {
         <div className="p-3 mt-auto">
           {user || isMock ? (
             <div className="flex items-center gap-3 px-2 py-2 rounded-lg"
-                 style={{ background: "hsla(45,90%,55%,0.06)" }}>
+                 style={{ background: accent.accentRgbaSubtle }}>
               {displayPhoto ? (
                 <img
                   src={displayPhoto}
                   alt={displayName}
-                  className="w-9 h-9 rounded-full object-cover shrink-0 border border-metallic-gold"
+                  className="w-9 h-9 rounded-full object-cover shrink-0"
+                  style={{ borderColor: accent.accentHex }}
                 />
               ) : (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, #b8860b, #ffd700)",
+                    background: `linear-gradient(135deg, ${accent.accentDark}, ${accent.accentHex})`,
                     color: "#0d1117",
                   }}
                 >
@@ -187,7 +293,7 @@ export function Sidebar() {
                   {displayName}
                 </p>
                 <div className="flex items-center gap-1 text-[10px]"
-                     style={{ color: "var(--pm-gold)" }}>
+                     style={{ color: accent.accentHex }}>
                   <Shield size={12} style={{ color: "var(--pm-text)" }} />
                   <span>{userRole ? ROLE_LABELS[userRole as keyof typeof ROLE_LABELS] : "Miembro"}</span>
                   <span>•</span>
@@ -223,7 +329,7 @@ export function Sidebar() {
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.07] px-2 text-[10px]">
               <span style={{ color: "var(--pm-muted)" }}>Trofeos del clan</span>
               <span className="font-mono font-bold"
-                    style={{ color: "var(--pm-gold)" }}>
+                    style={{ color: accent.accentHex }}>
                 {clanTrophies.toLocaleString()}
               </span>
             </div>

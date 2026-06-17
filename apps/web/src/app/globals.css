@@ -91,6 +91,43 @@ body::after {
   background: linear-gradient(135deg, #8b5e3c 0%, #cd7f32 25%, #e8a85c 50%, #cd7f32 75%, #8b5e3c 100%);
 }
 
+@utility bg-accent-orange {
+  background: linear-gradient(135deg, #CC6600 0%, #FF8C00 25%, #FFA500 50%, #FF8C00 75%, #CC6600 100%);
+}
+
+@utility bg-accent-blue {
+  background: linear-gradient(135deg, #0055CC 0%, #0088FF 25%, #33AAFF 50%, #0088FF 75%, #0055CC 100%);
+}
+
+@utility bg-accent-teal {
+  background: linear-gradient(135deg, #009988 0%, #00CCAA 25%, #33DDCC 50%, #00CCAA 75%, #009988 100%);
+}
+
+@utility bg-accent-purple {
+  background: linear-gradient(135deg, #8B30CC 0%, #A855F7 25%, #C084FC 50%, #A855F7 75%, #8B30CC 100%);
+}
+
+@utility bg-accent-orange-solid {
+  background: #FF8C00;
+}
+
+@utility bg-accent-blue-solid {
+  background: #0088FF;
+}
+
+@utility bg-accent-teal-solid {
+  background: #00CCAA;
+}
+
+@utility bg-accent-purple-solid {
+  background: #A855F7;
+}
+
+@utility animate-accent-shimmer {
+  background-size: 200% 100%;
+  animation: metallic-shimmer 3s ease-in-out infinite;
+}
+
 @utility text-metallic-gold {
   background: linear-gradient(135deg, #b8860b, #ffd700, #b8860b);
   -webkit-background-clip: text;

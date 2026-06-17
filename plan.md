@@ -847,4 +847,46 @@ Se implementaron múltiples mejoras:
 7. **Deploy**: Vercel actualizado con todos los cambios y variables de entorno (`GEMINI_API_KEY`, etc.) configuradas.
 8. **Git**: Historial limpio desde cero y remoción del botón de sincronización.
 
-El sistema ahora tiene mejor UI/UX, persistencia de datos correcta, y verificación robusta de duplicados.`
+El sistema ahora tiene mejor UI/UX, persistencia de datos correcta, y verificación robusta de duplicados.
+
+---
+
+## Sesión 29 — Sidebar theme-aware: fondo activo por color de página 🎨
+
+### Problema
+El sidebar usaba color naranja/dorado hardcoded (`hsla(45, 90%, 55%, 0.15)` + `var(--pm-gold)`) para el estado `.nav-item.active` en **todas** las páginas, sin respetar el tema de color de cada sección (naranja/azul/verde/morado).
+
+### Solución
+1. **`page-theme.ts`**: Agregado `accent` (hex vibrante) y `accentShimmer` (gradiente animado) a cada tema:
+   - Naranja (`#FF8C00`) → Dashboard, Ruleta, Settings
+   - Azul (`#0088FF`) → Logros, Miembros
+   - Teal (`#00CCAA`) → Mazos, Analytics
+   - Morado (`#A855F7`) → Regalos, Perfil
+
+2. **`globals.css`**: Nuevas utility classes reutilizables:
+   ```css
+   .bg-accent-orange .bg-accent-blue .bg-accent-teal .bg-accent-purple
+   .bg-accent-orange-solid .bg-accent-blue-solid .bg-accent-teal-solid .bg-accent-purple-solid
+   .animate-accent-shimmer
+   ```
+
+3. **`sidebar.tsx`**: Completamente theme-aware:
+   - Nav item activo: usa `accent.accentClass` (color + shimmer según página)
+   - Botón hamburger móvil: CSS vars `--toggle-bg` / `--toggle-shadow` dinámicas
+   - Avatar usuario: border color = `accentHex`
+   - Iniciales fallback: gradient = `accentDark` → `accentHex`
+   - Texto rol/trofeos: color = `accentHex`
+   - Footer background: `accentRgbaSubtle` (6% opacidad)
+
+4. **`premium.css`**: `.toggle-btn` usa CSS variables para heredar el color del tema.
+
+### Archivos modificados (4)
+| Archivo | Cambio |
+|---------|--------|
+| `components/layout/page-theme.ts` | Agregados `accent` + `accentShimmer` a cada tema; export `PageTheme` type |
+| `app/globals.css` | 8 nuevas utility classes para acentos + shimmer |
+| `components/layout/sidebar.tsx` | Theme-aware: accent dinámico en nav, hamburger, avatar, footer |
+| `app/styles/premium.css` | `.toggle-btn` usa `--toggle-bg` / `--toggle-shadow` vars |
+
+### Resultado
+Cada página muestra su color característico en el sidebar activo (naranja en dashboard, azul en logros, teal en mazos, morado en regalos) con animación de brillo en todos los temas.`
