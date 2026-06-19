@@ -16,6 +16,20 @@ export async function getUserUid(request: Request): Promise<string | null> {
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
+function cleanupExpiredEntries() {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) {
+      rateLimitMap.delete(key);
+    }
+  }
+}
+
+// Limpiar entradas expiradas cada 60s
+if (typeof setInterval !== "undefined") {
+  setInterval(cleanupExpiredEntries, 60_000);
+}
+
 export function checkRateLimit(
   uid: string,
   route: string,
@@ -24,10 +38,11 @@ export function checkRateLimit(
 ): { allowed: boolean; remaining: number; resetIn: number } {
   const key = `${uid}:${route}`;
   const now = Date.now();
-  const entry = rateLimitMap.get(key);
+  let entry = rateLimitMap.get(key);
 
   if (!entry || now > entry.resetAt) {
     rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+    entry = { count: 1, resetAt: now + windowMs };
     return { allowed: true, remaining: maxRequests - 1, resetIn: windowMs };
   }
 

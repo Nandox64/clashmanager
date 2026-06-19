@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Member, Clan, Achievement, WeeklyClanStats, Recruit, AutomationRule, ClanEvent, LogEntry } from "@clashmanager/shared";
+import type { Member, Clan, Achievement, WeeklyClanStats, Recruit, LogEntry } from "@clashmanager/shared";
 
 const emptyClan: Clan = {
   id: "",
@@ -12,10 +12,7 @@ const emptyClan: Clan = {
   createdAt: 0,
   settings: {
     inactivityDays: 5,
-    expulsionDays: 10,
     minDonationsWeekly: 200,
-    warRequired: true,
-    autoPromote: false,
   },
   stats: {
     clanScore: 0,
@@ -27,21 +24,13 @@ const emptyClan: Clan = {
 };
 
 export interface ClanScaling {
-  requiredTrophies: number;
   inactivityDays: number;
-  expulsionDays: number;
   minDonationsWeekly: number;
-  warRequired: boolean;
-  autoPromote: boolean;
 }
 
 const defaultScaling: ClanScaling = {
-  requiredTrophies: 0,
   inactivityDays: 5,
-  expulsionDays: 10,
   minDonationsWeekly: 200,
-  warRequired: true,
-  autoPromote: false,
 };
 
 /**
@@ -62,8 +51,6 @@ interface ClanState {
   achievements: Achievement[];
   weeklyStats: WeeklyClanStats[];
   recruits: Recruit[];
-  rules: AutomationRule[];
-  events: ClanEvent[];
   logs: LogEntry[];
   localWarRank: number | null;
   localWarRankChange: number;
@@ -88,8 +75,6 @@ interface ClanState {
   setAchievements: (achievements: Achievement[]) => void;
   setWeeklyStats: (stats: WeeklyClanStats[]) => void;
   setRecruits: (recruits: Recruit[]) => void;
-  setRules: (rules: AutomationRule[]) => void;
-  setEvents: (events: ClanEvent[]) => void;
   setLogs: (logs: LogEntry[]) => void;
 
   setLocalWarRank: (rank: number | null) => void;
@@ -116,8 +101,6 @@ export const useClanStore = create<ClanState>((set) => ({
   achievements: [],
   weeklyStats: [],
   recruits: [],
-  rules: [],
-  events: [],
   logs: [],
   localWarRank: null,
   localWarRankChange: 0,
@@ -139,8 +122,6 @@ export const useClanStore = create<ClanState>((set) => ({
   setAchievements: (achievements) => set({ achievements }),
   setWeeklyStats: (stats) => set({ weeklyStats: stats }),
   setRecruits: (recruits) => set({ recruits }),
-  setRules: (rules) => set({ rules }),
-  setEvents: (events) => set({ events }),
   setLogs: (logs) => set({ logs }),
 
   setLocalWarRank: (rank) => set({ localWarRank: rank }),

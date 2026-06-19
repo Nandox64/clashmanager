@@ -132,7 +132,7 @@ export default function AnalyticsPage() {
               { key: "stars", label: "★ Estrellas", color: "text-green-400", filter: (m: Member) => m.trophies >= 6000 && (m.weeklyStats?.activityDays ?? 0) >= 4 },
               { key: "talento", label: "⚠️ Talento Dormido", color: "text-yellow-400", filter: (m: Member) => m.trophies >= 6000 && (m.weeklyStats?.activityDays ?? 0) < 4 },
               { key: "workers", label: "💪 Trabajadores", color: "text-blue-400", filter: (m: Member) => m.trophies < 6000 && (m.weeklyStats?.activityDays ?? 0) >= 4 },
-              { key: "lastre", label: "❌ Lastre", color: "text-red-400", filter: (m: Member) => m.trophies < 6000 && (m.weeklyStats?.activityDays ?? 0) < 4 },
+              { key: "lastre", label: "❌ Lastre", color: "text-red-500", filter: (m: Member) => m.trophies < 6000 && (m.weeklyStats?.activityDays ?? 0) < 4 },
             ] as const).map((section) => (
               <div key={section.key} className="space-y-2">
                 <h4 className={`text-xs font-semibold ${section.color} flex items-center gap-1`}>

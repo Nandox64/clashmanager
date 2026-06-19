@@ -59,7 +59,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
-          <span className="text-red-400 text-2xl font-bold">!</span>
+          <span className="text-red-500 text-2xl font-bold">!</span>
         </div>
         <p className="text-sm text-clash-muted text-center max-w-xs">
           No tienes permisos para acceder a esta sección. Solo líder y co-líder pueden ver esta página.

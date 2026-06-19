@@ -1,7 +1,7 @@
 import "server-only";
 
 import { adminDb } from "./firebase-admin";
-import type { Clan, Member, Achievement, Recruit, AutomationRule, ClanEvent, LogEntry, WeeklyClanStats } from "@clashmanager/shared";
+import type { Clan, Member, Achievement, Recruit, LogEntry, WeeklyClanStats } from "@clashmanager/shared";
 
 const CLANS_COLLECTION = "clans";
 
@@ -27,18 +27,19 @@ export async function saveMembers(clanTag: string, members: Member[]) {
   const membersRef = ref.collection("members");
   const batch = adminDb!.batch();
 
-  const existingSnap = await membersRef.select().get();
   const currentUids = new Set(members.map(m => m.uid));
-  existingSnap.docs.forEach(doc => {
-    if (!currentUids.has(doc.id)) {
-      batch.delete(doc.ref);
-    }
-  });
 
   members.forEach((member) => {
     const memberRef = membersRef.doc(member.uid);
     batch.set(memberRef, { ...member, updatedAt: Date.now() }, { merge: true });
   });
+
+  const existingDocs = await membersRef.listDocuments();
+  for (const doc of existingDocs) {
+    if (!currentUids.has(doc.id)) {
+      batch.delete(doc);
+    }
+  }
 
   await batch.commit();
 }
@@ -83,7 +84,6 @@ export async function getMembersFromFirestore(
         weeklyStats: data.weeklyStats ?? {
           trophiesGained: 0,
           donationsGiven: data.donations ?? 0,
-          warParticipation: 0,
           activityDays: 0,
         },
       } as Member;
@@ -102,8 +102,7 @@ export async function saveRiverRaceData(
 }
 
 export async function saveLocalWarRank(clanTag: string, rank: number | null) {
-  const ref = getClanDocRef(clanTag);
-  await ref.update({ localWarRank: rank, updatedAt: Date.now() });
+  await saveClanWarSettings(clanTag, { localWarRank: rank });
 }
 
 export async function saveWarRankPrediction(
@@ -128,25 +127,57 @@ export async function saveWarRankPrediction(
 }
 
 export async function getClanUpdatedAt(clanTag: string): Promise<number | null> {
+  const settings = await getClanWarSettings(clanTag);
+  return settings.updatedAt;
+}
+
+export interface ClanWarSettings {
+  localWarRank: number | null;
+  localWarRankChange: number;
+  localWarTrophies: number | null;
+  updatedAt: number | null;
+  lastRaceKey: string | null;
+}
+
+const defaultWarSettings: ClanWarSettings = {
+  localWarRank: null,
+  localWarRankChange: 0,
+  localWarTrophies: null,
+  updatedAt: null,
+  lastRaceKey: null,
+};
+
+export async function getClanWarSettings(clanTag: string): Promise<ClanWarSettings> {
   try {
     const ref = getClanDocRef(clanTag);
     const snap = await ref.get();
-    if (!snap.exists) return null;
-    return snap.data()?.updatedAt ?? null;
+    if (!snap.exists) return { ...defaultWarSettings };
+    const d = snap.data()!;
+    return {
+      localWarRank: d.localWarRank ?? null,
+      localWarRankChange: d.localWarRankChange ?? 0,
+      localWarTrophies: d.localWarTrophies ?? null,
+      updatedAt: d.updatedAt ?? null,
+      lastRaceKey: d.lastRaceKey ?? null,
+    };
   } catch {
-    return null;
+    return { ...defaultWarSettings };
   }
 }
 
+export async function saveClanWarSettings(clanTag: string, settings: Partial<ClanWarSettings>) {
+  const ref = getClanDocRef(clanTag);
+  const update: Record<string, unknown> = { updatedAt: Date.now() };
+  if (settings.localWarRank !== undefined) update.localWarRank = settings.localWarRank;
+  if (settings.localWarRankChange !== undefined) update.localWarRankChange = settings.localWarRankChange;
+  if (settings.localWarTrophies !== undefined) update.localWarTrophies = settings.localWarTrophies;
+  if (settings.lastRaceKey !== undefined) update.lastRaceKey = settings.lastRaceKey;
+  await ref.update(update);
+}
+
 export async function getLocalWarRank(clanTag: string): Promise<number | null> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.get();
-    if (!snap.exists) return null;
-    return snap.data()?.localWarRank ?? null;
-  } catch {
-    return null;
-  }
+  const settings = await getClanWarSettings(clanTag);
+  return settings.localWarRank;
 }
 
 export async function saveAchievements(clanTag: string, achievements: Achievement[]) {
@@ -181,48 +212,28 @@ export async function getAchievements(clanTag: string): Promise<Achievement[]> {
 }
 
 export async function saveLocalWarTrophies(clanTag: string, trophies: number | null) {
-  const ref = getClanDocRef(clanTag);
-  await ref.update({ localWarTrophies: trophies, updatedAt: Date.now() });
+  await saveClanWarSettings(clanTag, { localWarTrophies: trophies });
 }
 
 export async function getLocalWarTrophies(clanTag: string): Promise<number | null> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.get();
-    if (!snap.exists) return null;
-    return snap.data()?.localWarTrophies ?? null;
-  } catch {
-    return null;
-  }
+  const settings = await getClanWarSettings(clanTag);
+  return settings.localWarTrophies;
 }
 
 export async function saveLocalWarRankChange(clanTag: string, change: number) {
-  const ref = getClanDocRef(clanTag);
-  await ref.update({ localWarRankChange: change, updatedAt: Date.now() });
+  await saveClanWarSettings(clanTag, { localWarRankChange: change });
 }
 
 export async function getLocalWarRankChange(clanTag: string): Promise<number> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.get();
-    if (!snap.exists) return 0;
-    return snap.data()?.localWarRankChange ?? 0;
-  } catch {
-    return 0;
-  }
+  const settings = await getClanWarSettings(clanTag);
+  return settings.localWarRankChange;
 }
 
 // ── War History (Cumulative) ──
 
 export async function getLastRaceKey(clanTag: string): Promise<string | null> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.get();
-    if (!snap.exists) return null;
-    return snap.data()?.lastRaceKey ?? null;
-  } catch {
-    return null;
-  }
+  const settings = await getClanWarSettings(clanTag);
+  return settings.lastRaceKey;
 }
 
 export async function saveLastRaceKey(clanTag: string, key: string) {
@@ -271,72 +282,6 @@ export async function getRecruits(clanTag: string): Promise<Recruit[]> {
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("recruits").orderBy("appliedAt", "desc").get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Recruit));
-  } catch {
-    return [];
-  }
-}
-
-// ── Automation Rules ──
-
-export async function saveRules(clanTag: string, rules: AutomationRule[]) {
-  const ref = getClanDocRef(clanTag);
-  const rulesRef = ref.collection("rules");
-  const batch = adminDb!.batch();
-
-  const existingSnap = await rulesRef.select().get();
-  const currentIds = new Set(rules.map(r => r.id));
-  existingSnap.docs.forEach(doc => {
-    if (!currentIds.has(doc.id)) {
-      batch.delete(doc.ref);
-    }
-  });
-
-  rules.forEach((rule) => {
-    const ruleRef = rulesRef.doc(rule.id);
-    batch.set(ruleRef, { ...rule, updatedAt: Date.now() }, { merge: true });
-  });
-
-  await batch.commit();
-}
-
-export async function getRules(clanTag: string): Promise<AutomationRule[]> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.collection("rules").get();
-    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as AutomationRule));
-  } catch {
-    return [];
-  }
-}
-
-// ── Clan Events ──
-
-export async function saveEvents(clanTag: string, events: ClanEvent[]) {
-  const ref = getClanDocRef(clanTag);
-  const eventsRef = ref.collection("events");
-  const batch = adminDb!.batch();
-
-  const existingSnap = await eventsRef.select().get();
-  const currentIds = new Set(events.map(e => e.id));
-  existingSnap.docs.forEach(doc => {
-    if (!currentIds.has(doc.id)) {
-      batch.delete(doc.ref);
-    }
-  });
-
-  events.forEach((event) => {
-    const eventRef = eventsRef.doc(event.id);
-    batch.set(eventRef, { ...event, updatedAt: Date.now() }, { merge: true });
-  });
-
-  await batch.commit();
-}
-
-export async function getEvents(clanTag: string): Promise<ClanEvent[]> {
-  try {
-    const ref = getClanDocRef(clanTag);
-    const snap = await ref.collection("events").get();
-    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ClanEvent));
   } catch {
     return [];
   }
@@ -487,12 +432,8 @@ export async function deleteMemberLink(clanTag: string, memberUid: string) {
 // ── Clan Settings (war rank + scaling) ──
 
 export interface ClanScalingConfig {
-  requiredTrophies: number;
   inactivityDays: number;
-  expulsionDays: number;
   minDonationsWeekly: number;
-  warRequired: boolean;
-  autoPromote: boolean;
 }
 
 export async function getClanScaling(clanTag: string): Promise<ClanScalingConfig | null> {

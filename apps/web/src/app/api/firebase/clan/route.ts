@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getClanFromFirestore,
   getMembersFromFirestore,
-  getLocalWarRank,
+  getClanWarSettings,
 } from "@/lib/firestore-service";
 import { adminDb } from "@/lib/firebase-admin";
 
@@ -16,10 +16,10 @@ export async function GET() {
     return NextResponse.json({ error: "Firebase Admin no inicializado" }, { status: 500 });
   }
 
-  const [clan, members, localWarRank] = await Promise.all([
+  const [clan, members, warSettings] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
-    getLocalWarRank(clanTag),
+    getClanWarSettings(clanTag),
   ]);
 
   if (!clan) {
@@ -32,5 +32,5 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ clan, members, localWarRank });
+  return NextResponse.json({ clan, members, localWarRank: warSettings.localWarRank });
 }

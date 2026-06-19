@@ -13,9 +13,7 @@ import {
   saveClan,
   saveMembers,
   saveRiverRaceData,
-  saveLocalWarRank,
-  saveLocalWarRankChange,
-  saveLocalWarTrophies,
+  saveClanWarSettings,
   saveWarRankPrediction,
   saveAchievements,
   saveWeeklyStats,
@@ -79,9 +77,11 @@ async function persistToFirestore(clanTag: string, data: PersistPayload) {
     saveClan(transformedClan).catch(() => {}),
     saveMembers(clanTag, transformedMembers).catch(() => {}),
     saveRiverRaceData(clanTag, currentRiverRace).catch(() => {}),
-    saveLocalWarRank(clanTag, estimate.rank).catch(() => {}),
-    saveLocalWarRankChange(clanTag, estimate.estimatedChange).catch(() => {}),
-    saveLocalWarTrophies(clanTag, transformedClan.stats.clanWarTrophies).catch(() => {}),
+    saveClanWarSettings(clanTag, {
+      localWarRank: estimate.rank,
+      localWarRankChange: estimate.estimatedChange,
+      localWarTrophies: transformedClan.stats.clanWarTrophies,
+    }).catch(() => {}),
     saveWarRankPrediction(clanTag, estimate).catch(() => {}),
     saveAchievements(clanTag, achievements).catch(() => {}),
     saveWeeklyStats(clanTag, weeklyStats).catch(() => {}),
@@ -108,12 +108,13 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
   const transformedClan = transformClan(clan);
 
   const prevTrophies = new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
+  const prevDonations = new Map(storedMembers.map(m => [m.playerTag, m.donations]));
   let warHistory = extractWarHistory(storedMembers);
 
   for (const member of clan.memberList) {
     const hist = warHistory.get(member.tag);
-    if (!hist || hist.totalWars === 0) {
-      warHistory.set(member.tag, { totalWars: 20, warsParticipated: 17 });
+    if (!hist) {
+      warHistory.set(member.tag, { totalWars: 0, warsParticipated: 0 });
     }
   }
 
@@ -129,6 +130,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
       const updatedHistory = new Map(warHistory);
       for (const member of clan.memberList) {
         const prev = updatedHistory.get(member.tag) ?? { totalWars: 0, warsParticipated: 0 };
+        if (prev.totalWars === 0) continue;
         updatedHistory.set(member.tag, {
           totalWars: prev.totalWars + 1,
           warsParticipated: prev.warsParticipated + (participantTags.has(member.tag) ? 1 : 0),
@@ -142,6 +144,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
   const transformedMembers = transformMembers(clan.memberList, {
     previousTrophies: prevTrophies,
+    previousDonations: prevDonations,
     currentRaceParticipants: currentRiverRace?.participants,
     warHistory,
   });

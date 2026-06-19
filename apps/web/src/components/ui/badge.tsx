@@ -10,7 +10,7 @@ const variants = {
   default: "bg-clash-card text-clash-text border-clash-border",
   success: "bg-green-900/30 text-green-400 border-green-500/30",
   warning: "bg-orange-900/30 text-orange-400 border-orange-500/30",
-  danger: "bg-red-900/30 text-red-400 border-red-500/30",
+  danger: "bg-red-900/30 text-red-500 border-red-500/30",
   info: "bg-cyan-900/30 text-cyan-400 border-cyan-500/30",
 };
 

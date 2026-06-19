@@ -41,10 +41,7 @@ export const AVATAR_COLORS = [
 
 export const DEFAULT_CLAN_SETTINGS = {
   inactivityDays: 5,
-  expulsionDays: 10,
   minDonationsWeekly: 200,
-  warRequired: true,
-  autoPromote: false,
 };
 
 export const MEDALS = [

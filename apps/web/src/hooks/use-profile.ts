@@ -41,6 +41,7 @@ export function useProfile() {
   const [profile, setProfileState] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     const mockUid = authProfile?.uid;
@@ -54,7 +55,7 @@ export function useProfile() {
     try {
       const headers = await getAuthHeaders(user, isMock, mockUid);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch("/api/profile", { headers, signal: controller.signal });
       clearTimeout(timeoutId);
       if (!res.ok) {
@@ -67,7 +68,7 @@ export function useProfile() {
       const data = await res.json();
       const p = data.profile ?? null;
       setProfileState(p);
-      if (p) {
+      if (p?.linkedMemberId) {
         setCachedLinkedMemberId(p.linkedMemberId);
         setCachedProfilePhoto(p.photoURL);
       }
@@ -79,11 +80,11 @@ export function useProfile() {
       }
     } finally {
       setLoading(false);
+      setInitialFetchDone(true);
     }
   }, [user, isMock, authProfile?.uid]);
 
   useEffect(() => {
-    // Hydration inmediata desde cache
     const cachedId = getCachedLinkedMemberId();
     const cachedPhoto = getCachedProfilePhoto();
     if (cachedId) {
@@ -96,7 +97,6 @@ export function useProfile() {
       });
       setLoading(false);
     }
-    // Luego fetch real para datos completos
     fetchProfile();
   }, [fetchProfile]);
 
@@ -142,5 +142,5 @@ export function useProfile() {
     [user, isMock, authProfile?.uid, fetchProfile]
   );
 
-  return { profile, loading, error, saveProfile, refetch: fetchProfile };
+  return { profile, loading, error, initialFetchDone, saveProfile, refetch: fetchProfile };
 }

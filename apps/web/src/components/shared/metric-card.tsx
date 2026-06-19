@@ -40,7 +40,7 @@ export function MetricCard({
               className={cn(
                 "flex items-center gap-0.5 text-xs font-medium",
                 trend === "up" && "text-green-400",
-                trend === "down" && "text-red-400",
+                trend === "down" && "text-red-500",
                 trend === "neutral" && "text-clash-muted"
               )}
             >

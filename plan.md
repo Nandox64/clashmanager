@@ -1063,4 +1063,71 @@ Además, un usuario no vinculado podía navegar toda la aplicación (el Onboardi
 - `app/profile/page.tsx`
 - `app/dashboard/dashboard-grid.tsx`
 - `app/settings/page.tsx`
-- `lib/store.ts``
+- `lib/store.ts`
+
+---
+
+## Sesión 32 — Fixes de datos, Settings y limpieza de features muertas 🧹
+
+### Bugs de datos corregidos ✅
+
+| # | Bug | Fix | Archivos |
+|---|-----|-----|----------|
+| 1 | `warParticipation` redundante en Firestore | Eliminado del `saveMapping` en Firestore. Se calcula siempre en runtime (`totalWars / warsParticipated`). | `firestore-service.ts` |
+| 2 | `donationsGiven` usaba donaciones de por vida | Ahora usa diferencia semanal via `previousDonations` snapshot (`prevDonations` map en `clan-sync.ts`). | `cr-transform.ts`, `clan-sync.ts` |
+| 3 | `totalWars` fallback 20/17 | Cambiado a `{ totalWars: 0, warsParticipated: 0 }`. Solo incrementa si `prev.totalWars > 0`. | `clan-sync.ts` |
+| 4 | `activityDays` saltos bruscos | Granularidad mejorada: 7,6,5,4,3,1,0 según `daysSinceActive`. | `cr-transform.ts` |
+| 5 | Medalla "En Llamas" condicion inadecuada | Cambiada de `activityDays >= 7` a `donationsGiven >= 500 && trophiesGained >= 100`. | `achievements.ts` |
+
+### Settings fixes 🔧
+
+| # | Problema | Fix | Archivos |
+|---|----------|-----|----------|
+| 1 | Rules guardados como doc único (`rules/rules`) → `rule.actions.map` crash | `saveRules`/`getRules` guardan/leen documentos individuales. `getRules` filtra docs sin `actions`. UI usa optional chaining. | `firestore-service.ts`, `settings/page.tsx` |
+| 2 | WarRank POST escribía a `settings/war` subcollection, GET leía de `clan/{tag}` | Ahora ambos leen/escriben en `clan/{tag}` via `saveClanWarSettings`. | `settings/route.ts`, `firestore-service.ts` |
+| 3 | Dashboard bloqueado por verify-email y linking | AuthGuard agrega excepciones: `/dashboard` no requiere email verificado ni miembro vinculado. | `auth-guard.tsx` |
+| 4 | Link-member no enviaba email | Se agrega `user.email` al crear perfil en Firestore. | `link-member/page.tsx` |
+
+### Features muertas eliminadas 🗑️
+
+| Feature | Archivos afectados |
+|---------|-------------------|
+| **Reglas de Automatización** (solo UI, sin motor de reglas) | `settings/page.tsx`, `store.ts`, `firestore-service.ts`, `api/settings/route.ts`, `mock-data.ts` |
+| **Eventos Semanales** (solo UI, sin procesamiento) | Mismos archivos + `packages/shared/src/types/index.ts` |
+| **Tipos** `AutomationRule`, `RuleCondition`, `RuleAction`, `ClanEvent` | Eliminados del shared package |
+
+### ClanScaling simplificado ✂️
+
+Campos eliminados de `ClanScaling` (store, Firestore, UI):
+- `requiredTrophies` — sin uso
+- `expulsionDays` — sin uso
+- `warRequired` — sin uso
+- `autoPromote` — sin uso
+
+**Se queda**: `inactivityDays` (threshold alerta) + `minDonationsWeekly` (consumido en Miembros en Riesgo).
+
+### Archivos modificados (17)
+
+| Archivo | Cambio |
+|---------|--------|
+| `packages/shared/src/types/index.ts` | Eliminados AutomationRule, RuleCondition, RuleAction, ClanEvent |
+| `packages/shared/src/constants/index.ts` | DEFAULT_CLAN_SETTINGS simplificado |
+| `apps/web/src/lib/store.ts` | Eliminados rules/events state, ClanScaling campos sobrantes |
+| `apps/web/src/lib/clan-sync.ts` | totalWars 0/0, prevDonations map |
+| `apps/web/src/lib/cr-transform.ts` | donationsGiven diff, activityDays granularidad |
+| `apps/web/src/lib/achievements.ts` | En Llamas: donationsGiven + trophiesGained |
+| `apps/web/src/lib/firestore-service.ts` | Eliminados saveRules/getRules/saveEvents/getEvents; ClanScalingConfig simplificado; warParticipation quitado de save |
+| `apps/web/src/lib/mock-data.ts` | Eliminados mockAutomationRules, mockEvents |
+| `apps/web/src/app/api/settings/route.ts` | Eliminados rules/events de GET/POST; imports simplificados |
+| `apps/web/src/app/settings/page.tsx` | Eliminadas cards Reglas/Eventos; eliminar campos scaling extra; inputs UI simplificados |
+| `apps/web/src/components/auth/auth-guard.tsx` | Excepción /dashboard para verify-email y linking |
+| `apps/web/src/app/link-member/page.tsx` | Email enviado al crear perfil |
+| `apps/web/src/lib/firestore-service.ts` | saveClanWarSettings escribe en clan doc (no subcollection) |
+
+---
+
+## Pendientes
+
+### donationDays (propuesta)
+- No hay forma de saber cuántos días donó un miembro en la semana.
+- Requiere snapshots diarios de `donations` (similar a `trophiesGained` pero frecuencia diaria).

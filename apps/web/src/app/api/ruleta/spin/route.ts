@@ -1,59 +1,8 @@
 import { NextResponse } from "next/server";
 import { getRuletaConfig, getRuletaSpin, batchWrite } from "@/lib/firestore-service";
 import { getUserUid } from "@/lib/api-utils";
-import type { RuletaSpin, RuletaWinner } from "@/lib/firestore-service";
-
-const SEGMENTS = [
-  "no-ganar", "oro-1k", "oro-10k", "gemas-500", "gemas-1200", "pass",
-];
-
-const PRIZE_LABELS: Record<string, string> = {
-  "oro-1k": "Oro $1,000",
-  "oro-10k": "Oro $10,000",
-  "gemas-500": "Gemas 500",
-  "gemas-1200": "Gemas 1200",
-  "pass": "Pass Royale",
-};
-
-const FREE_WEIGHTS: Record<string, number> = {
-  "oro-1k": 22, "oro-10k": 16, "gemas-500": 12, "gemas-1200": 7, "pass": 3, "no-ganar": 40,
-};
-
-const EVENT_WEIGHTS: Record<string, number> = {
-  "oro-1k": 6, "oro-10k": 5, "gemas-500": 4, "gemas-1200": 2.5, "pass": 0.5, "no-ganar": 82,
-};
-
-function pickPrize(config: { prizeCounts: Record<string, number>; passAwarded: boolean; eventActive: boolean }): { prize: string; segmentIndex: number } {
-  const weights = config.eventActive ? { ...EVENT_WEIGHTS } : { ...FREE_WEIGHTS };
-
-  // Remove capped prizes in event mode
-  if (config.eventActive) {
-    if (config.prizeCounts["oro-1k"] >= 3) delete weights["oro-1k"];
-    if (config.prizeCounts["oro-10k"] >= 3) delete weights["oro-10k"];
-    if (config.prizeCounts["gemas-500"] >= 3) delete weights["gemas-500"];
-    if (config.prizeCounts["gemas-1200"] >= 3) delete weights["gemas-1200"];
-    if (config.passAwarded) delete weights["pass"];
-  }
-
-  // Build weighted segments list
-  const segments: { prize: string; weight: number }[] = [];
-  for (const seg of SEGMENTS) {
-    if (seg === "no-ganar" || weights[seg] !== undefined) {
-      segments.push({ prize: seg, weight: seg === "no-ganar" ? weights["no-ganar"] : weights[seg] });
-    } else {
-      segments.push({ prize: "no-ganar", weight: weights["no-ganar"] });
-    }
-  }
-
-  const total = segments.reduce((acc, seg) => acc + seg.weight, 0);
-  const r = Math.random() * total;
-  let acum = 0;
-  for (let i = 0; i < segments.length; i++) {
-    acum += segments[i].weight;
-    if (r <= acum) return { prize: segments[i].prize, segmentIndex: i };
-  }
-  return { prize: "no-ganar", segmentIndex: 0 };
-}
+import { pickPrize, PRIZE_LABELS } from "@/lib/ruleta-prize";
+import type { RuletaSpin } from "@/lib/firestore-service";
 
 export async function POST(request: Request) {
   const clanTag = process.env.CLAN_TAG;

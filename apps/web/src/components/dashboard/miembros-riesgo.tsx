@@ -75,7 +75,7 @@ export function MiembrosRiesgo() {
             Inactivos, donaciones bajas o poca participación en guerra
           </p>
         </div>
-        <AlertTriangle size={16} className={total === 0 ? "text-green-400" : "text-red-400"} />
+        <AlertTriangle size={16} className={total === 0 ? "text-green-400" : "text-red-500"} />
       </CardHeader>
       <img src="/lanzadardos1.webp" alt="" className="absolute bottom-0 left-1/2 -translate-x-1/2 h-50 object-cover opacity-75 pointer-events-none" />
       <div className="relative z-10 space-y-4">

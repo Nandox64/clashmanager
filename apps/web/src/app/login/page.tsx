@@ -209,7 +209,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-xs text-red-400 text-center">{error}</p>
+            <p className="text-xs text-red-500 text-center">{error}</p>
           )}
 
           {mode === "login" ? (

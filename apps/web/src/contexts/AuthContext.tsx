@@ -20,6 +20,7 @@ import {
 } from "firebase/auth";
 import { auth, isConfigured } from "@/lib/firebase";
 import { mockUser } from "@/lib/mock-data";
+import { setCurrentProfileUid, clearProfileCacheForUser } from "@/lib/profile-cache";
 import type { UserProfile, MemberRole } from "@clashmanager/shared";
 
 interface AuthState {
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isConfigured && auth) {
       const unsub = onAuthStateChanged(auth, (user) => {
         setFirebaseUser(user);
+        setCurrentProfileUid(user?.uid ?? null);
         setIsLoading(false);
       });
       const timeout = setTimeout(() => {
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTimeout(timeout);
       };
     } else {
+      setCurrentProfileUid(mockUser?.uid ?? "mock");
       setIsLoading(false);
     }
   }, []);
@@ -75,11 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     if (!auth) return;
     try {
+      if (firebaseUser?.uid) clearProfileCacheForUser(firebaseUser.uid);
       await firebaseSignOut(auth);
     } catch (err) {
       console.error("Error al cerrar sesión:", err);
     }
-  }, []);
+  }, [firebaseUser?.uid]);
 
   const signUpWithEmail = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase Auth no disponible");

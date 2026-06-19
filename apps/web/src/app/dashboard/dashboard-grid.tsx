@@ -74,17 +74,17 @@ export function DashboardGrid() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-page-title text-2xl">Dashboard</h1>
-          <p className="text-sm text-clash-muted mt-0.5">
+          <h1 className="text-page-title text-2xl">Bienvenido</h1>
+          <p className="text-sm text-clash-text mt-0.5">
             Centro de control • {clan.name}
           </p>
           <p className="text-xs text-clash-dimmed mt-1">
-            Monitorea el rendimiento, actividad y logros de tu clan en tiempo real
+            Monitorea el rendimiento, actividad y logros de tu clan en tiempo real, mejora tus mazos y estrategias con nuestra IA y datos actualizados al instante.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {lastFetchedAt && (
-            <span className="text-[10px] text-clash-dimmed font-mono whitespace-nowrap">
+            <span className="text-[11px] text-clash-dimmed font-mono whitespace-nowrap">
               {formatTimeAgo(lastFetchedAt)}
             </span>
           )}
@@ -109,7 +109,7 @@ export function DashboardGrid() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Trophy size={14} className="text-clash-muted" />
+                <Trophy size={16} className="text-clash-muted" />
                 <span className="text-xs text-clash-muted">Total Copas</span>
               </div>
               <span className="text-lg font-bold font-mono text-clash-text">
@@ -128,7 +128,7 @@ export function DashboardGrid() {
                 {members.length}
               </span>
               <p className="text-[10px] text-clash-dimmed mt-0.5">
-                {activeMembers} activos
+                {activeMembers} Activos
               </p>
             </div>
           </div>

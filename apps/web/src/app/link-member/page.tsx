@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useClanStore } from "@/lib/store";
+import { useClanData } from "@/hooks/use-clan-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/use-profile";
 import {
@@ -43,6 +44,7 @@ async function getAuthHeaders(
 export default function LinkMemberPage() {
   const { user, isMock, profile: authProfile } = useAuth();
   const { profile: serverProfile, loading: profileLoading } = useProfile();
+  useClanData();
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
   const router = useRouter();
@@ -100,7 +102,7 @@ export default function LinkMemberPage() {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ photoURL: photo, linkedMemberId }),
+        body: JSON.stringify({ photoURL: photo, linkedMemberId, email: user?.email ?? "" }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -130,7 +132,7 @@ export default function LinkMemberPage() {
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
   return (
-    <div className="min-h-dynamic flex items-center justify-center bg-black/50 p-4">
+    <div className="min-h-dynamic flex items-center justify-center p-4">
       <div className="w-full max-w-lg bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
         <div className="p-5 sm:p-6 border-b border-clash-border text-center">
           <div className="w-14 h-14 rounded-full bg-metallic-gold/20 flex items-center justify-center mx-auto mb-3">
@@ -175,7 +177,7 @@ export default function LinkMemberPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs text-clash-muted font-medium">
-              Tu miembro del clan <span className="text-red-400">*</span>
+              Tu miembro del clan <span className="text-red-500">*</span>
             </label>
             <select
               value={linkedMemberId ?? ""}

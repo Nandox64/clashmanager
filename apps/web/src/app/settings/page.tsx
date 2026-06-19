@@ -9,10 +9,9 @@ import { useClanData } from "@/hooks/use-clan-data";
 import { useProfile } from "@/hooks/use-profile";
 import { ROLE_LABELS, ROLE_HIERARCHY } from "@clashmanager/shared";
 
-import { Settings, Bell, Shield, Webhook, Save, Target, Gauge, Trophy, Link2Off, Users } from "lucide-react";
+import { Settings, Webhook, Save, Target, Gauge, Trophy, Trash2, UserCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import type { AutomationRule, ClanEvent } from "@clashmanager/shared";
 import type { ClanScaling } from "@/lib/store";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { RuletaControl } from "@/components/ruleta/ruleta-control";
@@ -34,36 +33,31 @@ export default function SettingsPage() {
   const clan = useClanStore((s) => s.clan);
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
-  const storeRules = useClanStore((s) => s.rules);
-  const setStoreRules = useClanStore((s) => s.setRules);
-  const storeEvents = useClanStore((s) => s.events);
-  const setStoreEvents = useClanStore((s) => s.setEvents);
   const storeLogs = useClanStore((s) => s.logs);
   const setStoreLogs = useClanStore((s) => s.setLogs);
   const storeScaling = useClanStore((s) => s.clanScaling);
   const setStoreScaling = useClanStore((s) => s.setClanScaling);
   const storeLocalWarRank = useClanStore((s) => s.localWarRank);
   const setStoreLocalWarRank = useClanStore((s) => s.setLocalWarRank);
-  const storeLocalWarTrophies = useClanStore((s) => s.localWarTrophies);
-  const setStoreLocalWarTrophies = useClanStore((s) => s.setLocalWarTrophies);
+  const storeLocalWarRankChange = useClanStore((s) => s.localWarRankChange);
+  const setStoreLocalWarRankChange = useClanStore((s) => s.setLocalWarRankChange);
+  const progressPhase = useClanStore((s) => s.progressPhase);
 
   const linkedMember = members.find((m) => m.uid === profile?.linkedMemberId);
   const userRole = linkedMember?.role ?? null;
   const isAllowed = userRole ? ALLOWED_ROLES.includes(userRole) : false;
 
-  const [rules, setRules] = useState<AutomationRule[]>(storeRules);
-  const [events, setEvents] = useState<ClanEvent[]>(storeEvents);
   const [logs, setLogs] = useState(storeLogs);
   const [settingsLoading, setSettingsLoading] = useState(false);
-  const [linkedProfiles, setLinkedProfiles] = useState<Array<{ uid: string; displayName: string; linkedMemberId: string | null; email?: string }>>([]);
-  const [unlinkingUid, setUnlinkingUid] = useState<string | null>(null);
 
   const [warRank, setWarRank] = useState(storeLocalWarRank ?? 0);
-  const [warTrophies, setWarTrophies] = useState(storeLocalWarTrophies ?? 0);
+  const [warRankChange, setWarRankChange] = useState(storeLocalWarRankChange ?? 0);
   const [scaling, setScaling] = useState<ClanScaling>(storeScaling);
 
   const [rateLimits, setRateLimits] = useState<Array<{ route: string; used: number; remaining: number; resetIn: number }>>([]);
   const [rateLimitLoading, setRateLimitLoading] = useState(false);
+  const [linkedProfiles, setLinkedProfiles] = useState<Array<{ uid: string; linkedMemberId: string | null; email?: string | null; displayName?: string }>>([]);
+  const [linkedProfilesLoading, setLinkedProfilesLoading] = useState(false);
 
   const getAuthHeaders = async (): Promise<Record<string, string>> => {
     if (isMock) return { Authorization: `Bearer mock-${authProfile?.uid ?? "mode"}` };
@@ -73,12 +67,47 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setWarRank(storeLocalWarRank ?? 0);
-    setWarTrophies(storeLocalWarTrophies ?? 0);
-  }, [storeLocalWarRank, storeLocalWarTrophies]);
+    setWarRankChange(storeLocalWarRankChange ?? 0);
+  }, [storeLocalWarRank, storeLocalWarRankChange]);
 
   useEffect(() => {
     setScaling(storeScaling);
   }, [storeScaling]);
+
+  const fetchLinkedProfiles = async () => {
+    setLinkedProfilesLoading(true);
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/profile?linked=1", { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setLinkedProfiles(data.profiles ?? []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLinkedProfilesLoading(false);
+    }
+  };
+
+  const unlinkProfile = async (firebaseUid: string, memberUid: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/profile/unlink", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: firebaseUid, memberUid }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Error" }));
+        throw new Error(err.error || "Error al desvincular");
+      }
+      toast.success("Perfil desvinculado");
+      fetchLinkedProfiles();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    }
+  };
 
   const fetchRateLimits = async () => {
     setRateLimitLoading(true);
@@ -98,18 +127,22 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     setSettingsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
-      const res = await fetch("/api/settings");
+      const res = await fetch("/api/settings", { signal: controller.signal });
       if (!res.ok) throw new Error("Error al cargar ajustes");
       const data = await res.json();
-      setRules(data.rules ?? []);
-      setEvents(data.events ?? []);
       setLogs(data.logs ?? []);
-      setStoreRules(data.rules ?? []);
-      setStoreEvents(data.events ?? []);
       setStoreLogs(data.logs ?? []);
-      if (data.warRank) setWarRank(data.warRank);
-      if (data.warTrophies) setWarTrophies(data.warTrophies);
+      if (data.warRank !== undefined && data.warRank !== null) {
+        setWarRank(data.warRank);
+        setStoreLocalWarRank(data.warRank);
+      }
+      if (data.warRankChange !== undefined && data.warRankChange !== null) {
+        setWarRankChange(data.warRankChange);
+        setStoreLocalWarRankChange(data.warRankChange);
+      }
       if (data.scaling) {
         setScaling(data.scaling);
         setStoreScaling(data.scaling);
@@ -117,104 +150,47 @@ export default function SettingsPage() {
     } catch {
       // Silently fall back to current state
     } finally {
+      clearTimeout(timeoutId);
       setSettingsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (storeRules.length > 0) {
-      setRules(storeRules);
-      setEvents(storeEvents);
-      setLogs(storeLogs);
-    } else if (loaded) {
+    if (loaded && (progressPhase === "ready" || progressPhase === "error")) {
       fetchSettings();
     }
-  }, [loaded]);
-
-  const fetchLinkedProfiles = async () => {
-    try {
-      const headers = await getAuthHeaders();
-      const memberUid = linkedMember?.uid;
-      const url = memberUid ? `/api/profile?linked=1&memberUid=${memberUid}` : "/api/profile?linked=1";
-      const res = await fetch(url, { headers });
-      if (!res.ok) throw new Error("Error al cargar vinculaciones");
-      const data = await res.json();
-      setLinkedProfiles(data.profiles ?? []);
-    } catch {
-      toast.error("Error al cargar vinculaciones");
-    }
-  };
-
-  useEffect(() => {
-    if (userRole === "leader") fetchLinkedProfiles();
-  }, [userRole]);
+  }, [loaded, progressPhase]);
 
   useEffect(() => {
     if (user) fetchRateLimits();
   }, [user]);
-
-  const unlinkProfile = async (targetUid: string, memberUid: string) => {
-    setUnlinkingUid(targetUid);
-    try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch("/api/profile/unlink", {
-        method: "POST",
-        headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: targetUid, memberUid }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error || "Error al desvincular");
-      }
-      setLinkedProfiles((prev) => prev.filter((p) => p.uid !== targetUid));
-      toast.success("Miembro desvinculado");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al desvincular");
-    } finally {
-      setUnlinkingUid(null);
-    }
-  };
-
+  useEffect(() => {
+    if (isAllowed) fetchLinkedProfiles();
+  }, [isAllowed]);
   const saveSettings = async (extra: Record<string, unknown> = {}) => {
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
-          rules,
-          events,
           warRank,
-          warTrophies,
+          warRankChange,
           scaling,
           ...extra,
         }),
       });
-      if (!res.ok) throw new Error("Error al guardar");
-      setStoreRules(rules);
-      setStoreEvents(events);
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error ?? `Error ${res.status}`);
+      }
       setStoreScaling(scaling);
       setStoreLocalWarRank(warRank);
-      setStoreLocalWarTrophies(warTrophies);
+      setStoreLocalWarRankChange(warRankChange);
       toast.success("Ajustes guardados");
-    } catch {
-      toast.error("Error al guardar ajustes");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar ajustes");
     }
-  };
-
-  const toggleRule = async (ruleId: string) => {
-    const newRules = rules.map((r) =>
-      r.id === ruleId ? { ...r, enabled: !r.enabled } : r
-    );
-    setRules(newRules);
-    await saveSettings({ rules: newRules });
-  };
-
-  const toggleEvent = async (eventId: string) => {
-    const newEvents = events.map((e) =>
-      e.id === eventId ? { ...e, enabled: !e.enabled } : e
-    );
-    setEvents(newEvents);
-    await saveSettings({ events: newEvents });
   };
 
   if (error && !loaded) {
@@ -333,11 +309,11 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-clash-dimmed">Trofeos de guerra</label>
+                  <label className="text-xs text-clash-dimmed">Cambio de posición (+ sube, - baja)</label>
                   <Input
                     type="number"
-                    value={warTrophies}
-                    onChange={(e) => setWarTrophies(Number(e.target.value))}
+                    value={warRankChange}
+                    onChange={(e) => setWarRankChange(Number(e.target.value))}
                     readOnly={!isAllowed}
                     className={!isAllowed ? "opacity-70" : ""}
                   />
@@ -348,7 +324,7 @@ export default function SettingsPage() {
                   <Button
                     size="sm"
                     variant="metal"
-                    onClick={() => saveSettings({ warRank, warTrophies })}
+                    onClick={() => saveSettings({ warRank, warRankChange })}
                   >
                     <Save size={14} />
                     Guardar posición
@@ -370,33 +346,13 @@ export default function SettingsPage() {
                 </div>
                 <Gauge size={16} className="text-metallic-gold" />
               </CardHeader>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Trofeos requeridos para unirse</label>
-                  <Input
-                    type="number"
-                    value={scaling.requiredTrophies}
-                    onChange={(e) => setScaling({ ...scaling, requiredTrophies: Number(e.target.value) })}
-                    readOnly={!isAllowed}
-                    className={!isAllowed ? "opacity-70" : ""}
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs text-clash-muted">Días de inactividad antes de alertar</label>
                   <Input
                     type="number"
                     value={scaling.inactivityDays}
                     onChange={(e) => setScaling({ ...scaling, inactivityDays: Number(e.target.value) })}
-                    readOnly={!isAllowed}
-                    className={!isAllowed ? "opacity-70" : ""}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Días para expulsión por inactividad</label>
-                  <Input
-                    type="number"
-                    value={scaling.expulsionDays}
-                    onChange={(e) => setScaling({ ...scaling, expulsionDays: Number(e.target.value) })}
                     readOnly={!isAllowed}
                     className={!isAllowed ? "opacity-70" : ""}
                   />
@@ -410,30 +366,6 @@ export default function SettingsPage() {
                     readOnly={!isAllowed}
                     className={!isAllowed ? "opacity-70" : ""}
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Guerra requerida</label>
-                  <select
-                    value={scaling.warRequired ? "true" : "false"}
-                    onChange={(e) => setScaling({ ...scaling, warRequired: e.target.value === "true" })}
-                    disabled={!isAllowed}
-                    className="w-full rounded-lg border border-white/20 bg-glass px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/30 transition-colors disabled:opacity-70"
-                  >
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs text-clash-muted">Auto-promover</label>
-                  <select
-                    value={scaling.autoPromote ? "true" : "false"}
-                    onChange={(e) => setScaling({ ...scaling, autoPromote: e.target.value === "true" })}
-                    disabled={!isAllowed}
-                    className="w-full rounded-lg border border-white/20 bg-glass px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/30 transition-colors disabled:opacity-70"
-                  >
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
                 </div>
               </div>
               {isAllowed && (
@@ -450,94 +382,6 @@ export default function SettingsPage() {
               )}
             </Card>
 
-            <Card>
-              <CardHeader>
-                <div>
-                  <CardTitle className="text-metallic-gold">Reglas de Automatización</CardTitle>
-                  <p className="text-xs text-clash-muted mt-0.5">
-                    {isAllowed
-                      ? "Reglas inteligentes para gestión del clan — haz clic en una regla para activarla/desactivarla"
-                      : "Vista de solo lectura"}
-                  </p>
-                </div>
-                <Bell size={16} className="text-metallic-gold" />
-              </CardHeader>
-              <div className="space-y-3">
-                {rules.map((rule) => (
-                  <div
-                    key={rule.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-glass cursor-pointer hover:bg-clash-card transition-colors"
-                    onClick={() => isAllowed && toggleRule(rule.id)}
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-clash-text truncate">
-                          {rule.name}
-                        </p>
-                        <Badge
-                          variant={rule.enabled ? "success" : "default"}
-                          size="sm"
-                        >
-                          {rule.enabled ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-clash-muted mt-0.5">
-                        {rule.actions.map((a) => a.message).join(", ")}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div>
-                  <CardTitle className="text-metallic-gold">Eventos Semanales</CardTitle>
-                  <p className="text-xs text-clash-muted mt-0.5">
-                    {isAllowed
-                      ? "Retos automáticos programados por día — haz clic para activar/desactivar"
-                      : "Vista de solo lectura"}
-                  </p>
-                </div>
-                <Shield size={16} className="text-metallic-gold" />
-              </CardHeader>
-              <div className="space-y-3">
-                {events.map((event) => (
-                  <div
-                    key={event.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-glass cursor-pointer hover:bg-clash-card transition-colors"
-                    onClick={() => isAllowed && toggleEvent(event.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-glass flex items-center justify-center">
-                        {event.type === "donation"
-                          ? "🎁"
-                          : event.type === "war"
-                            ? "⚔️"
-                            : event.type === "push"
-                              ? "🚀"
-                              : "⭐"}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-clash-text truncate">
-                          {event.name}
-                        </p>
-                        <p className="text-xs text-clash-muted">
-                          {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][
-                            event.dayOfWeek
-                          ]}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={event.enabled ? "success" : "default"}>
-                      {event.enabled ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
             {/* Ruleta Control (leader only) */}
             <Card>
               <CardHeader>
@@ -551,6 +395,64 @@ export default function SettingsPage() {
               </CardHeader>
               <RuletaControl isAllowed={isAllowed} />
             </Card>
+
+            {/* Vinculaciones (solo leader) */}
+            {userRole === "leader" && (
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle className="text-metallic-gold">Vinculaciones</CardTitle>
+                  <p className="text-xs text-clash-dimmed mt-0.5">
+                    Perfiles vinculados a miembros del clan
+                  </p>
+                </div>
+                <UserCircle size={16} className="text-metallic-gold" />
+              </CardHeader>
+              <div className="space-y-3">
+                {linkedProfilesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <p className="text-xs text-clash-muted">Cargando...</p>
+                  </div>
+                ) : linkedProfiles.length === 0 ? (
+                  <div className="flex items-center justify-center py-4">
+                    <p className="text-xs text-clash-muted">No hay vinculaciones</p>
+                  </div>
+                ) : (
+                  linkedProfiles.map((lp) => {
+                    const linkedMember = members.find((m) => m.uid === lp.linkedMemberId);
+                    return (
+                      <div key={lp.uid} className="flex items-center justify-between p-3 rounded-lg bg-glass border border-clash-border">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#b8860b] to-[#ffd700] flex items-center justify-center text-xs font-bold text-black shrink-0">
+                            {linkedMember?.displayName?.slice(0, 2).toUpperCase() ?? "??"}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-clash-text truncate">
+                              {linkedMember?.displayName ?? "Miembro desconocido"}
+                            </p>
+                            <p className="text-xs text-clash-dimmed truncate">
+                              {lp.email || lp.uid}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (!lp.linkedMemberId) return;
+                            unlinkProfile(lp.uid, lp.linkedMemberId);
+                          }}
+                          disabled={!lp.linkedMemberId}
+                          className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-40"
+                          title="Desvincular"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </Card>
+            )}
 
             {/* Uso de IA (visible para leader/coleader) */}
             <Card>
@@ -613,43 +515,6 @@ export default function SettingsPage() {
                 )}
               </div>
             </Card>
-
-            {userRole === "leader" && (
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle className="text-metallic-gold">Vinculaciones</CardTitle>
-                    <p className="text-xs text-clash-muted mt-0.5">Perfiles conectados a miembros del clan</p>
-                  </div>
-                  <Users size={16} className="text-metallic-gold" />
-                </CardHeader>
-                <div className="space-y-2">
-                  {linkedProfiles.map((linkedProfile) => {
-                    const member = members.find((m) => m.uid === linkedProfile.linkedMemberId);
-                    return (
-                      <div key={linkedProfile.uid} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-glass">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-clash-text truncate">{member?.displayName ?? linkedProfile.linkedMemberId}</p>
-                          <p className="text-xs text-clash-muted truncate">{linkedProfile.email || linkedProfile.displayName || linkedProfile.uid}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          disabled={unlinkingUid === linkedProfile.uid || linkedProfile.uid === profile?.uid || !linkedProfile.linkedMemberId}
-                          onClick={() => linkedProfile.linkedMemberId && unlinkProfile(linkedProfile.uid, linkedProfile.linkedMemberId)}
-                        >
-                          <Link2Off size={14} />
-                          Desvincular
-                        </Button>
-                      </div>
-                    );
-                  })}
-                  {linkedProfiles.length === 0 && (
-                    <p className="text-xs text-clash-muted text-center py-3">No hay vinculaciones registradas.</p>
-                  )}
-                </div>
-              </Card>
-            )}
 
             <Card>
               <CardHeader>

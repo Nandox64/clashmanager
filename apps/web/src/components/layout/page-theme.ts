@@ -1,10 +1,10 @@
 export const PAGE_THEMES: Record<string, { background: string; surface: string; border: string; overlay: string; accent: string; accentShimmer: string }> = {
   "/dashboard": {
     background: "/bg_piso_naranja.webp",
-    surface: "#B05E0ED9",
-    border: "#B05E0ECC",
-    overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
-    accent: "#FF8C00",
+    surface: "#a85808e7",
+    border: "#e28204cc",
+    overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
+    accent: "#ad7f00",
     accentShimmer: "linear-gradient(135deg, #CC6600 0%, #FF8C00 25%, #FFA500 50%, #FF8C00 75%, #CC6600 100%)",
   },
   "/achievements": {
@@ -33,10 +33,10 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   },
   "/ruleta": {
     background: "/bg_piso_naranja.webp",
-    surface: "#B05E0ED9",
-    border: "#B05E0ECC",
-    overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
-    accent: "#FF8C00",
+    surface: "#a85808e7",
+    border: "#e28204cc",
+    overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
+    accent: "#ad7f00",
     accentShimmer: "linear-gradient(135deg, #CC6600 0%, #FF8C00 25%, #FFA500 50%, #FF8C00 75%, #CC6600 100%)",
   },
   "/members": {
@@ -65,10 +65,10 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   },
   "/settings": {
     background: "/bg_piso_naranja.webp",
-    surface: "#B05E0ED9",
-    border: "#B05E0ECC",
-    overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
-    accent: "#FF8C00",
+    surface: "#a85808e7",
+    border: "#e28204cc",
+    overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
+    accent: "#ad7f00",
     accentShimmer: "linear-gradient(135deg, #CC6600 0%, #FF8C00 25%, #FFA500 50%, #FF8C00 75%, #CC6600 100%)",
   },
 };

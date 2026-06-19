@@ -14,10 +14,7 @@ export type LogType =
 
 export interface ClanSettings {
   inactivityDays: number;
-  expulsionDays: number;
   minDonationsWeekly: number;
-  warRequired: boolean;
-  autoPromote: boolean;
 }
 
 export interface Member {
@@ -135,31 +132,3 @@ export interface UserProfile {
   playerTags: string[];
 }
 
-export interface AutomationRule {
-  id: string;
-  name: string;
-  type: "inactivity" | "low_performance" | "promotion" | "custom";
-  conditions: RuleCondition[];
-  actions: RuleAction[];
-  enabled: boolean;
-}
-
-export interface RuleCondition {
-  field: string;
-  operator: "gt" | "lt" | "eq" | "gte" | "lte";
-  value: number;
-  daysWindow: number;
-}
-
-export interface RuleAction {
-  type: "mark_risk" | "suggest_expulsion" | "suggest_promotion" | "alert";
-  message: string;
-}
-
-export interface ClanEvent {
-  id: string;
-  name: string;
-  type: "donation" | "war" | "push" | "mvp";
-  dayOfWeek: number;
-  enabled: boolean;
-}

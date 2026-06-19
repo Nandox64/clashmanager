@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useClanStore } from "@/lib/store";
 import {
   loadClanCache,
@@ -175,7 +175,12 @@ function handlePoll() {
   }
 }
 
+let hydratedOnce = false;
+
 export function loadClanDataOnce() {
+  if (hydratedOnce) return;
+  hydratedOnce = true;
+
   const hydrated = hydrateFromCache();
 
   if (hydrated) {
@@ -209,12 +214,6 @@ export function useClanData() {
   const progressPhase = useClanStore((s) => s.progressPhase);
   const fromCache = useClanStore((s) => s.fromCache);
   const lastFetchedAt = useClanStore((s) => s.lastFetchedAt);
-
-  useEffect(() => {
-    loadClanDataOnce();
-    startControlledPolling();
-    return () => { stopControlledPolling(); };
-  }, []);
 
   return { loading, error, progressPhase, fromCache, lastFetchedAt, refetch: refetchData, forceSync: forceSyncData };
 }

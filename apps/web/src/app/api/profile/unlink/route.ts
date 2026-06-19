@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 import { deleteMemberLink, getMemberByUid, getProfile, unlinkProfileMember } from "@/lib/firestore-service";
+import { getUserUid } from "@/lib/api-utils";
 
-async function getUserUid(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    if (token === "mock-mode" || token.startsWith("mock-")) return token.replace("mock-", "");
-    if (adminAuth) {
-      try { return (await adminAuth.verifyIdToken(token)).uid; } catch { return null; }
-    }
+async function findMemberUidByFirebaseUid(clanTag: string, firebaseUid: string): Promise<string | null> {
+  try {
+    if (!adminDb) return null;
+    const snap = await adminDb
+      .collection("clans")
+      .doc(clanTag.replace("#", ""))
+      .collection("memberLinks")
+      .where("firebaseUid", "==", firebaseUid)
+      .get();
+    if (snap.empty) return null;
+    return snap.docs[0].id;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 export async function POST(request: Request) {
@@ -26,9 +31,22 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Intentar obtener linkedMemberId desde el perfil
+    let callerLinkedMemberId: string | null = null;
     const profile = await getProfile(clanTag, uid);
-    const linkedMember = profile?.linkedMemberId ? await getMemberByUid(clanTag, profile.linkedMemberId) : null;
-    if (linkedMember?.role !== "leader") {
+    if (profile?.linkedMemberId) {
+      callerLinkedMemberId = profile.linkedMemberId;
+    } else {
+      // Fallback: buscar en memberLinks si profile no tiene linkedMemberId
+      callerLinkedMemberId = await findMemberUidByFirebaseUid(clanTag, uid);
+    }
+
+    if (!callerLinkedMemberId) {
+      return NextResponse.json({ error: "No vinculado" }, { status: 403 });
+    }
+
+    const callerMember = await getMemberByUid(clanTag, callerLinkedMemberId);
+    if (callerMember?.role !== "leader") {
       return NextResponse.json({ error: "Solo el líder puede desvincular miembros" }, { status: 403 });
     }
 

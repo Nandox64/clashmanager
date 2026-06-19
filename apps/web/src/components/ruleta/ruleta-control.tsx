@@ -155,7 +155,7 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
               Activar evento
             </Button>
           ) : (
-            <Button onClick={() => toggleEvent(false)} disabled={toggling} variant="secondary" className="text-red-400">
+            <Button onClick={() => toggleEvent(false)} disabled={toggling} variant="secondary" className="text-red-500">
               {toggling ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} />}
               Desactivar evento
             </Button>
@@ -168,7 +168,7 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
         {PRIZE_KEYS.map((key) => (
           <div key={key} className="p-2 rounded-lg bg-glass border border-clash-border text-center">
             <p className="text-[10px] text-clash-muted truncate">{PRIZE_LABELS[key]}</p>
-            <p className={`text-sm font-bold ${key === "pass" ? "text-red-400" : "text-metallic-gold"}`}>
+            <p className={`text-sm font-bold ${key === "pass" ? "text-red-500" : "text-metallic-gold"}`}>
               {prizeCounts[key.replace("-", "") as keyof PrizeCount] ?? 0}
               <span className="text-[10px] text-clash-muted font-normal">/ {key === "pass" ? 1 : 3}</span>
             </p>

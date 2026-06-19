@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getLocalWarRank, getLocalWarRankChange, saveAchievements } from "@/lib/firestore-service";
+import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getClanWarSettings, saveAchievements } from "@/lib/firestore-service";
 import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
@@ -13,11 +13,10 @@ export async function GET() {
     return NextResponse.json({ error: "Firebase no disponible" }, { status: 503 });
   }
 
-  const [clan, members, rank, rankChange, storedAchievements, weeklyStats] = await Promise.all([
+  const [clan, members, warSettings, storedAchievements, weeklyStats] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
-    getLocalWarRank(clanTag),
-    getLocalWarRankChange(clanTag),
+    getClanWarSettings(clanTag),
     getAchievements(clanTag),
     getWeeklyStats(clanTag),
   ]);
@@ -43,7 +42,8 @@ export async function GET() {
     members,
     achievements,
     weeklyStats,
-    localWarRank: rank,
-    localWarRankChange: rankChange,
+    localWarRank: warSettings.localWarRank,
+    localWarRankChange: warSettings.localWarRankChange,
+    localWarTrophies: warSettings.localWarTrophies,
   });
 }

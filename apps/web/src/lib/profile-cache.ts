@@ -4,9 +4,19 @@ const ROLE_KEY = "clash-linked-role-v2";
 
 const storage = (typeof window !== "undefined" ? localStorage : null) as Storage;
 
+let currentUid: string | null = null;
+
+export function setCurrentProfileUid(uid: string | null) {
+  currentUid = uid;
+}
+
+function prefixedKey(base: string): string {
+  return currentUid ? `${base}_${currentUid}` : base;
+}
+
 export function getCachedLinkedMemberId(): string | null {
   try {
-    return storage?.getItem(LINKED_KEY) ?? null;
+    return storage?.getItem(prefixedKey(LINKED_KEY)) ?? null;
   } catch {
     return null;
   }
@@ -14,17 +24,18 @@ export function getCachedLinkedMemberId(): string | null {
 
 export function setCachedLinkedMemberId(id: string | null) {
   try {
-    if (id) storage?.setItem(LINKED_KEY, id);
+    const key = prefixedKey(LINKED_KEY);
+    if (id) storage?.setItem(key, id);
     else {
-      storage?.removeItem(LINKED_KEY);
-      storage?.removeItem(ROLE_KEY);
+      storage?.removeItem(key);
+      storage?.removeItem(prefixedKey(ROLE_KEY));
     }
   } catch {}
 }
 
 export function getCachedProfilePhoto(): string {
   try {
-    return storage?.getItem(PHOTO_KEY) ?? "";
+    return storage?.getItem(prefixedKey(PHOTO_KEY)) ?? "";
   } catch {
     return "";
   }
@@ -32,14 +43,15 @@ export function getCachedProfilePhoto(): string {
 
 export function setCachedProfilePhoto(url: string) {
   try {
-    if (url) storage?.setItem(PHOTO_KEY, url);
-    else storage?.removeItem(PHOTO_KEY);
+    const key = prefixedKey(PHOTO_KEY);
+    if (url) storage?.setItem(key, url);
+    else storage?.removeItem(key);
   } catch {}
 }
 
 export function getCachedRole(): string | null {
   try {
-    return storage?.getItem(ROLE_KEY) ?? null;
+    return storage?.getItem(prefixedKey(ROLE_KEY)) ?? null;
   } catch {
     return null;
   }
@@ -47,7 +59,16 @@ export function getCachedRole(): string | null {
 
 export function setCachedRole(role: string | null) {
   try {
-    if (role) storage?.setItem(ROLE_KEY, role);
-    else storage?.removeItem(ROLE_KEY);
+    const key = prefixedKey(ROLE_KEY);
+    if (role) storage?.setItem(key, role);
+    else storage?.removeItem(key);
+  } catch {}
+}
+
+export function clearProfileCacheForUser(uid: string) {
+  try {
+    storage?.removeItem(`${LINKED_KEY}_${uid}`);
+    storage?.removeItem(`${PHOTO_KEY}_${uid}`);
+    storage?.removeItem(`${ROLE_KEY}_${uid}`);
   } catch {}
 }

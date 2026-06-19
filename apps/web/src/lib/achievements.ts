@@ -40,7 +40,7 @@ const MEDAL_CHECKERS: {
     medalId: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    check: (m) => (m.weeklyStats?.activityDays ?? 0) >= 7,
+    check: (m) => (m.weeklyStats?.donationsGiven ?? 0) >= 500 && (m.weeklyStats?.trophiesGained ?? 0) >= 100,
   },
   {
     medalId: "diamond",

@@ -28,7 +28,7 @@ const phaseConfig: Record<ProgressPhase, {
     animate: true,
   },
   syncing: {
-    message: "Descargando datos del clan…",
+    message: "Sincronizando con Clash Royale API…",
     icon: RefreshCw,
     color: "text-clash-primary",
     animate: true,
@@ -122,7 +122,7 @@ export function LoadingProgress({ onRetry }: LoadingProgressProps) {
         {/* Texto secundario por fase */}
         {progressPhase === "syncing" && (
           <p className="text-[11px] text-clash-muted/60 text-center">
-            Sincronizando con Clash Royale API…
+            Guardando datos en el servidor — primera carga más lenta
           </p>
         )}
         {progressPhase === "loading-api" && (

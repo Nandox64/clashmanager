@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
 import { getClanFull, CRApiClientError } from "@/lib/cr-api";
 import { syncClanData } from "@/lib/clan-sync";
-import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getLocalWarRank, getLastRaceKey } from "@/lib/firestore-service";
+import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getClanWarSettings, getLastRaceKey } from "@/lib/firestore-service";
+import type { Member, Achievement } from "@clashmanager/shared";
 import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
 const CACHE_FRESH_MS = 5 * 60 * 1000;
 
-let backgroundSyncInFlight = false;
-
 async function readFromFirestore(clanTag: string) {
-  const [clan, members, rank, storedAchievements, weeklyStats] = await Promise.all([
+  const [clan, members, warSettings, storedAchievements, weeklyStats] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
-    getLocalWarRank(clanTag),
+    getClanWarSettings(clanTag),
     getAchievements(clanTag),
     getWeeklyStats(clanTag),
   ]);
@@ -29,7 +28,7 @@ async function readFromFirestore(clanTag: string) {
   }
 
   const achievements = computeAchievements(members, storedAchievements);
-  return { clan, members, achievements, weeklyStats, localWarRank: rank, localWarRankChange: 0 };
+  return { clan, members, achievements, weeklyStats, localWarRank: warSettings.localWarRank, localWarRankChange: warSettings.localWarRankChange };
 }
 
 export async function GET(request: Request) {
@@ -42,19 +41,47 @@ export async function GET(request: Request) {
   const force = searchParams.get("force") === "1";
   const useCache = searchParams.get("use_cache") === "1";
 
-  // Iniciar promesas en paralelo con la lectura de caché
+  // Leer caché primero (sin iniciar CR API aún)
   const cachePromise = adminDb ? readFromFirestore(clanTag) : Promise.resolve(null);
-  const crApiPromise = getClanFull();
-  const storedMembersPromise = adminDb ? getMembersFromFirestore(clanTag).catch(() => []) : Promise.resolve([]);
-  const existingAchievementsPromise = adminDb ? getAchievements(clanTag).catch(() => []) : Promise.resolve([]);
-  const lastRaceKeyPromise = adminDb ? getLastRaceKey(clanTag).catch(() => null) : Promise.resolve(null);
+
+  // Lazy getters: solo inician las promesas CR cuando se accede a ellas
+  let crApiPromise: ReturnType<typeof getClanFull> | null = null;
+  let storedMembersPromise: Promise<Member[]> | null = null;
+  let existingAchievementsPromise: Promise<Achievement[]> | null = null;
+  let lastRaceKeyPromise: Promise<string | null> | null = null;
+
+  function getCrApiPromise() {
+    if (!crApiPromise) crApiPromise = getClanFull();
+    return crApiPromise;
+  }
+  function getStoredMembersPromise() {
+    if (!storedMembersPromise) storedMembersPromise = adminDb ? getMembersFromFirestore(clanTag!).catch(() => []) : Promise.resolve([]);
+    return storedMembersPromise;
+  }
+  function getExistingAchievementsPromise() {
+    if (!existingAchievementsPromise) existingAchievementsPromise = adminDb ? getAchievements(clanTag!).catch(() => []) : Promise.resolve([]);
+    return existingAchievementsPromise;
+  }
+  function getLastRaceKeyPromise() {
+    if (!lastRaceKeyPromise) lastRaceKeyPromise = adminDb ? getLastRaceKey(clanTag!).catch(() => null) : Promise.resolve(null);
+    return lastRaceKeyPromise;
+  }
+
+  function makePreloaded() {
+    return {
+      crApiPromise: getCrApiPromise(),
+      storedMembersPromise: getStoredMembersPromise(),
+      existingAchievementsPromise: getExistingAchievementsPromise(),
+      lastRaceKeyPromise: getLastRaceKeyPromise(),
+    };
+  }
 
   if (force) {
     try {
       const result = await syncClanData({
         clanTag,
-        awaitPersist: false,
-        preloaded: { crApiPromise, storedMembersPromise, existingAchievementsPromise, lastRaceKeyPromise },
+        awaitPersist: true,
+        preloaded: makePreloaded(),
       });
       return NextResponse.json(result);
     } catch (err) {
@@ -72,10 +99,8 @@ export async function GET(request: Request) {
     const fresh = Date.now() - updatedAt < CACHE_FRESH_MS;
 
     if (useCache) {
-      if (!fresh && !backgroundSyncInFlight) {
-        backgroundSyncInFlight = true;
-        syncClanData({ clanTag, awaitPersist: false, preloaded: { crApiPromise, storedMembersPromise, existingAchievementsPromise, lastRaceKeyPromise } })
-          .catch(() => {}).finally(() => { backgroundSyncInFlight = false; });
+      if (!fresh) {
+        syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch(() => {});
       }
       return NextResponse.json({ ...cached, cached: true, stale: !fresh });
     }
@@ -83,21 +108,17 @@ export async function GET(request: Request) {
     if (fresh) {
       return NextResponse.json({ ...cached, cached: true, stale: false });
     } else {
-      if (!backgroundSyncInFlight) {
-        backgroundSyncInFlight = true;
-        syncClanData({ clanTag, awaitPersist: false, preloaded: { crApiPromise, storedMembersPromise, existingAchievementsPromise, lastRaceKeyPromise } })
-          .catch(() => {}).finally(() => { backgroundSyncInFlight = false; });
-      }
+      syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch(() => {});
       return NextResponse.json({ ...cached, cached: true, stale: true });
     }
   }
 
-  // No hay caché en Firestore — sync completo
+  // No hay caché en Firestore — sync completo (espera a Firestore)
   try {
     const result = await syncClanData({
       clanTag,
-      awaitPersist: false,
-      preloaded: { crApiPromise, storedMembersPromise, existingAchievementsPromise, lastRaceKeyPromise },
+      awaitPersist: true,
+      preloaded: makePreloaded(),
     });
     return NextResponse.json(result);
   } catch (err) {

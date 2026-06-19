@@ -37,10 +37,7 @@ export function transformClan(data: CRClan): Clan {
     createdAt: Date.now(),
     settings: {
       inactivityDays: 5,
-      expulsionDays: 10,
       minDonationsWeekly: 200,
-      warRequired: true,
-      autoPromote: false,
     },
     stats: {
       clanScore: data.clanScore,
@@ -59,6 +56,7 @@ export function transformMembers(
   members: CRClanMember[],
   options?: {
     previousTrophies?: Map<string, number>;
+    previousDonations?: Map<string, number>;
     currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
     warHistory?: Map<string, { totalWars: number; warsParticipated: number }>;
   }
@@ -78,6 +76,11 @@ export function transformMembers(
       ? Math.max(0, m.trophies - prev)
       : 0;
 
+    const prevDonations = options?.previousDonations?.get(m.tag);
+    const donationsGiven = prevDonations !== undefined
+      ? Math.max(0, m.donations - prevDonations)
+      : 0;
+
     const prevWarHistory = options?.warHistory?.get(m.tag);
     const totalWars = prevWarHistory?.totalWars ?? 0;
     const warsParticipated = prevWarHistory?.warsParticipated ?? 0;
@@ -94,8 +97,11 @@ export function transformMembers(
       : currentWarPct;
 
     const activityDays =
-      daysSinceActive < 2 ? 5 :
-      daysSinceActive < 5 ? 3 :
+      daysSinceActive < 1 ? 7 :
+      daysSinceActive < 2 ? 6 :
+      daysSinceActive < 3 ? 5 :
+      daysSinceActive < 5 ? 4 :
+      daysSinceActive < 7 ? 3 :
       daysSinceActive < 10 ? 1 : 0;
 
     return {
@@ -121,7 +127,7 @@ export function transformMembers(
       warsParticipated,
       weeklyStats: {
         trophiesGained,
-        donationsGiven: m.donations,
+        donationsGiven,
         warParticipation,
         activityDays,
       },

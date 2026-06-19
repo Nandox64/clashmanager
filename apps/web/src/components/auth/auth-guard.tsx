@@ -19,7 +19,7 @@ function LoadingScreen() {
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isMock } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, initialFetchDone } = useProfile();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -35,15 +35,17 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
     if (user && !user.emailVerified && !isMock) {
+      if (pathname === "/dashboard") return;
       router.push("/verify-email");
       return;
     }
     if (pathname === LINK_MEMBER_ROUTE) return;
-    if (profileLoading) return;
+    if (pathname === "/dashboard") return;
+    if (profileLoading || !initialFetchDone) return;
     if (!hasLinkedMember && !isMock) {
       router.push(LINK_MEMBER_ROUTE);
     }
-  }, [user, isLoading, isMock, pathname, router, profileLoading, hasLinkedMember]);
+  }, [user, isLoading, isMock, pathname, router, profileLoading, initialFetchDone, hasLinkedMember]);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -57,7 +59,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <LoadingScreen />;
   }
 
-  const needsProfile = pathname !== LINK_MEMBER_ROUTE && !!user && !isMock && !hasLinkedMember && profileLoading;
+  const needsProfile = pathname !== LINK_MEMBER_ROUTE && pathname !== "/dashboard" && !!user && !isMock && !hasLinkedMember && profileLoading;
 
   if (needsProfile) {
     return <LoadingScreen />;

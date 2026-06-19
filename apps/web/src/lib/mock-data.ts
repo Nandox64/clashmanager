@@ -7,8 +7,6 @@ import type {
   Achievement,
   LogEntry,
   UserProfile,
-  AutomationRule,
-  ClanEvent,
 } from "@clashmanager/shared";
 
 export const mockUser: UserProfile = {
@@ -32,10 +30,7 @@ export const mockClan: Clan = {
   createdAt: Date.now() - 365 * 86400000,
   settings: {
     inactivityDays: 5,
-    expulsionDays: 10,
     minDonationsWeekly: 200,
-    warRequired: true,
-    autoPromote: false,
   },
   stats: { clanScore: 48500, clanWarTrophies: 3200, averageTrophies: 6400 },
   healthScore: 78,
@@ -146,28 +141,3 @@ export const mockLogs: LogEntry[] = [
   { id: "log-004", action: "ascendió a", actorId: "member-001", targetId: "member-010", details: "a Veterano", timestamp: Date.now() - 20 * 86400000, type: "promotion" },
 ];
 
-export const mockAutomationRules: AutomationRule[] = [
-  {
-    id: "rule-001",
-    name: "Inactividad temprana",
-    type: "inactivity",
-    conditions: [{ field: "lastActiveAt", operator: "gt", value: 5, daysWindow: 0 }],
-    actions: [{ type: "mark_risk", message: "Marcar como en riesgo" }],
-    enabled: true,
-  },
-  {
-    id: "rule-002",
-    name: "Expulsión por inactividad",
-    type: "inactivity",
-    conditions: [{ field: "lastActiveAt", operator: "gt", value: 10, daysWindow: 0 }],
-    actions: [{ type: "suggest_expulsion", message: "Sugerir expulsión al líder" }],
-    enabled: true,
-  },
-];
-
-export const mockEvents: ClanEvent[] = [
-  { id: "evt-001", name: "Donation King", type: "donation", dayOfWeek: 1, enabled: true },
-  { id: "evt-002", name: "War Ready", type: "war", dayOfWeek: 3, enabled: true },
-  { id: "evt-003", name: "Push Friday", type: "push", dayOfWeek: 5, enabled: true },
-  { id: "evt-004", name: "MVP de la Semana", type: "mvp", dayOfWeek: 0, enabled: true },
-];

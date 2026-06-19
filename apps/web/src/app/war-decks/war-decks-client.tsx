@@ -609,7 +609,7 @@ Puedo ayudarte con:
               <RefreshCw size={14} /> Mazos de Guerra Cargados
             </h3>
             {warDecksError && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 mb-3"><AlertCircle size={12} /> {warDecksError}</div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500 mb-3"><AlertCircle size={12} /> {warDecksError}</div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {warDecks.map((deck, i) => (
@@ -625,7 +625,7 @@ Puedo ayudarte con:
               <Sparkles size={14} /> Sugerencias IA — Guerra
             </h3>
             {error && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 mb-3"><AlertCircle size={12} /> {error}</div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500 mb-3"><AlertCircle size={12} /> {error}</div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {decks.map((deck, i) => (
@@ -641,7 +641,7 @@ Puedo ayudarte con:
               🏆 Mazo de Trofeos
             </h3>
             {trophyError && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 mb-3"><AlertCircle size={12} /> {trophyError}</div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500 mb-3"><AlertCircle size={12} /> {trophyError}</div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {trophyDeck.map((deck, i) => (
@@ -657,7 +657,7 @@ Puedo ayudarte con:
               ⛵ Mazos de Barcos
             </h3>
             {boatError && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 mb-3"><AlertCircle size={12} /> {boatError}</div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500 mb-3"><AlertCircle size={12} /> {boatError}</div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {boatDecks.map((deck, i) => (

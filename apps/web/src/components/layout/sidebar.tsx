@@ -58,7 +58,6 @@ export function Sidebar() {
   const members = useClanStore((s) => s.members);
   const clanName    = clan?.name || "...";
   const clanTag     = clan?.tag  || "";
-  const clanTrophies = clan?.stats?.clanScore || 0;
 
   const linkedMemberId = getCachedLinkedMemberId();
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
@@ -237,7 +236,7 @@ export function Sidebar() {
         <div className="separator-gold mx-5" />
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col justify-evenly px-3 py-1 min-h-0">
+        <nav className="flex-1 flex flex-col gap-2 px-3 py-1 min-h-0">
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -323,16 +322,6 @@ export function Sidebar() {
               </span>
               <span className="text-sm">Iniciar Sesión</span>
             </Link>
-          )}
-
-          {clanTrophies > 0 && (
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.07] px-2 text-[10px]">
-              <span style={{ color: "var(--pm-muted)" }}>Trofeos del clan</span>
-              <span className="font-mono font-bold"
-                    style={{ color: accent.accentHex }}>
-                {clanTrophies.toLocaleString()}
-              </span>
-            </div>
           )}
         </div>
       </aside>
