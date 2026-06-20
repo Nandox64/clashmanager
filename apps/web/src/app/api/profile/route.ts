@@ -68,14 +68,14 @@ export async function POST(request: Request) {
 
     const profile: import("@/lib/firestore-service").UserProfileDoc = {
       uid,
-      displayName: body.displayName ?? existing?.displayName ?? "",
-      photoURL: body.photoURL ?? existing?.photoURL ?? "",
+      displayName: body.displayName || existing?.displayName || "",
+      photoURL: body.photoURL || existing?.photoURL || "",
       linkedMemberId: nextLinkedMemberId,
       linkedAt: nextLinkedMemberId ? (existing?.linkedMemberId === nextLinkedMemberId ? existing?.linkedAt ?? Date.now() : Date.now()) : Date.now(),
-      firstName: body.firstName !== undefined ? body.firstName : (existing?.firstName ?? null),
-      lastName: body.lastName !== undefined ? body.lastName : (existing?.lastName ?? null),
-      phone: body.phone !== undefined ? body.phone : (existing?.phone ?? null),
-      email: body.email !== undefined ? body.email : (existing?.email ?? null),
+      firstName: body.firstName || existing?.firstName || null,
+      lastName: body.lastName || existing?.lastName || null,
+      phone: body.phone || existing?.phone || null,
+      email: body.email || existing?.email || null,
     };
 
     const operations: import("@/lib/firestore-service").BatchOperation[] = [

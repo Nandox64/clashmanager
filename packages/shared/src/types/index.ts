@@ -90,6 +90,7 @@ export interface WeeklyClanStats {
   avgTrophies: number;
   totalDonations: number;
   warTrophies: number;
+  warFame?: number;
 }
 
 export interface Recruit {

@@ -67,7 +67,13 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await saveProfile({ photoURL: photo, linkedMemberId, firstName, lastName, phone, email });
+      const data: Record<string, unknown> = { linkedMemberId };
+      if (firstName) data.firstName = firstName;
+      if (lastName) data.lastName = lastName;
+      if (phone) data.phone = phone;
+      if (email) data.email = email;
+      if (photo !== undefined) data.photoURL = photo;
+      await saveProfile(data);
       toast.success("Perfil guardado");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al guardar perfil");

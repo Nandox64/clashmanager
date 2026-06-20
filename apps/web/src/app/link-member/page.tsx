@@ -99,10 +99,14 @@ export default function LinkMemberPage() {
     setSaving(true);
     try {
       const headers = await getAuthHeaders(user, isMock, authProfile?.uid);
+      const linked = members.find((m) => m.uid === linkedMemberId);
+      const body: Record<string, unknown> = { linkedMemberId, email: user?.email ?? "" };
+      if (photo) body.photoURL = photo;
+      if (linked?.displayName) body.displayName = linked.displayName;
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ photoURL: photo, linkedMemberId, email: user?.email ?? "" }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -110,7 +114,6 @@ export default function LinkMemberPage() {
       }
       setCachedLinkedMemberId(linkedMemberId);
       setCachedProfilePhoto(photo);
-      const linked = members.find((m) => m.uid === linkedMemberId);
       setCachedRole(linked?.role ?? null);
       toast.success("Perfil vinculado correctamente");
       router.push("/dashboard");

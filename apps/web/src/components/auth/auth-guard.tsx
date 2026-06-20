@@ -23,9 +23,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const hasLinkedMember = !!(
-    profile?.linkedMemberId || getCachedLinkedMemberId()
-  );
+  const cachedLinkedMemberId = getCachedLinkedMemberId();
+  const hasLinkedMember = !!(profile?.linkedMemberId || cachedLinkedMemberId);
 
   useEffect(() => {
     if (isLoading) return;
@@ -59,7 +58,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <LoadingScreen />;
   }
 
-  const needsProfile = pathname !== LINK_MEMBER_ROUTE && pathname !== "/dashboard" && !!user && !isMock && !hasLinkedMember && profileLoading;
+  // Si ya hay linkedMember en caché (localStorage), render children inmediatamente
+  // sin esperar al fetch del perfil. El fetch se hace en background.
+  const hasCachedLink = !!cachedLinkedMemberId;
+  const needsProfile = !hasCachedLink && pathname !== LINK_MEMBER_ROUTE && pathname !== "/dashboard" && !!user && !isMock && !hasLinkedMember && profileLoading;
 
   if (needsProfile) {
     return <LoadingScreen />;

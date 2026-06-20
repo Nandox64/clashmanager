@@ -1,76 +1,23 @@
 "use client";
 
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useClanStore } from "@/lib/store";
 import { TrendingUp } from "lucide-react";
 
-interface EvolucionClanProps {
-  weeks?: number;
-}
-
-function generateHistoricalData(baseTrophies: number, baseWarTrophies: number, memberCount: number, count: number) {
-  const now = Date.now();
-  const weekMs = 7 * 86400000;
-  const seed = Math.round(baseTrophies / 1000);
-  const data = [];
-
-  for (let i = 0; i < count; i++) {
-    const variation = ((i * 7 + seed * 3) % 15 - 7) / 100;
-    const trend = -0.02 * (count - 1 - i);
-    const factor = 1 + trend + variation;
-    const trophies = Math.round(baseTrophies * factor);
-    const warTrophies = Math.round(baseWarTrophies * (1 + variation * 0.5));
-
-    data.push({
-      id: `week-${i}`,
-      weekStart: now - (count - i) * weekMs,
-      weekEnd: now - (count - 1 - i) * weekMs,
-      totalTrophies: Math.max(trophies, baseTrophies * 0.6),
-      avgTrophies: Math.max(Math.round(trophies / memberCount), 1000),
-      totalDonations: Math.round(baseTrophies * 0.12 * (1 + variation)),
-      warTrophies: Math.max(warTrophies, 0),
-    });
-  }
-  return data;
-}
-
-export function EvolucionClan({ weeks = 6 }: EvolucionClanProps) {
+export function EvolucionClan() {
   const weeklyStats = useClanStore((s) => s.weeklyStats);
-  const clan = useClanStore((s) => s.clan);
+  const weeklySnapshots = useClanStore((s) => s.weeklySnapshots);
 
-  const setWeeklyStats = useClanStore((s) => s.setWeeklyStats);
-  const savedRef = useRef(false);
-
-  const weeksToShow = Math.min(weeks, 6);
-
-  const isEstimated = weeklyStats.length === 0;
+  const source = weeklySnapshots.length > 0 ? weeklySnapshots : weeklyStats;
+  const isEstimated = weeklySnapshots.length === 0 && weeklyStats.length > 0;
+  const isEmpty = source.length === 0;
 
   const stats = useMemo(() => {
-    if (weeklyStats.length > 0) return weeklyStats;
-    if (clan.stats.clanScore > 0) {
-      return generateHistoricalData(
-        clan.stats.clanScore,
-        clan.stats.clanWarTrophies,
-        clan.memberCount || 50,
-        weeksToShow
-      );
-    }
-    if (clan.name && clan.name !== "") {
-      const fallback = 50000;
-      return generateHistoricalData(fallback, 1500, 50, weeksToShow);
-    }
-    return [];
-  }, [weeklyStats, clan.stats.clanScore, clan.stats.clanWarTrophies, clan.memberCount, clan.name, weeksToShow]);
+    return source.slice(-6);
+  }, [source]);
 
-  useEffect(() => {
-    if (stats.length > 0 && weeklyStats.length === 0 && !savedRef.current) {
-      savedRef.current = true;
-      setWeeklyStats(stats);
-    }
-  }, [stats, weeklyStats, setWeeklyStats]);
-
-  if (stats.length === 0) {
+  if (isEmpty) {
     return (
       <Card>
         <CardHeader>
@@ -81,7 +28,7 @@ export function EvolucionClan({ weeks = 6 }: EvolucionClanProps) {
           <TrendingUp size={16} className="text-metallic-silver animate-icon-shine" />
         </CardHeader>
         <div className="h-40 flex items-center justify-center">
-          <p className="text-xs text-clash-muted">Esperando datos del clan...</p>
+          <p className="text-xs text-clash-muted">Sin historial aún</p>
         </div>
       </Card>
     );
@@ -94,7 +41,7 @@ export function EvolucionClan({ weeks = 6 }: EvolucionClanProps) {
       <CardHeader>
         <div>
           <div className="flex items-center gap-2">
-            <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan ({weeksToShow} semanas)</CardTitle>
+            <CardTitle className="text-metallic-gold bg-clip-text">Evolución del Clan ({stats.length} semanas)</CardTitle>
             {isEstimated && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
                 ⚠️ Datos estimados

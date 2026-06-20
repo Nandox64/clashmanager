@@ -55,15 +55,15 @@ export async function GET(request: Request) {
     return crApiPromise;
   }
   function getStoredMembersPromise() {
-    if (!storedMembersPromise) storedMembersPromise = adminDb ? getMembersFromFirestore(clanTag!).catch(() => []) : Promise.resolve([]);
+    if (!storedMembersPromise) storedMembersPromise = adminDb ? getMembersFromFirestore(clanTag!).catch((e) => { console.error("load: getMembersFromFirestore failed:", e); return []; }) : Promise.resolve([]);
     return storedMembersPromise;
   }
   function getExistingAchievementsPromise() {
-    if (!existingAchievementsPromise) existingAchievementsPromise = adminDb ? getAchievements(clanTag!).catch(() => []) : Promise.resolve([]);
+    if (!existingAchievementsPromise) existingAchievementsPromise = adminDb ? getAchievements(clanTag!).catch((e) => { console.error("load: getAchievements failed:", e); return []; }) : Promise.resolve([]);
     return existingAchievementsPromise;
   }
   function getLastRaceKeyPromise() {
-    if (!lastRaceKeyPromise) lastRaceKeyPromise = adminDb ? getLastRaceKey(clanTag!).catch(() => null) : Promise.resolve(null);
+    if (!lastRaceKeyPromise) lastRaceKeyPromise = adminDb ? getLastRaceKey(clanTag!).catch((e) => { console.error("load: getLastRaceKey failed:", e); return null; }) : Promise.resolve(null);
     return lastRaceKeyPromise;
   }
 
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
 
     if (useCache) {
       if (!fresh) {
-        syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch(() => {});
+        syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch((e) => console.error("load: background sync (stale) failed:", e));
       }
       return NextResponse.json({ ...cached, cached: true, stale: !fresh });
     }
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
     if (fresh) {
       return NextResponse.json({ ...cached, cached: true, stale: false });
     } else {
-      syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch(() => {});
+      syncClanData({ clanTag, awaitPersist: false, preloaded: makePreloaded() }).catch((e) => console.error("load: background sync (expired) failed:", e));
       return NextResponse.json({ ...cached, cached: true, stale: true });
     }
   }

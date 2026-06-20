@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRuletaConfig, getRuletaSpin, batchWrite } from "@/lib/firestore-service";
+import { getRuletaConfig, getRuletaSpin, getUserWins, batchWrite } from "@/lib/firestore-service";
 import { getUserUid } from "@/lib/api-utils";
 import { pickPrize, PRIZE_LABELS } from "@/lib/ruleta-prize";
 import type { RuletaSpin } from "@/lib/firestore-service";
@@ -14,9 +14,10 @@ export async function POST(request: Request) {
   const body = await request.json();
   const displayName = body.displayName || "Anónimo";
 
-  const [rawConfig, prev] = await Promise.all([
+  const [rawConfig, prev, userWins] = await Promise.all([
     getRuletaConfig(clanTag),
     getRuletaSpin(clanTag, uid),
+    getUserWins(clanTag, uid),
   ]);
 
   let config = rawConfig;
@@ -25,6 +26,11 @@ export async function POST(request: Request) {
     config = { eventActive: false, eventName: "", maxWinners: 3, prizeCounts: { "oro-1k": 0, "oro-10k": 0, "gemas-500": 0, "gemas-1200": 0, pass: 0 }, passAwarded: false, eventStartedAt: null };
   }
   const isNewEvent = !prev || prev.eventStartedAt !== config.eventStartedAt;
+
+  // Per-member limit: max 3 prizes total
+  if (userWins.length >= 3) {
+    return NextResponse.json({ prize: "no-ganar", label: "No ganaste — límite de 3 premios alcanzado", segmentIndex: 0, won: false });
+  }
 
   if (config.eventActive) {
     const spinsUsed = isNewEvent ? 0 : prev.spinsUsed;

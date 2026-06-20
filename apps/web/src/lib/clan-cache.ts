@@ -17,6 +17,7 @@ export interface ClanCachePayload {
   members: unknown;
   achievements: unknown;
   weeklyStats: unknown;
+  weeklySnapshots: unknown;
   localWarRank: number | null;
   localWarRankChange: number;
   localWarTrophies: number | null;

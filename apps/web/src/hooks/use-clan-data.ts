@@ -44,6 +44,7 @@ function hydrateFromCache(): boolean {
   s.setMembers(cached.members as Parameters<typeof s.setMembers>[0]);
   s.setAchievements(cached.achievements as Parameters<typeof s.setAchievements>[0]);
   s.setWeeklyStats(cached.weeklyStats as Parameters<typeof s.setWeeklyStats>[0]);
+  s.setWeeklySnapshots((cached.weeklySnapshots ?? []) as Parameters<typeof s.setWeeklySnapshots>[0]);
   s.setLocalWarRank(cached.localWarRank);
   s.setLocalWarRankChange(cached.localWarRankChange);
   s.setLocalWarTrophies(cached.localWarTrophies ?? null);
@@ -70,6 +71,7 @@ function applyApiData(data: Record<string, unknown>) {
   s.setMembers(data.members as Parameters<typeof s.setMembers>[0]);
   s.setAchievements((data.achievements ?? []) as Parameters<typeof s.setAchievements>[0]);
   s.setWeeklyStats((data.weeklyStats ?? []) as Parameters<typeof s.setWeeklyStats>[0]);
+  s.setWeeklySnapshots((data.weeklySnapshots ?? []) as Parameters<typeof s.setWeeklySnapshots>[0]);
   s.setLocalWarRank((data.localWarRank as number) ?? null);
   s.setLocalWarRankChange((data.localWarRankChange as number) ?? 0);
   s.setLocalWarTrophies((data.localWarTrophies as number) ?? null);
@@ -85,6 +87,7 @@ function applyApiData(data: Record<string, unknown>) {
     members: data.members,
     achievements: data.achievements ?? [],
     weeklyStats: data.weeklyStats ?? [],
+    weeklySnapshots: data.weeklySnapshots ?? [],
     localWarRank: (data.localWarRank as number) ?? null,
     localWarRankChange: (data.localWarRankChange as number) ?? 0,
     localWarTrophies: (data.localWarTrophies as number) ?? null,

@@ -17,9 +17,11 @@ import {
   saveWarRankPrediction,
   saveAchievements,
   saveWeeklyStats,
+  saveWeeklySnapshot,
   getAchievements,
   getMembersFromFirestore,
   getLocalWarRank,
+  getLocalWarRankChange,
   getLocalWarTrophies,
   getLastRaceKey,
   saveLastRaceKey,
@@ -73,23 +75,31 @@ interface PersistPayload {
 
 async function persistToFirestore(clanTag: string, data: PersistPayload) {
   const { transformedClan, transformedMembers, currentRiverRace, estimate, achievements, weeklyStats } = data;
-  await Promise.all([
-    saveClan(transformedClan).catch(() => {}),
-    saveMembers(clanTag, transformedMembers).catch(() => {}),
-    saveRiverRaceData(clanTag, currentRiverRace).catch(() => {}),
-    saveClanWarSettings(clanTag, {
-      localWarRank: estimate.rank,
-      localWarRankChange: estimate.estimatedChange,
-      localWarTrophies: transformedClan.stats.clanWarTrophies,
-    }).catch(() => {}),
-    saveWarRankPrediction(clanTag, estimate).catch(() => {}),
-    saveAchievements(clanTag, achievements).catch(() => {}),
-    saveWeeklyStats(clanTag, weeklyStats).catch(() => {}),
-  ]);
+
+  const persistOps: Promise<unknown>[] = [
+    saveClan(transformedClan).catch((e) => console.error("saveClan failed:", e)),
+    saveMembers(clanTag, transformedMembers).catch((e) => console.error("saveMembers failed:", e)),
+    saveRiverRaceData(clanTag, currentRiverRace).catch((e) => console.error("saveRiverRaceData failed:", e)),
+    saveWarRankPrediction(clanTag, estimate).catch((e) => console.error("saveWarRankPrediction failed:", e)),
+    saveAchievements(clanTag, achievements).catch((e) => console.error("saveAchievements failed:", e)),
+    saveWeeklyStats(clanTag, weeklyStats).catch((e) => console.error("saveWeeklyStats failed:", e)),
+  ];
+
+  if (estimate.confidence !== "fallback") {
+    persistOps.push(
+      saveClanWarSettings(clanTag, {
+        localWarRank: estimate.rank,
+        localWarRankChange: estimate.estimatedChange,
+        localWarTrophies: transformedClan.stats.clanWarTrophies,
+      }).catch((e) => console.error("saveClanWarSettings failed:", e))
+    );
+  }
+
+  await Promise.all(persistOps);
 }
 
 export async function syncClanData(input: SyncInput): Promise<SyncResult> {
-  const { clanTag, rankFallback = 547, changeFallback = -5, trophiesFallback = 2620, awaitPersist = true, preloaded } = input;
+  const { clanTag, rankFallback = 0, changeFallback = -5, trophiesFallback = 2620, awaitPersist = true, preloaded } = input;
 
   const crApiPromise = preloaded?.crApiPromise ?? getClanFull();
   const storedMembersPromise = preloaded?.storedMembersPromise ?? (adminDb ? getMembersFromFirestore(clanTag).catch(() => []) : Promise.resolve([]));
@@ -138,7 +148,25 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
       }
       warHistory = updatedHistory;
 
-      await saveLastRaceKey(clan.tag, raceKey).catch(() => {});
+      const totalDonations = clan.memberList.reduce((a, m) => a + m.donations, 0);
+      const avgTrophies = clan.memberList.length > 0
+        ? Math.round(clan.memberList.reduce((a, m) => a + m.trophies, 0) / clan.memberList.length)
+        : 0;
+      const weekStart = new Date(latestRace.createdDate).getTime();
+      const snapshot: WeeklyClanStats = {
+        id: raceKey,
+        weekStart,
+        weekEnd: weekStart + 7 * 86400000,
+        totalTrophies: clan.clanScore,
+        avgTrophies,
+        totalDonations,
+        warTrophies: latestRace.standings?.[0]?.trophyChange ?? 0,
+        warFame: latestRace.standings?.[0]?.clan?.fame ?? 0,
+      };
+      await Promise.all([
+        saveLastRaceKey(clan.tag, raceKey).catch(() => {}),
+        saveWeeklySnapshot(clanTag, snapshot).catch((e) => console.error("saveWeeklySnapshot failed:", e)),
+      ]);
     }
   }
 
@@ -149,8 +177,9 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
     warHistory,
   });
 
-  const [storedRank, storedTrophies] = await Promise.all([
+  const [storedRank, storedChange, storedTrophies] = await Promise.all([
     getLocalWarRank(clan.tag).catch(() => null),
+    getLocalWarRankChange(clan.tag).catch(() => 0),
     getLocalWarTrophies(clan.tag).catch(() => null),
   ]);
 
@@ -159,7 +188,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
     clan.tag,
     clan.clanWarTrophies,
     storedRank ?? rankFallback,
-    changeFallback,
+    storedChange ?? changeFallback,
     storedTrophies ?? trophiesFallback,
   );
 
@@ -211,7 +240,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
   if (awaitPersist) {
     await persistPromise;
   } else {
-    persistPromise.catch(() => {});
+    persistPromise.catch((e) => console.error("Background persist failed:", e));
   }
 
   return {

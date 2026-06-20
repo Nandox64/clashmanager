@@ -151,11 +151,11 @@ export function transformToWeeklyStats(
   const races = riverRaceLog.items.slice(0, 8);
 
   for (let i = 0; i < races.length; i++) {
-    const weekStart = Date.now() - (races.length - i) * 7 * 86400000;
-    const weekEnd = Date.now() - (races.length - 1 - i) * 7 * 86400000;
     const race = races[i];
+    const weekStart = parseRaceDate(race.createdDate);
+    const weekEnd = weekStart + 7 * 86400000;
     const warTrophies = race?.standings?.[0]?.trophyChange ?? 0;
-    const raceFame = race?.standings?.[0]?.clan?.fame ?? 0;
+    const warFame = race?.standings?.[0]?.clan?.fame ?? 0;
 
     items.push({
       id: `week-${i}`,
@@ -165,9 +165,18 @@ export function transformToWeeklyStats(
       avgTrophies,
       totalDonations,
       warTrophies,
+      warFame,
     });
   }
   return items;
+}
+
+function parseRaceDate(dateStr: string): number {
+  const normalized = dateStr
+    .replace(/^(\d{4})(\d{2})(\d{2})T/, "$1-$2-$3T")
+    .replace(/T(\d{2})(\d{2})(\d{2})/, "T$1:$2:$3");
+  const d = new Date(normalized);
+  return isNaN(d.getTime()) ? Date.now() : d.getTime();
 }
 
 function mapRole(

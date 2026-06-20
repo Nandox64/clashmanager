@@ -50,6 +50,7 @@ interface ClanState {
   members: Member[];
   achievements: Achievement[];
   weeklyStats: WeeklyClanStats[];
+  weeklySnapshots: WeeklyClanStats[];
   recruits: Recruit[];
   logs: LogEntry[];
   localWarRank: number | null;
@@ -74,6 +75,7 @@ interface ClanState {
   setMembers: (members: Member[]) => void;
   setAchievements: (achievements: Achievement[]) => void;
   setWeeklyStats: (stats: WeeklyClanStats[]) => void;
+  setWeeklySnapshots: (snapshots: WeeklyClanStats[]) => void;
   setRecruits: (recruits: Recruit[]) => void;
   setLogs: (logs: LogEntry[]) => void;
 
@@ -100,6 +102,7 @@ export const useClanStore = create<ClanState>((set) => ({
   members: [],
   achievements: [],
   weeklyStats: [],
+  weeklySnapshots: [],
   recruits: [],
   logs: [],
   localWarRank: null,
@@ -121,6 +124,7 @@ export const useClanStore = create<ClanState>((set) => ({
   setMembers: (members) => set({ members }),
   setAchievements: (achievements) => set({ achievements }),
   setWeeklyStats: (stats) => set({ weeklyStats: stats }),
+  setWeeklySnapshots: (snapshots) => set({ weeklySnapshots: snapshots }),
   setRecruits: (recruits) => set({ recruits }),
   setLogs: (logs) => set({ logs }),
 

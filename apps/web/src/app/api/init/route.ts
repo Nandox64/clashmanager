@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getClanWarSettings, saveAchievements } from "@/lib/firestore-service";
+import { getClanFromFirestore, getMembersFromFirestore, getAchievements, getWeeklyStats, getWeeklySnapshots, getClanWarSettings, saveAchievements } from "@/lib/firestore-service";
 import { computeAchievements } from "@/lib/achievements";
 import { adminDb } from "@/lib/firebase-admin";
 
@@ -13,12 +13,13 @@ export async function GET() {
     return NextResponse.json({ error: "Firebase no disponible" }, { status: 503 });
   }
 
-  const [clan, members, warSettings, storedAchievements, weeklyStats] = await Promise.all([
+  const [clan, members, warSettings, storedAchievements, weeklyStats, weeklySnapshots] = await Promise.all([
     getClanFromFirestore(clanTag),
     getMembersFromFirestore(clanTag),
     getClanWarSettings(clanTag),
     getAchievements(clanTag),
     getWeeklyStats(clanTag),
+    getWeeklySnapshots(clanTag),
   ]);
 
   if (!clan) {
@@ -35,13 +36,14 @@ export async function GET() {
   }
 
   const achievements = computeAchievements(members, storedAchievements);
-  saveAchievements(clanTag, achievements).catch(() => {});
+  saveAchievements(clanTag, achievements).catch((e) => console.error("init: saveAchievements failed:", e));
 
   return NextResponse.json({
     clan,
     members,
     achievements,
     weeklyStats,
+    weeklySnapshots,
     localWarRank: warSettings.localWarRank,
     localWarRankChange: warSettings.localWarRankChange,
     localWarTrophies: warSettings.localWarTrophies,

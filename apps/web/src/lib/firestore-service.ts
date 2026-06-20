@@ -52,7 +52,8 @@ export async function getClanFromFirestore(
     const snap = await ref.get();
     if (!snap.exists) return null;
     return { id: snap.id, ...snap.data() } as Clan;
-  } catch {
+  } catch (e) {
+    console.error("getClanFromFirestore failed:", e);
     return null;
   }
 }
@@ -63,7 +64,8 @@ export async function getMemberByUid(clanTag: string, uid: string): Promise<Memb
     const snap = await ref.collection("members").doc(uid).get();
     if (!snap.exists) return null;
     return { uid: snap.id, ...snap.data() } as Member;
-  } catch {
+  } catch (e) {
+    console.error("getMemberByUid failed:", e);
     return null;
   }
 }
@@ -88,7 +90,8 @@ export async function getMembersFromFirestore(
         },
       } as Member;
     });
-  } catch {
+  } catch (e) {
+    console.error("getMembersFromFirestore failed:", e);
     return [];
   }
 }
@@ -160,7 +163,8 @@ export async function getClanWarSettings(clanTag: string): Promise<ClanWarSettin
       updatedAt: d.updatedAt ?? null,
       lastRaceKey: d.lastRaceKey ?? null,
     };
-  } catch {
+  } catch (e) {
+    console.error("getClanWarSettings failed:", e);
     return { ...defaultWarSettings };
   }
 }
@@ -206,7 +210,8 @@ export async function getAchievements(clanTag: string): Promise<Achievement[]> {
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("achievements").orderBy("awardedAt", "desc").get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Achievement));
-  } catch {
+  } catch (e) {
+    console.error("getAchievements failed:", e);
     return [];
   }
 }
@@ -282,7 +287,8 @@ export async function getRecruits(clanTag: string): Promise<Recruit[]> {
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("recruits").orderBy("appliedAt", "desc").get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Recruit));
-  } catch {
+  } catch (e) {
+    console.error("getRecruits failed:", e);
     return [];
   }
 }
@@ -307,7 +313,8 @@ export async function getLogs(clanTag: string, limit = 20): Promise<LogEntry[]> 
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("logs").orderBy("timestamp", "desc").limit(limit).get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as LogEntry));
-  } catch {
+  } catch (e) {
+    console.error("getLogs failed:", e);
     return [];
   }
 }
@@ -340,7 +347,36 @@ export async function getWeeklyStats(clanTag: string): Promise<WeeklyClanStats[]
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("weeklyStats").orderBy("weekStart", "asc").get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as WeeklyClanStats));
-  } catch {
+  } catch (e) {
+    console.error("getWeeklyStats failed:", e);
+    return [];
+  }
+}
+
+// ── Weekly Snapshots (Evolución del Clan) ──
+
+export async function saveWeeklySnapshot(clanTag: string, snapshot: WeeklyClanStats) {
+  const ref = getClanDocRef(clanTag);
+  await ref.collection("weeklySnapshots").doc(snapshot.id).set(
+    { ...snapshot, updatedAt: Date.now() },
+    { merge: true }
+  );
+  // Prune: keep newest 6
+  const existing = await ref.collection("weeklySnapshots").orderBy("weekStart", "desc").get();
+  if (existing.docs.length > 6) {
+    const batch = adminDb!.batch();
+    existing.docs.slice(6).forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  }
+}
+
+export async function getWeeklySnapshots(clanTag: string, max = 6): Promise<WeeklyClanStats[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("weeklySnapshots").orderBy("weekStart", "desc").limit(max).get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as WeeklyClanStats)).reverse();
+  } catch (e) {
+    console.error("getWeeklySnapshots failed:", e);
     return [];
   }
 }
@@ -365,7 +401,8 @@ export async function getProfile(clanTag: string, firebaseUid: string): Promise<
     const snap = await ref.collection("profiles").doc(firebaseUid).get();
     if (!snap.exists) return null;
     return { uid: snap.id, ...snap.data() } as UserProfileDoc;
-  } catch {
+  } catch (e) {
+    console.error("getProfile failed:", e);
     return null;
   }
 }
@@ -385,7 +422,8 @@ export async function getProfileByLinkedMember(clanTag: string, memberUid: strin
     if (snap.empty) return null;
     const doc = snap.docs[0];
     return { uid: doc.id, ...doc.data() } as UserProfileDoc;
-  } catch {
+  } catch (e) {
+    console.error("getProfileByLinkedMember failed:", e);
     return null;
   }
 }
@@ -395,7 +433,8 @@ export async function getLinkedProfiles(clanTag: string): Promise<UserProfileDoc
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("profiles").where("linkedMemberId", "!=", null).get();
     return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as UserProfileDoc));
-  } catch {
+  } catch (e) {
+    console.error("getLinkedProfiles failed:", e);
     return [];
   }
 }
@@ -414,7 +453,8 @@ export async function getFirebaseUidByMember(clanTag: string, memberUid: string)
     const snap = await ref.collection("memberLinks").doc(memberUid).get();
     if (!snap.exists) return null;
     return snap.data()?.firebaseUid ?? null;
-  } catch {
+  } catch (e) {
+    console.error("getFirebaseUidByMember failed:", e);
     return null;
   }
 }
@@ -442,7 +482,8 @@ export async function getClanScaling(clanTag: string): Promise<ClanScalingConfig
     const snap = await ref.get();
     if (!snap.exists) return null;
     return (snap.data()?.scaling as ClanScalingConfig) ?? null;
-  } catch {
+  } catch (e) {
+    console.error("getClanScaling failed:", e);
     return null;
   }
 }
@@ -493,7 +534,8 @@ export async function getRuletaConfig(clanTag: string): Promise<RuletaConfig | n
     const snap = await ref.collection("settings").doc("ruleta").get();
     if (!snap.exists) return null;
     return snap.data() as RuletaConfig;
-  } catch {
+  } catch (e) {
+    console.error("getRuletaConfig failed:", e);
     return null;
   }
 }
@@ -509,7 +551,8 @@ export async function getRuletaSpin(clanTag: string, uid: string): Promise<Rulet
     const snap = await ref.collection("ruletaSpins").doc(uid).get();
     if (!snap.exists) return null;
     return snap.data() as RuletaSpin;
-  } catch {
+  } catch (e) {
+    console.error("getRuletaSpin failed:", e);
     return null;
   }
 }
@@ -524,7 +567,8 @@ export async function getRuletaWinners(clanTag: string): Promise<RuletaWinner[]>
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("ruletaWinners").orderBy("awardedAt", "desc").limit(50).get();
     return snap.docs.map((doc) => ({ id: doc.id, uid: doc.data().uid, displayName: doc.data().displayName, prize: doc.data().prize, awardedAt: doc.data().awardedAt, outOfCompetition: doc.data().outOfCompetition } as RuletaWinner));
-  } catch {
+  } catch (e) {
+    console.error("getRuletaWinners failed:", e);
     return [];
   }
 }
@@ -534,7 +578,8 @@ export async function getUserWins(clanTag: string, uid: string, limit = 3): Prom
     const ref = getClanDocRef(clanTag);
     const snap = await ref.collection("ruletaWinners").where("uid", "==", uid).orderBy("awardedAt", "desc").limit(limit).get();
     return snap.docs.map((doc) => ({ id: doc.id, uid: doc.data().uid, displayName: doc.data().displayName, prize: doc.data().prize, awardedAt: doc.data().awardedAt, outOfCompetition: doc.data().outOfCompetition } as RuletaWinner));
-  } catch {
+  } catch (e) {
+    console.error("getUserWins failed:", e);
     return [];
   }
 }

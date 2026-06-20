@@ -262,7 +262,7 @@ export function RuletaSection() {
           <button
             onClick={handleSpin}
             disabled={!canSpin}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#7C3AED] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#A855F7]/30 relative z-10 animate-pulse-glow"
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#750191] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-90 disabled:cursor-default shadow-lg shadow-[#9f07f7]/30 relative z-10 animate-pulse-glow"
           >
             {countdown !== null ? (
               <Loader2 size={20} className="animate-spin" />

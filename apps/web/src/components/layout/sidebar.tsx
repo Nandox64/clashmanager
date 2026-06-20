@@ -18,7 +18,7 @@ import {
   Gift,
   Trophy,
 } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, memo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
@@ -39,7 +39,7 @@ const navItems = [
 
 const LEADER_ONLY = ["/settings"];
 
-export function Sidebar() {
+export const Sidebar = memo(function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -327,4 +327,4 @@ export function Sidebar() {
       </aside>
     </>
   );
-}
+});

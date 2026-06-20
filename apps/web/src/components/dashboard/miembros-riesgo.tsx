@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { useClanStore } from "@/lib/store";
-import { daysAgo, getActivityColor } from "@/lib/utils";
+import { daysAgo } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
 import type { Member } from "@clashmanager/shared";
 
@@ -111,8 +111,15 @@ export function MiembrosRiesgo() {
                               Don.: {member.weeklyStats?.donationsGiven ?? 0} · Guerra:{" "}
                               {member.weeklyStats?.warParticipation ?? 0}%
                               {daysSinceActive > 0 && (
-                                <span className={`ml-1.5 ${getActivityColor(daysSinceActive)}`}>
-                                  · {daysAgo(member.lastActiveAt)}
+                                <span className={[
+                                  "ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium",
+                                  severity === "inactive" || severity === "risk" || section.key === "inactivity"
+                                    ? "bg-red-800/70 text-red-100"
+                                    : section.key === "donations"
+                                      ? "bg-amber-700/60 text-amber-100"
+                                      : "bg-neutral-700/60 text-neutral-100",
+                                ].join(" ")}>
+                                  {daysAgo(member.lastActiveAt)}
                                 </span>
                               )}
                             </p>
