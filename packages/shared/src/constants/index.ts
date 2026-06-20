@@ -55,7 +55,7 @@ export const MEDALS = [
     id: "clan_heart",
     name: "Corazón del Clan",
     icon: "❤️",
-    requirement: "30 días donando diario",
+    requirement: "Top donador de la semana",
   },
   {
     id: "unstoppable",
@@ -67,7 +67,7 @@ export const MEDALS = [
     id: "guardian",
     name: "Guardián",
     icon: "🛡️",
-    requirement: "Más donaciones del mes",
+    requirement: "Donó 3x lo que recibió 3 semanas seguidas",
   },
   {
     id: "sharpshooter",
@@ -85,7 +85,7 @@ export const MEDALS = [
     id: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    requirement: "10+ días activo en la semana",
+    requirement: "Donó 500+ y ganó 100+ copas en la semana",
   },
   {
     id: "strategist",

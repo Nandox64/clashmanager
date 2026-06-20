@@ -39,6 +39,8 @@ export interface Member {
   weeklyStats: WeeklyStats;
   totalWars: number;
   warsParticipated: number;
+  consecutiveTopDonorWeeks?: number;
+  lastTopDonorWeekId?: string;
 }
 
 export interface WeeklyStats {

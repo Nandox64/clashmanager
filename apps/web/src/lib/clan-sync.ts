@@ -163,6 +163,34 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
     storedTrophies ?? trophiesFallback,
   );
 
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const currentWeekId = weekStart.toISOString().slice(0, 10);
+
+  const storedByTag = new Map(storedMembers.map(m => [m.playerTag, m]));
+
+  const sortedByDonations = [...transformedMembers].sort(
+    (a, b) => (b.weeklyStats?.donationsGiven ?? 0) - (a.weeklyStats?.donationsGiven ?? 0)
+  );
+
+  const top3Tags = new Set(sortedByDonations.slice(0, 3).map(m => m.playerTag));
+
+  for (const member of transformedMembers) {
+    const stored = storedByTag.get(member.playerTag);
+    const prevWeeks = stored?.consecutiveTopDonorWeeks ?? 0;
+    const lastWeekId = stored?.lastTopDonorWeekId;
+
+    if (lastWeekId === currentWeekId) {
+      member.consecutiveTopDonorWeeks = prevWeeks;
+      member.lastTopDonorWeekId = currentWeekId;
+      continue;
+    }
+
+    member.consecutiveTopDonorWeeks = top3Tags.has(member.playerTag) ? prevWeeks + 1 : 0;
+    member.lastTopDonorWeekId = currentWeekId;
+  }
+
   const achievements = computeAchievements(transformedMembers, existingAchievements);
 
   const weeklyStats = riverRaceLog

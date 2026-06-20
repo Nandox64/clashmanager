@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { NavigationLoader } from "@/components/layout/navigation-loader";
 import { PageBackground } from "@/components/layout/page-background";
 import { PWARegister } from "@/components/pwa-register";
+import { ThemeColorUpdater } from "@/components/layout/theme-color-updater";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <ThemeColorUpdater />
         <PageBackground />
         <NavigationLoader />
         <PWARegister />

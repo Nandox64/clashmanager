@@ -148,12 +148,15 @@ async function fetchFromApi(force = false) {
 
     useClanStore.setState({ progressPhase: "ready" });
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : "Error al conectar";
-    useClanStore.setState({ error: errorMsg });
+    const isAbort = err instanceof DOMException && err.name === "AbortError";
+    const errorMsg = isAbort
+      ? "La solicitud tardó demasiado — los datos se muestran desde caché"
+      : err instanceof Error ? err.message : "Error al conectar";
+    useClanStore.setState({ error: isAbort && useClanStore.getState().loaded ? null : errorMsg });
 
     // Si ya teníamos datos (del caché), no borrarlos — seguir mostrándolos
     if (!useClanStore.getState().loaded) {
-      useClanStore.setState({ progressPhase: "error" });
+      useClanStore.setState({ progressPhase: isAbort ? "ready" : "error" });
     }
     // Si sí hay datos cargados, dejamos progressPhase como estaba (ready o lo que sea)
   } finally {

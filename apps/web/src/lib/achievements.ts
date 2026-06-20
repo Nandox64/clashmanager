@@ -19,7 +19,10 @@ const MEDAL_CHECKERS: {
     medalId: "clan_heart",
     name: "Corazón del Clan",
     icon: "❤️",
-    check: (m) => (m.donations ?? 0) >= 500,
+    check: (m, allMembers) => {
+      const maxGiven = Math.max(...allMembers.map((x) => x.weeklyStats?.donationsGiven ?? 0));
+      return maxGiven > 0 && (m.weeklyStats?.donationsGiven ?? 0) === maxGiven;
+    },
   },
   {
     medalId: "unstoppable",
@@ -31,9 +34,11 @@ const MEDAL_CHECKERS: {
     medalId: "guardian",
     name: "Guardián",
     icon: "🛡️",
-    check: (m, allMembers) => {
-      const maxDonations = Math.max(...allMembers.map((x) => x.donations ?? 0));
-      return maxDonations > 0 && (m.donations ?? 0) === maxDonations;
+    check: (m) => {
+      const ratio = m.donationsReceived > 0
+        ? m.donations / m.donationsReceived
+        : m.donations > 0 ? Infinity : 0;
+      return ratio >= 3 && (m.consecutiveTopDonorWeeks ?? 0) >= 3;
     },
   },
   {

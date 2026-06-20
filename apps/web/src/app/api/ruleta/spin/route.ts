@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     operations.push(
-      { type: "set", collection: "ruletaWinners", docId: uid, data: { uid, displayName, prize: result.prize, awardedAt: Date.now(), outOfCompetition } }
+      { type: "set", collection: "ruletaWinners", docId: `${uid}_${Date.now()}`, data: { uid, displayName, prize: result.prize, awardedAt: Date.now(), outOfCompetition } }
     );
   }
 

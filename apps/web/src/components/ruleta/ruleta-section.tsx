@@ -19,6 +19,7 @@ interface SpinResult {
 }
 
 interface Winner {
+  id?: string;
   uid: string;
   displayName: string;
   prize: string;
@@ -34,6 +35,7 @@ export function RuletaSection() {
   const [won, setWon] = useState(false);
   const [prize, setPrize] = useState<string | null>(null);
   const [winners, setWinners] = useState<Winner[]>([]);
+  const [myWins, setMyWins] = useState<Winner[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [currentResult, setCurrentResult] = useState<SpinResult | null>(null);
   const [lastResult, setLastResult] = useState<SpinResult | null>(null);
@@ -77,6 +79,7 @@ export function RuletaSection() {
       setWon(data.state?.won ?? false);
       setPrize(data.state?.prize ?? null);
       setWinners(Array.isArray(data.winners) ? data.winners : []);
+      setMyWins(Array.isArray(data.myWins) ? data.myWins : []);
       dismissedErrorRef.current = false;
     } catch (err) {
       if (!silent && !dismissedErrorRef.current) {
@@ -204,29 +207,6 @@ export function RuletaSection() {
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Countdown overlay */}
-      {countdown !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 will-change-[opacity] overflow-y-auto">
-          <div className="text-center">
-            {countdown > 0 ? (
-              <>
-                <p
-                  className="text-9xl font-extrabold text-metallic-gold drop-shadow-[0_0_30px_rgba(184,134,11,0.5)]"
-                  style={{ animation: "cd-pop 0.4s ease-out both" }}
-                >
-                  {countdown}
-                </p>
-                <p className="text-lg text-clash-muted mt-4 tracking-widest uppercase">Preparados...</p>
-              </>
-            ) : (
-              <p className="text-6xl font-extrabold text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.5)] animate-ping">
-                \u00a1YA!
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
       <style>{`
         @keyframes cd-pop {
           0% { transform: scale(0.3); opacity: 0; }
@@ -248,17 +228,41 @@ export function RuletaSection() {
 
       <div className="grid gap-4 lg:gap-6 lg:grid-cols-2 lg:items-start">
         {/* Column 1: Wheel */}
-        <div className="flex flex-col items-center gap-4 lg:gap-6 pt-4 lg:pt-6">
-          <RuletaWheel
-            spinning={spinning}
-            resultIndex={currentResult?.segmentIndex ?? null}
-            spinTrigger={spinTrigger}
-          />
+        <div className="flex flex-col items-center gap-4 lg:gap-6 pt-4 lg:pt-6 max-w-[260px] lg:max-w-full mx-auto lg:mx-0">
+          <div className="relative inline-block max-w-full">
+            {countdown !== null && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-black/60" />
+                <div className="text-center relative">
+                  {countdown > 0 ? (
+                    <>
+                      <p
+                        className="text-8xl lg:text-9xl font-extrabold text-metallic-gold drop-shadow-[0_0_30px_rgba(184,134,11,0.5)]"
+                        style={{ animation: "cd-pop 0.4s ease-out both" }}
+                      >
+                        {countdown}
+                      </p>
+                      <p className="text-sm lg:text-lg text-clash-muted mt-2 lg:mt-4 tracking-widest uppercase">Preparados...</p>
+                    </>
+                  ) : (
+                    <p className="text-5xl lg:text-6xl font-extrabold text-green-400 drop-shadow-[0_0_30px_rgba(74,222,128,0.5)] animate-ping">
+                      ¡YA!
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            <RuletaWheel
+              spinning={spinning}
+              resultIndex={currentResult?.segmentIndex ?? null}
+              spinTrigger={spinTrigger}
+            />
+          </div>
 
           <button
             onClick={handleSpin}
             disabled={!canSpin}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#B05E0E] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#B05E0E]/20 relative z-10 animate-pulse-glow"
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#7C3AED] text-white text-base font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#A855F7]/30 relative z-10 animate-pulse-glow"
           >
             {countdown !== null ? (
               <Loader2 size={20} className="animate-spin" />
@@ -267,7 +271,7 @@ export function RuletaSection() {
             ) : (
               <Gift size={20} />
             )}
-            {countdown !== null ? "Preparando..." : spinning ? "Girando..." : eventActive && spinsRemaining <= 0 ? "Sin tiros" : "\u00a1GIRAR!"}
+            {countdown !== null ? "Preparando..." : spinning ? "Girando..." : eventActive && spinsRemaining <= 0 ? "Sin tiros" : "¡GIRAR!"}
           </button>
         </div>
 
@@ -279,7 +283,7 @@ export function RuletaSection() {
               {eventActive ? (
                 <>
                   <li>{"\u2022"} Tienes <strong>2 tiros</strong> por evento</li>
-                  <li>{"\u2022"} Si ganas un premio, quedas fuera autom\u00e1ticamente</li>
+                  <li>{"\u2022"} Si ganas un premio, quedas fuera automáticamente</li>
                   <li>{"\u2022"} Si pierdes los 2 tiros, fuera tambi\u00e9n</li>
                   <li>{"\u2022"} M\u00e1ximo {3} ganadores por premio</li>
                   <li>{"\u2022"} Solo 1 Pass Royale por evento</li>
@@ -287,13 +291,32 @@ export function RuletaSection() {
                 </>
               ) : (
                 <>
-                  <li>{"\u2022"} La ruleta est\u00e1 en <strong>modo libre</strong> \u2014 no hay premios reales</li>
-                  <li>{"\u2022"} Espera a que el l\u00edder active un evento para participar</li>
+                  <li>{"\u2022"} La ruleta está en <strong>modo libre</strong> — no hay premios reales</li>
+                  <li>{"\u2022"} Espera a que el líder active un evento para participar</li>
                   <li>{"\u2022"} En evento: 2 tiros por persona, premios con topes</li>
                 </>
               )}
             </ul>
           </div>
+
+          {myWins.length > 0 && (
+            <div className="border-t border-clash-border pt-4">
+              <h3 className="text-sm font-bold text-clash-text mb-2">\ud83c\udfaf Mis resultados</h3>
+              <div className="space-y-2">
+                {myWins.map((w) => (
+                  <div key={w.id || w.uid} className="flex items-center gap-3 p-3 rounded-lg bg-glass-card border border-clash-border">
+                    <div className="w-8 h-8 rounded-full bg-metallic-gold/20 flex items-center justify-center text-sm">
+                      {w.displayName?.slice(0, 2).toUpperCase() || "??"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-clash-text">{PRIZE_LABELS[w.prize] || w.prize}</p>
+                      <p className="text-xs text-clash-dimmed">{new Date(w.awardedAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="border-t border-clash-border pt-4">
             <h3 className="text-sm font-bold text-clash-text mb-2">\ud83c\udfc6 Ganadores</h3>
@@ -302,7 +325,7 @@ export function RuletaSection() {
                 {winners.filter((w) => !w.outOfCompetition).length > 0 && (
                   <div className="space-y-2">
                     {winners.filter((w) => !w.outOfCompetition).map((w) => (
-                      <div key={w.uid} className="flex items-center gap-3 p-3 rounded-lg bg-glass-card border border-clash-border">
+                      <div key={w.id || w.uid} className="flex items-center gap-3 p-3 rounded-lg bg-glass-card border border-clash-border">
                         <div className="w-8 h-8 rounded-full bg-metallic-gold/20 flex items-center justify-center text-sm">
                           {w.displayName?.slice(0, 2).toUpperCase() || "??"}
                         </div>
@@ -319,7 +342,7 @@ export function RuletaSection() {
                     <p className="text-[10px] text-clash-dimmed uppercase tracking-wider mb-1.5">Fuera de concurso</p>
                     <div className="space-y-2">
                       {winners.filter((w) => w.outOfCompetition).map((w) => (
-                        <div key={w.uid} className="flex items-center gap-3 p-3 rounded-lg bg-glass-card border border-clash-border">
+                        <div key={w.id || w.uid} className="flex items-center gap-3 p-3 rounded-lg bg-glass-card border border-clash-border">
                           <div className="w-8 h-8 rounded-full bg-metallic-gold/20 flex items-center justify-center text-sm">
                             {w.displayName?.slice(0, 2).toUpperCase() || "??"}
                           </div>
@@ -334,7 +357,7 @@ export function RuletaSection() {
                 )}
               </div>
             ) : (
-              <p className="text-xs text-clash-muted">Sin ganadores a\u00fan</p>
+              <p className="text-xs text-clash-muted">Sin ganadores aún</p>
             )}
           </div>
         </div>
@@ -360,12 +383,12 @@ export function RuletaSection() {
                   Premio: <span className="text-yellow-300 font-black text-xl">{lastResult.label}</span>
                 </p>
                 <p className="text-lg font-black text-green-300 mt-3 animate-bounce [text-shadow:_0_2px_4px_rgb(0_0_0_/_70%)]">
-                  \u00a1Felicidades!
+                  ¡Felicidades!
                 </p>
               </>
             )}
             {eventActive && lastResult.won && (
-              <p className="text-sm text-white/80 mt-2 [text-shadow:_0_1px_3px_rgb(0_0_0_/_60%)]">Contacta al l\u00edder para recibir tu premio.</p>
+              <p className="text-sm text-white/80 mt-2 [text-shadow:_0_1px_3px_rgb(0_0_0_/_60%)]">Contacta al líder para recibir tu premio.</p>
             )}
             <div className="mt-4 flex justify-center gap-2">
               <button

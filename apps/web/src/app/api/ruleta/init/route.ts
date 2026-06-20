@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRuletaConfig, getRuletaSpin, getRuletaWinners } from "@/lib/firestore-service";
+import { getRuletaConfig, getRuletaSpin, getRuletaWinners, getUserWins } from "@/lib/firestore-service";
 import { getUserUid } from "@/lib/api-utils";
 
 export async function GET(request: Request) {
@@ -23,9 +23,11 @@ export async function GET(request: Request) {
     let spinsRemaining = 0;
     let won = false;
     let prize: string | null = null;
+    let myWins: any[] = [];
 
     if (uid) {
       spin = await getRuletaSpin(clanTag, uid).catch(() => null);
+      myWins = await getUserWins(clanTag, uid, 3).catch(() => []);
     }
 
     const eventActive = config?.eventActive ?? false;
@@ -48,6 +50,7 @@ export async function GET(request: Request) {
       config,
       state: { eventActive, spinsRemaining, won, prize },
       winners,
+      myWins,
     });
   } catch (err) {
     console.error("[Ruleta] Error en init route:", err);

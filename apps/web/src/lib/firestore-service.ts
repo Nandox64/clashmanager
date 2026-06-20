@@ -479,6 +479,7 @@ export interface RuletaSpin {
 }
 
 export interface RuletaWinner {
+  id?: string;
   uid: string;
   displayName: string;
   prize: string;
@@ -521,8 +522,18 @@ export async function saveRuletaSpin(clanTag: string, uid: string, spin: RuletaS
 export async function getRuletaWinners(clanTag: string): Promise<RuletaWinner[]> {
   try {
     const ref = getClanDocRef(clanTag);
-    const snap = await ref.collection("ruletaWinners").orderBy("awardedAt", "desc").limit(3).get();
-    return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() } as RuletaWinner));
+    const snap = await ref.collection("ruletaWinners").orderBy("awardedAt", "desc").limit(50).get();
+    return snap.docs.map((doc) => ({ id: doc.id, uid: doc.data().uid, displayName: doc.data().displayName, prize: doc.data().prize, awardedAt: doc.data().awardedAt, outOfCompetition: doc.data().outOfCompetition } as RuletaWinner));
+  } catch {
+    return [];
+  }
+}
+
+export async function getUserWins(clanTag: string, uid: string, limit = 3): Promise<RuletaWinner[]> {
+  try {
+    const ref = getClanDocRef(clanTag);
+    const snap = await ref.collection("ruletaWinners").where("uid", "==", uid).orderBy("awardedAt", "desc").limit(limit).get();
+    return snap.docs.map((doc) => ({ id: doc.id, uid: doc.data().uid, displayName: doc.data().displayName, prize: doc.data().prize, awardedAt: doc.data().awardedAt, outOfCompetition: doc.data().outOfCompetition } as RuletaWinner));
   } catch {
     return [];
   }
@@ -536,6 +547,14 @@ export async function addRuletaWinner(clanTag: string, winner: RuletaWinner) {
 export async function clearRuletaWinners(clanTag: string) {
   const ref = getClanDocRef(clanTag);
   const snap = await ref.collection("ruletaWinners").get();
+  const batch = adminDb!.batch();
+  snap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+}
+
+export async function clearRuletaSpins(clanTag: string) {
+  const ref = getClanDocRef(clanTag);
+  const snap = await ref.collection("ruletaSpins").get();
   const batch = adminDb!.batch();
   snap.docs.forEach((doc) => batch.delete(doc.ref));
   await batch.commit();

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Loader2, Play, Save, Square } from "lucide-react";
+import { Loader2, Play, Save, Square, RotateCcw } from "lucide-react";
 
 interface PrizeCount {
   oro1k: number;
@@ -36,6 +36,7 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [toggling, setToggling] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const getHeaders = useCallback(async (): Promise<Record<string, string>> => {
     const token = await user?.getIdToken();
@@ -111,6 +112,20 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
     }
   };
 
+  const handleReset = async () => {
+    if (!window.confirm("¿Estás seguro? Se borrarán todos los ganadores, tiros y la configuración de la ruleta.")) return;
+    setResetting(true);
+    try {
+      const headers = await getHeaders();
+      await fetch("/api/ruleta/reset", { method: "POST", headers });
+      await fetchData();
+    } catch {
+      // silent
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const totalWinners = Object.values(prizeCounts).reduce((a, b) => a + b, 0);
 
   return (
@@ -160,6 +175,10 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
               Desactivar evento
             </Button>
           )}
+          <Button onClick={handleReset} disabled={resetting} variant="secondary" className="text-red-400 border-red-400/30">
+            {resetting ? <Loader2 size={16} className="animate-spin" /> : <RotateCcw size={16} />}
+            Reset ruleta
+          </Button>
         </div>
       )}
 
@@ -185,7 +204,7 @@ export function RuletaControl({ isAllowed }: { isAllowed: boolean }) {
         <div className="space-y-2">
           <p className="text-xs font-medium text-clash-text">Ganadores</p>
           {winners.map((w) => (
-            <div key={w.uid} className="flex items-center gap-2 p-2 rounded-lg bg-glass">
+            <div key={w.uid + w.awardedAt} className="flex items-center gap-2 p-2 rounded-lg bg-glass">
               <p className="text-xs text-clash-text flex-1 truncate">{w.displayName}</p>
               <p className="text-[10px] text-metallic-gold font-medium">{PRIZE_LABELS[w.prize] || w.prize}</p>
             </div>
