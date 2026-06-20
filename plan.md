@@ -1126,8 +1126,125 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 
 ---
 
+## Sesión 33 — Ruleta fixes, theme-color dinámico, dashboard abort error 🚀
+
+### Features implementadas ✅
+
+#### 1. Unicode escapes corregidos en JSX
+- **Problema**: Cadenas como `est\u00e1`, `\u2014`, `\u00a1YA!` escritas en JSX text (fuera de `{...}`) se renderizaban literales.
+- **Fix**: Reemplazados con caracteres reales (`está`, `—`, `¡YA!`, etc.).
+- **Archivo**: `components/ruleta/ruleta-section.tsx`
+
+#### 2. Countdown overlay centrado sobre la ruleta (círculo)
+- **Problema**: El countdown era `fixed inset-0` (pantalla completa). Luego se movió a la columna pero con `aspect-square` deformaba el círculo en óvalo y desplazaba el botón.
+- **Fix**: Envuelto en `<div className="relative inline-block max-w-full">` (mismo tamaño que la rueda) con `rounded-full bg-black/60` dentro de un cuadrado perfecto.
+- **Archivo**: `components/ruleta/ruleta-section.tsx`
+
+#### 3. Ruleta más pequeña en mobile
+- **Problema**: La rueda ocupaba casi todo el viewport en mobile, ocultando las instrucciones.
+- **Fix**: Columna 1 limitada a `max-w-[260px] lg:max-w-full mx-auto lg:mx-0`.
+- **Archivo**: `components/ruleta/ruleta-section.tsx`
+
+#### 4. 3 estados de victoria por participante
+- **Problema**: `ruletaWinners` usaba `docId: uid` → sobrescribía la victoria anterior. Solo se mostraba el último premio.
+- **Fix**:
+  - Cada win se guarda con ID único (`${uid}_${Date.now()}`) en vez de sobrescribir.
+  - Nueva función `getUserWins(clanTag, uid, limit=3)` en `firestore-service.ts`.
+  - `init/route.ts` devuelve `myWins` con las últimas 3 victorias del usuario.
+  - Nueva sección "🎯 Mis resultados" en la UI.
+- **Archivos**: `firestore-service.ts`, `spin/route.ts`, `init/route.ts`, `ruleta-section.tsx`
+
+#### 5. Reset ruleta en Settings
+- **Problema**: No había forma de reiniciar la ruleta (borrar ganadores, tiros y config).
+- **Fix**:
+  - Nueva API `POST /api/ruleta/reset` que limpia `ruletaWinners`, `ruletaSpins` y resetea config.
+  - Nuevas funciones `clearRuletaSpins` en `firestore-service.ts`.
+  - Botón "Reset ruleta" en `RuletaControl` con confirmación.
+- **Archivos**: `api/ruleta/reset/route.ts` (nuevo), `firestore-service.ts`, `ruleta-control.tsx`
+
+#### 6. Botón Girar morado con glow púrpura
+- **Problema**: Botón naranja con glow dorado tenue (poco visible y sin color).
+- **Fix**:
+  - `bg-[#7C3AED]` (morado) con `shadow-[#A855F7]/30`.
+  - `pulse-glow` actualizado a colores púrpura (`rgba(168, 85, 247, ...)`) con blur de 30→50px y doble capa de sombra.
+- **Archivos**: `ruleta-section.tsx`, `globals.css`
+
+#### 7. Theme-color dinámico por página
+- **Problema**: `<meta name="theme-color">` fijo en `#0d1117`. El navegador no reflejaba el color de la página activa.
+- **Fix**: Nuevo componente `ThemeColorUpdater` que lee `accent` del tema actual via `useTheme()` y actualiza el meta tag en el DOM.
+- **Archivos**: `components/layout/theme-color-updater.tsx` (nuevo), `layout.tsx`
+
+#### 8. Dashboard: abort timeout con mensaje amigable
+- **Problema**: `controller.abort()` sin razón mostraba "signal is aborted without reason" en el dashboard.
+- **Fix**: Catch de `AbortError` → mensaje "La solicitud tardó demasiado — los datos se muestran desde caché". No se muestra error si ya hay datos cacheados.
+- **Archivo**: `hooks/use-clan-data.ts`
+
+#### 9. Medallas actualizadas
+- **Problema**: `clan_heart` usaba `donations >= 500` plano. `guardian` usaba `max donations` del mes.
+- **Fix**:
+  - `clan_heart`: top donador de la semana (`max donationsGiven`).
+  - `guardian`: ratio donaciones 3:1 recibido/dado por 3 semanas consecutivas.
+  - Nuevos campos `consecutiveTopDonorWeeks` y `lastTopDonorWeekId` en Member.
+- **Archivos**: `achievements.ts`, `clan-sync.ts`, `packages/shared/src/constants/index.ts`, `packages/shared/src/types/index.ts`
+
+### Archivos modificados (14)
+
+| Archivo | Cambio |
+|---------|--------|
+| `components/ruleta/ruleta-section.tsx` | Unicode fixes, countdown en círculo, mobile wheel, Mis resultados, botón morado |
+| `components/ruleta/ruleta-control.tsx` | Botón Reset ruleta + fix key winners |
+| `app/api/ruleta/spin/route.ts` | Winners con ID único (`${uid}_${Date.now()}`) |
+| `app/api/ruleta/init/route.ts` | Devuelve `myWins` del usuario |
+| `app/api/ruleta/reset/route.ts` | **NUEVO** — API reset ruleta |
+| `lib/firestore-service.ts` | `getUserWins()`, `clearRuletaSpins()`, `getRuletaWinners` limit 50 |
+| `app/globals.css` | `pulse-glow` con colores púrpura más intensos |
+| `app/layout.tsx` | Import + render de `ThemeColorUpdater` |
+| `components/layout/theme-color-updater.tsx` | **NUEVO** — meta theme-color dinámico |
+| `hooks/use-clan-data.ts` | AbortError → mensaje amigable, no oculta datos cacheados |
+| `lib/achievements.ts` | clan_heart top donador, guardian ratio 3:1 x3 semanas |
+| `lib/clan-sync.ts` | Cálculo de `consecutiveTopDonorWeeks` |
+| `packages/shared/src/constants/index.ts` | Requirements actualizados |
+| `packages/shared/src/types/index.ts` | `consecutiveTopDonorWeeks`, `lastTopDonorWeekId` en Member |
+
+---
+
+## Sesión 34 — Fix tag case-sensitive en Firestore document ID + diagnóstico persistencia 🔧
+
+### Features implementadas ✅
+
+#### 1. Normalizar tag a uppercase en getClanDocRef
+- **Problema**: Si CR API devuelve `tag` en minúsculas (`#glqvycul`), `saveClan` escribía en doc ID `glqvycul`, pero `/api/init` lee de `GLQVYCUL` (env). Firestore document IDs son case-sensitive → documento no encontrado → 404.
+- **Fix**: `getClanDocRef` ahora aplica `.toUpperCase()` al doc ID.
+- **Archivo**: `lib/firestore-service.ts:10`
+
+#### 2. Normalizar id a uppercase en transformClan
+- **Problema**: `clan.id` podía quedar en minúscula si CR API devolvía tag lowercase, inconsistente con el doc ID.
+- **Fix**: `transformClan` aplica `.toUpperCase()` al `id`.
+- **Archivo**: `lib/cr-transform.ts:30`
+
+### Diagnóstico en curso 🔍
+
+- **Síntoma**: `/api/init` sigue retornando 404 incluso tras fix de case. El sync (`/api/firebase/load?force=1`) retorna 200 con datos frescos, pero no se persisten a Firestore.
+- **Causa probable**: `saveClan` y demás funciones de persistencia fallan silenciosamente — todos los `.catch(() => {})` tragan errores.
+- **Por confirmar**: Si Firestore es accesible desde el entorno local (cuenta de servicio, red, región).
+
+### Archivos modificados (2)
+| Archivo | Cambio |
+|---------|--------|
+| `lib/firestore-service.ts` | `getClanDocRef`: `.toUpperCase()` al doc ID |
+| `lib/cr-transform.ts` | `transformClan`: `.toUpperCase()` al `id` |
+
+---
+
 ## Pendientes
 
 ### donationDays (propuesta)
 - No hay forma de saber cuántos días donó un miembro en la semana.
 - Requiere snapshots diarios de `donations` (similar a `trophiesGained` pero frecuencia diaria).
+
+### Persistencia a Firestore en localhost
+- Investigar por qué `saveClan`/`persistToFirestore` fallan silenciosamente en dev.
+- Verificar si `adminDb` está correctamente inicializado.
+- Verificar conectividad con Firestore desde la máquina local (credenciales, red, región).
+- Agregar logging temporal a `.catch()` handlers para diagnóstico.
+- Considerar: migrar a `firebase-admin` con Application Default Credentials vs service account JSON en env var.

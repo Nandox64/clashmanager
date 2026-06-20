@@ -156,7 +156,7 @@ async function fetchFromApi(force = false) {
 
     // Si ya teníamos datos (del caché), no borrarlos — seguir mostrándolos
     if (!useClanStore.getState().loaded) {
-      useClanStore.setState({ progressPhase: isAbort ? "ready" : "error" });
+      useClanStore.setState({ progressPhase: "error" });
     }
     // Si sí hay datos cargados, dejamos progressPhase como estaba (ready o lo que sea)
   } finally {

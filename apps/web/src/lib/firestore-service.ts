@@ -7,7 +7,7 @@ const CLANS_COLLECTION = "clans";
 
 function getClanDocRef(clanTag: string) {
   if (!adminDb) throw new Error("Firebase Admin no inicializado");
-  return adminDb.collection(CLANS_COLLECTION).doc(clanTag.replace("#", ""));
+  return adminDb.collection(CLANS_COLLECTION).doc(clanTag.replace("#", "").toUpperCase());
 }
 
 export async function saveClan(clan: Clan) {

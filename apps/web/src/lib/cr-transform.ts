@@ -27,7 +27,7 @@ export interface WarRankEstimate {
 
 export function transformClan(data: CRClan): Clan {
   return {
-    id: data.tag.replace("#", ""),
+    id: data.tag.replace("#", "").toUpperCase(),
     name: data.name,
     tag: data.tag,
     description: data.description,
