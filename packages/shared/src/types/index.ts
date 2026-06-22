@@ -41,11 +41,14 @@ export interface Member {
   warsParticipated: number;
   consecutiveTopDonorWeeks?: number;
   lastTopDonorWeekId?: string;
+  lastDonationCheckDay?: number;
+  donationDaysWeek?: number;
 }
 
 export interface WeeklyStats {
   trophiesGained: number;
   donationsGiven: number;
+  donationDays: number;
   warParticipation: number;
   activityDays: number;
 }

@@ -1315,15 +1315,35 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 
 ---
 
-## Pendientes
+## Sesión 36 — donationDays + deploy a Vercel 🚀
 
-### donationDays (propuesta)
-- No hay forma de saber cuántos días donó un miembro en la semana.
-- Requiere snapshots diarios de `donations` (similar a `trophiesGained` pero frecuencia diaria).
+### donationDays implementado ✅
 
-### Persistencia a Firestore en localhost
-- Investigar por qué `saveClan`/`persistToFirestore` fallan silenciosamente en dev.
-- Verificar si `adminDb` está correctamente inicializado.
-- Verificar conectividad con Firestore desde la máquina local (credenciales, red, región).
-- Agregar logging temporal a `.catch()` handlers para diagnóstico.
-- Considerar: migrar a `firebase-admin` con Application Default Credentials vs service account JSON en env var.
+- **Problema**: No había forma de saber cuántos días donó un miembro en la semana.
+- **Solución**: 
+  - Nuevo campo `donationDays` en `WeeklyStats` (shared types).
+  - Nuevos campos `lastDonationCheckDay` y `donationDaysWeek` en `Member` para tracking incremental.
+  - En `cr-transform.ts`, se compara `donationsGiven > 0` y si el día de último check es anterior a hoy, se incrementa `donationDays`.
+  - En `clan-sync.ts`, se pasan los datos de stored members a `transformMembers` para tracking preciso.
+  - Mock data actualizada con `donationDays` en todos los miembros.
+
+### Persistencia a Firestore (diagnóstico) ✅
+- Los `.catch(() => {})` ya fueron reemplazados por `console.error` en Sesión 35.
+- `adminDb` se inicializa correctamente si `FIREBASE_SERVICE_ACCOUNT_KEY` está presente.
+- Para entorno local: verificar que `apps/web/.env.local` tenga la variable correcta (JSON string del service account).
+
+### Deploy a Vercel ✅
+- **Problema**: La rama local estaba 2 commits ahead de `origin/main` (Sesiones 34-35), por lo que Vercel servía una versión anterior.
+- **Fix**: Push a `origin/main` → Vercel redeploy automático.
+- Todos los cambios de Sesiones 34-36 ahora están en producción.
+
+### Archivos modificados (8)
+| Archivo | Cambio |
+|---------|--------|
+| `packages/shared/src/types/index.ts` | `donationDays` en WeeklyStats; `lastDonationCheckDay`, `donationDaysWeek` en Member |
+| `apps/web/src/lib/cr-transform.ts` | Cálculo de `donationDays` con tracking día a día |
+| `apps/web/src/lib/clan-sync.ts` | `storedMembersByTag` map pasado a transformMembers |
+| `apps/web/src/lib/mock-data.ts` | `donationDays` en todos los mock members |
+| `plan.md` | Documentación Sesión 36 |
+
+---

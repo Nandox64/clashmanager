@@ -59,6 +59,7 @@ export function transformMembers(
     previousDonations?: Map<string, number>;
     currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
     warHistory?: Map<string, { totalWars: number; warsParticipated: number }>;
+    storedMembersByTag?: Map<string, { lastDonationCheckDay?: number; donationDaysWeek?: number }>;
   }
 ): Member[] {
   const now = Date.now();
@@ -80,6 +81,14 @@ export function transformMembers(
     const donationsGiven = prevDonations !== undefined
       ? Math.max(0, m.donations - prevDonations)
       : 0;
+
+    const storedDonationData = options?.storedMembersByTag?.get(m.tag);
+    const todayDay = Math.floor(Date.now() / 86400000);
+    const lastCheckDay = storedDonationData?.lastDonationCheckDay ?? -1;
+    let donationDays = storedDonationData?.donationDaysWeek ?? 0;
+    if (donationsGiven > 0 && lastCheckDay < todayDay) {
+      donationDays += 1;
+    }
 
     const prevWarHistory = options?.warHistory?.get(m.tag);
     const totalWars = prevWarHistory?.totalWars ?? 0;
@@ -125,9 +134,12 @@ export function transformMembers(
       xp: 0,
       totalWars,
       warsParticipated,
+      lastDonationCheckDay: todayDay,
+      donationDaysWeek: donationDays,
       weeklyStats: {
         trophiesGained,
         donationsGiven,
+        donationDays,
         warParticipation,
         activityDays,
       },

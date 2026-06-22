@@ -170,11 +170,14 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
     }
   }
 
+  const storedByTagForTransform = new Map(storedMembers.map(m => [m.playerTag, { lastDonationCheckDay: m.lastDonationCheckDay, donationDaysWeek: m.donationDaysWeek }]));
+
   const transformedMembers = transformMembers(clan.memberList, {
     previousTrophies: prevTrophies,
     previousDonations: prevDonations,
     currentRaceParticipants: currentRiverRace?.participants,
     warHistory,
+    storedMembersByTag: storedByTagForTransform,
   });
 
   const [storedRank, storedChange, storedTrophies] = await Promise.all([
