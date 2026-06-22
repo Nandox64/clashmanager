@@ -18,7 +18,7 @@ import {
   Gift,
   Trophy,
 } from "lucide-react";
-import { useState, useRef, useCallback, memo } from "react";
+import { useState, useRef, useCallback, useEffect, memo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClanStore } from "@/lib/store";
 import { getCachedLinkedMemberId, getCachedProfilePhoto, getCachedRole } from "@/lib/profile-cache";
@@ -116,8 +116,17 @@ export const Sidebar = memo(function Sidebar() {
 
   const navActiveVars = getNavActiveVars(theme);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   const sidebarStyle = {
-    background: theme.surface,
+    background: theme.surfaceSolid,
     borderRightColor: theme.border,
     ...navActiveVars,
   } as React.CSSProperties;
@@ -225,12 +234,12 @@ export const Sidebar = memo(function Sidebar() {
         style={sidebarStyle}
       >
         {/* Header / Logo */}
-        <div className="flex flex-col items-center gap-2 p-4 pt-5">
-          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[160px] h-auto object-contain" />
+        <div className="flex flex-col items-center gap-1 p-3 pt-4 lg:p-4 lg:pt-5">
+          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[140px] lg:max-w-[160px] h-auto object-contain" />
           <img
             src="/logo_clase_pro.png"
             alt="Clase Pro"
-            className="w-28 h-28 object-contain"
+            className="w-20 h-20 lg:w-28 lg:h-28 object-contain"
           />
         </div>
         <div className="separator-gold mx-5" />
@@ -264,7 +273,7 @@ export const Sidebar = memo(function Sidebar() {
         <div className="separator-gold mx-5" />
 
         {/* Footer / User */}
-        <div className="p-3 mt-auto">
+        <div className="p-3 mt-auto" style={{ background: theme.surfaceSolid }}>
           {user || isMock ? (
             <div className="flex items-center gap-3 px-2 py-2 rounded-lg"
                  style={{ background: accent.accentRgbaSubtle }}>

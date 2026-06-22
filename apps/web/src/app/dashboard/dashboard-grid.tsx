@@ -72,33 +72,35 @@ export function DashboardGrid() {
   return (
     <div className="space-y-6">
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-page-title text-2xl">Bienvenido</h1>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-page-title text-2xl">Bienvenido</h1>
+            <div className="flex items-center gap-2">
+              {lastFetchedAt && (
+                <span className="text-[11px] text-clash-dimmed font-mono whitespace-nowrap">
+                  {formatTimeAgo(lastFetchedAt)}
+                </span>
+              )}
+              <button
+                onClick={refetch}
+                disabled={loading}
+                className="p-2 rounded-lg bg-glass-card border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50"
+                title="Actualizar datos"
+              >
+                <RefreshCw
+                  size={14}
+                  className={loading ? "animate-spin" : ""}
+                />
+              </button>
+            </div>
+          </div>
           <p className="text-sm text-clash-text mt-0.5">
             Centro de control • {clan.name}
           </p>
           <p className="text-xs text-clash-dimmed mt-1">
             Monitorea el rendimiento, actividad y logros de tu clan en tiempo real, mejora tus mazos y estrategias con nuestra IA y datos actualizados al instante.
           </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {lastFetchedAt && (
-            <span className="text-[11px] text-clash-dimmed font-mono whitespace-nowrap">
-              {formatTimeAgo(lastFetchedAt)}
-            </span>
-          )}
-          <button
-            onClick={refetch}
-            disabled={loading}
-            className="p-2 rounded-lg bg-glass-card border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50"
-            title="Actualizar datos"
-          >
-            <RefreshCw
-              size={14}
-              className={loading ? "animate-spin" : ""}
-            />
-          </button>
         </div>
       </div>
 
