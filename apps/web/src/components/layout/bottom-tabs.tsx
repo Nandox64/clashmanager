@@ -44,8 +44,10 @@ export function BottomTabs() {
 
   const theme = getPageTheme(pathname);
   const navStyle = {
-    background: "var(--color-clash-card)",
+    background: theme.surface,
     borderTopColor: theme.border,
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
   } as React.CSSProperties;
 
   useEffect(() => {
