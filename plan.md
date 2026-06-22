@@ -1236,6 +1236,85 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 
 ---
 
+## Sesión 35 — Evolución del Clan con snapshots reales, fixes de persistencia, rango, contraste UI y ruleta 🚀
+
+### Features implementadas ✅
+
+#### 1. Evolución del Clan con datos reales (sin sintéticos)
+- **Problema**: `generateHistoricalData()` generaba datos inventados. No había historial real.
+- **Fix**:
+  - Nueva colección `weeklySnapshots` en Firestore (máx 6, prune automático al guardar).
+  - `saveWeeklySnapshot()` / `getWeeklySnapshots(limit=6)` en `firestore-service.ts`.
+  - En `clan-sync.ts`, al detectar nueva `raceKey` se crea snapshot con `clanScore`, promedio trofeos, donaciones totales, `trophyChange` y `fame` real de la guerra completada.
+  - `transformToWeeklyStats` usa `createdDate` real del river race log (no relativo a `Date.now()`) e incluye `warFame`.
+  - `evolucion-clan.tsx`: eliminado `generateHistoricalData()`, lee `weeklySnapshots` del store, fallback a `weeklyStats`.
+- **Archivos**: `firestore-service.ts`, `clan-sync.ts`, `cr-transform.ts`, `evolucion-clan.tsx`, `store.ts`, `init/route.ts`, `use-clan-data.ts`, `clan-cache.ts`
+
+#### 2. Persistencia: `.catch(() => {})` → `console.error`
+- **Problema**: Todos los `catch` en Firestore calls tragaban errores silenciosamente, imposible diagnosticar.
+- **Fix**: Reemplazados 16+ `.catch(() => {})` / `.catch(() => null)` con `console.error`.
+- **Archivos**: `firestore-service.ts`, `clan-sync.ts`, `init/route.ts`, `load/route.ts`
+
+#### 3. War Rank: no sobrescribir valor manual + fix rankChange
+- **Problema 1**: `persistToFirestore` guardaba `localWarRank` incluso cuando confidence era `"fallback"`, sobrescribiendo el valor manual del usuario con un default (0).
+- **Fix 1**: Solo guarda `localWarRank` cuando `estimate.confidence !== "fallback"`.
+- **Problema 2**: `localWarRankChange` no se cargaba desde Firestore en `syncClanData`. Siempre se usaba el default `-5`, ignorando el valor que el usuario guarda desde Settings.
+- **Fix 2**: Agregado `getLocalWarRankChange(clan.tag)` al `Promise.all` y se pasa como `seedChange` a `estimateWarRank`.
+- **Archivos**: `clan-sync.ts`
+
+#### 4. Perfil: evitar que `""` sobrescriba datos
+- **Problema**: `displayName ?? member.displayName` con `displayName: ""` → `""` ganaba, borrando el valor existente en Firestore.
+- **Fix (server)**: `??` → `||` en todos los campos del `profile/route.ts`.
+- **Fix (cliente)**: `link-member/page.tsx` envía `displayName` del miembro; `profile/page.tsx` solo envía campos con valor truthy.
+- **Archivos**: `profile/route.ts`, `link-member/page.tsx`, `profile/page.tsx`
+
+#### 5. AuthGuard + Sidebar: render inmediato + memo
+- **AuthGuard**: Renderiza hijos inmediatamente si hay `cachedLinkedMemberId` en localStorage (sin esperar fetch).
+- **Sidebar**: Envuelto en `React.memo` para evitar re-renders innecesarios.
+- **Archivos**: `auth-guard.tsx`, `sidebar.tsx`
+
+#### 6. Contraste UI en Miembros en Riesgo
+- **Problema**: Badge `danger` (`bg-red-900/30 text-red-500`) y texto `· Hace X días` (`text-red-400`/`text-orange-400`) no contrastaban sobre la superficie naranja del dashboard (`#a85808e7`).
+- **Fix**:
+  - Badge `danger`: `bg-red-800/70 text-red-100` (fondo más opaco, texto más claro).
+  - Días de inactividad: convertido a pastilla con fondo (`bg-red-800/70 text-red-100` para inactividad, `bg-amber-700/60 text-amber-100` para donaciones, `bg-neutral-700/60 text-neutral-100` para guerra).
+- **Archivos**: `badge.tsx`, `miembros-riesgo.tsx`
+
+#### 7. Ruleta: botón transparente + límite 3 premios por miembro
+- **Problema 1**: `disabled:opacity-40` hacía el botón 40% opaco al girar.
+- **Fix 1**: Cambiado a `disabled:opacity-90` para mantener visible durante countdown/spinning.
+- **Problema 2**: No había límite de premios por miembro. `getUserWins(limit=3)` era solo de display.
+- **Fix 2**: En `spin/route.ts`, se consulta `getUserWins(clanTag, uid)` y si ya tiene 3+ premios, devuelve `"no-ganar"`.
+- **Archivos**: `ruleta-section.tsx`, `spin/route.ts`
+
+### Archivos modificados (21)
+
+| Archivo | Cambio |
+|---------|--------|
+| `packages/shared/src/types/index.ts` | `warFame?: number` en `WeeklyClanStats` |
+| `lib/firestore-service.ts` | `saveWeeklySnapshot` + `getWeeklySnapshots`; console.error en todos los catch; new weeklySnapshots subcollection |
+| `lib/clan-sync.ts` | Snapshot semanal en nueva raceKey; carga `localWarRankChange` desde Firestore; skip save cuando fallback |
+| `lib/cr-transform.ts` | `transformToWeeklyStats` con `createdDate` real + `warFame`; nueva `parseRaceDate()` |
+| `lib/store.ts` | `weeklySnapshots` state + setter |
+| `lib/clan-cache.ts` | `weeklySnapshots` en `ClanCachePayload` |
+| `hooks/use-clan-data.ts` | `weeklySnapshots` en cache/API hydratation |
+| `app/api/init/route.ts` | `getWeeklySnapshots` + retorno en JSON |
+| `app/api/profile/route.ts` | `??` → `||` en todos los campos |
+| `app/api/ruleta/spin/route.ts` | Límite 3 premios por miembro via `getUserWins` |
+| `app/link-member/page.tsx` | `displayName` enviado al crear perfil |
+| `app/profile/page.tsx` | Solo envía campos con contenido real |
+| `components/auth/auth-guard.tsx` | Render inmediato si hay `cachedLinkedMemberId` |
+| `components/layout/sidebar.tsx` | `React.memo` |
+| `components/ui/badge.tsx` | `danger`: `bg-red-800/70 text-red-100` |
+| `components/dashboard/evolucion-clan.tsx` | Eliminado `generateHistoricalData()`, usa real snapshots |
+| `components/dashboard/miembros-riesgo.tsx` | Días de inactividad como pastillas con fondo por sección |
+| `components/ruleta/ruleta-section.tsx` | `opacity-40` → `opacity-90` en botón girar |
+| `apps/web/.env.example` | Eliminado `CLAN_WAR_RANK_FALLBACK` |
+| `hooks/use-profile.ts` | Revertido caché en memoria (causaba que el perfil no cargara de Firestore) |
+| `plan.md` | Documentación Sesión 35 |
+
+---
+
 ## Pendientes
 
 ### donationDays (propuesta)
