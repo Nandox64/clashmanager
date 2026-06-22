@@ -244,8 +244,8 @@ export const Sidebar = memo(function Sidebar() {
         </div>
         <div className="separator-gold mx-5" />
 
-        {/* Navigation */}
-        <nav className="flex-1 flex flex-col gap-2 px-3 py-1 min-h-0">
+        {/* Navigation — scrollable */}
+        <nav className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 px-3 py-1">
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -272,8 +272,8 @@ export const Sidebar = memo(function Sidebar() {
 
         <div className="separator-gold mx-5" />
 
-        {/* Footer / User */}
-        <div className="p-3 mt-auto" style={{ background: theme.surfaceSolid }}>
+        {/* Footer / User — always at bottom */}
+        <div className="p-3 shrink-0" style={{ background: theme.surfaceSolid }}>
           {user || isMock ? (
             <div className="flex items-center gap-3 px-2 py-2 rounded-lg"
                  style={{ background: accent.accentRgbaSubtle }}>

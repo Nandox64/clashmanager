@@ -29,7 +29,6 @@
   border-right: 1px solid var(--pm-border);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  overflow-y: auto;
   z-index: 40;
   scrollbar-width: thin;
   scrollbar-color: hsla(45, 90%, 55%, 0.2) transparent;
