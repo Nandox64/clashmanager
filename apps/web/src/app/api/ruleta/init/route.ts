@@ -12,10 +12,24 @@ export async function GET(request: Request) {
 
     const uidPromise = getUserUid(request).catch(() => null);
 
-    const [config, winners] = await Promise.all([
+    const [config, rawWinners] = await Promise.all([
       getRuletaConfig(clanTag),
       getRuletaWinners(clanTag),
     ]);
+
+    // Group winners by uid, keep only last 3 per participant
+    const winnersMap = new Map<string, typeof rawWinners>();
+    for (const w of rawWinners) {
+      const list = winnersMap.get(w.uid) || [];
+      list.push(w);
+      winnersMap.set(w.uid, list);
+    }
+    const winners: typeof rawWinners = [];
+    for (const [, list] of winnersMap) {
+      list.sort((a, b) => b.awardedAt - a.awardedAt);
+      winners.push(...list.slice(0, 3));
+    }
+    winners.sort((a, b) => b.awardedAt - a.awardedAt);
 
     const uid = await uidPromise;
 

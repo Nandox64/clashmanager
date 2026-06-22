@@ -27,11 +27,6 @@ export async function POST(request: Request) {
   }
   const isNewEvent = !prev || prev.eventStartedAt !== config.eventStartedAt;
 
-  // Per-member limit: max 3 prizes total
-  if (userWins.length >= 3) {
-    return NextResponse.json({ prize: "no-ganar", label: "No ganaste — límite de 3 premios alcanzado", segmentIndex: 0, won: false });
-  }
-
   if (config.eventActive) {
     const spinsUsed = isNewEvent ? 0 : prev.spinsUsed;
     const alreadyWon = !isNewEvent && prev.won;
@@ -64,6 +59,19 @@ export async function POST(request: Request) {
 
   if (isWin) {
     const outOfCompetition = !config.eventActive;
+
+    // If user already has 3 wins, delete the oldest to make room
+    if (userWins.length >= 3) {
+      const sorted = [...userWins].sort((a, b) => a.awardedAt - b.awardedAt);
+      const toRemove = sorted.slice(0, sorted.length - 2);
+      for (const old of toRemove) {
+        if (old.id) {
+          operations.push(
+            { type: "delete", collection: "ruletaWinners", docId: old.id }
+          );
+        }
+      }
+    }
 
     if (config.eventActive) {
       const counts = { ...config.prizeCounts };
