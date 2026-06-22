@@ -122,7 +122,7 @@ export const Sidebar = memo(function Sidebar() {
     ...navActiveVars,
   } as React.CSSProperties;
   const mobileBarStyle = {
-    background: theme.surface,
+    background: theme.surfaceSolid,
     borderBottomColor: theme.border,
   } as React.CSSProperties;
 

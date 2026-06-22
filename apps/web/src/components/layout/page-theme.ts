@@ -1,7 +1,8 @@
-export const PAGE_THEMES: Record<string, { background: string; surface: string; border: string; overlay: string; accent: string; accentShimmer: string }> = {
+export const PAGE_THEMES: Record<string, { background: string; surface: string; surfaceSolid: string; border: string; overlay: string; accent: string; accentShimmer: string }> = {
   "/dashboard": {
     background: "/bg_piso_naranja.webp",
     surface: "#a85808e7",
+    surfaceSolid: "#a85808",
     border: "#e28204cc",
     overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
     accent: "#ad7f00",
@@ -10,6 +11,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/achievements": {
     background: "/bg_piso_azul.webp",
     surface: "#003E77D9",
+    surfaceSolid: "#003E77",
     border: "#003E77CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(0, 62, 119, 0.4) 15%, transparent 35%, transparent 65%, rgba(0, 62, 119, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#0088FF",
@@ -18,6 +20,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/war-decks": {
     background: "/bg_piso_verde.webp",
     surface: "#285E60D9",
+    surfaceSolid: "#285E60",
     border: "#285E60CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(40, 94, 96, 0.4) 15%, transparent 35%, transparent 65%, rgba(40, 94, 96, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#00CCAA",
@@ -26,6 +29,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/gifts": {
     background: "/bg_piso_morado.webp",
     surface: "#391666D9",
+    surfaceSolid: "#391666",
     border: "#391666CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(57, 22, 102, 0.4) 15%, transparent 35%, transparent 65%, rgba(57, 22, 102, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#A855F7",
@@ -34,6 +38,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/ruleta": {
     background: "/bg_piso_naranja.webp",
     surface: "#a85808e7",
+    surfaceSolid: "#a85808",
     border: "#e28204cc",
     overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
     accent: "#ad7f00",
@@ -42,6 +47,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/members": {
     background: "/bg_piso_azul.webp",
     surface: "#003E77D9",
+    surfaceSolid: "#003E77",
     border: "#003E77CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(0, 62, 119, 0.4) 15%, transparent 35%, transparent 65%, rgba(0, 62, 119, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#0088FF",
@@ -50,6 +56,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/analytics": {
     background: "/bg_piso_verde.webp",
     surface: "#285E60D9",
+    surfaceSolid: "#285E60",
     border: "#285E60CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(40, 94, 96, 0.4) 15%, transparent 35%, transparent 65%, rgba(40, 94, 96, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#00CCAA",
@@ -58,6 +65,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/profile": {
     background: "/bg_piso_morado.webp",
     surface: "#391666D9",
+    surfaceSolid: "#391666",
     border: "#391666CC",
     overlay: "linear-gradient(180deg, rgba(13, 17, 23, 0.65) 0%, rgba(57, 22, 102, 0.4) 15%, transparent 35%, transparent 65%, rgba(57, 22, 102, 0.4) 85%, rgba(13, 17, 23, 0.75) 100%)",
     accent: "#A855F7",
@@ -66,6 +74,7 @@ export const PAGE_THEMES: Record<string, { background: string; surface: string; 
   "/settings": {
     background: "/bg_piso_naranja.webp",
     surface: "#a85808e7",
+    surfaceSolid: "#a85808",
     border: "#e28204cc",
     overlay: "linear-gradient(180deg, rgba(29, 16, 2, 0.65) 0%, rgba(176, 94, 14, 0.4) 15%, transparent 35%, transparent 65%, rgba(176, 94, 14, 0.4) 85%, rgba(29, 16, 23, 0.75) 100%)",
     accent: "#ad7f00",
