@@ -1347,3 +1347,56 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 | `plan.md` | Documentación Sesión 36 |
 
 ---
+
+## Sesión 37 — Bugfixes mobile y UI/UX 📱
+
+### 1. Bottom tabs — fondo theme-aware ✅
+- **Problema**: La barra inferior móvil usaba `var(--color-clash-card)` (`#1c2333`) fijo, ignorando el tema de la página.
+- **Fix**: Cambiado a `theme.surface` + `backdrop-filter: blur(16px)`, igual que la sidebar. Ahora hereda el color de la página activa.
+
+### 2. Mobile top bar — fondo sólido sin transparencia ✅
+- **Problema**: La barra superior móvil (botón menú + logo + nombre del clan) usaba `theme.surface` con transparencia (alpha `e7`/`D9`), viéndose el fondo oscuro a través.
+- **Fix**: Nuevo campo `surfaceSolid` en `page-theme.ts` (sin canal alpha) para cada tema:
+  - Naranja → `#a85808`
+  - Azul → `#003E77`
+  - Verde → `#285E60`
+  - Morado → `#391666`
+  - Mobile bar usa `theme.surfaceSolid`.
+
+### 3. Ghost scroll al abrir sidebar ✅
+- **Problema**: Al abrir el sidebar en mobile, el fondo de la página seguía scrolleando.
+- **Fix**: `useEffect` que agrega `overflow: hidden` al `<body>` cuando `isOpen` y lo restaura al cerrar.
+
+### 4. Perfil/logout descolocado en sidebar ✅
+- **Problema**: El footer con perfil y botón salir quedaba detrás de los items del menú en mobile, obligando a scrollear.
+- **Fix**: 
+  - Sidebar dividido en 3 capas: header fijo arriba, nav scrollable (`overflow-y-auto flex-1 min-h-0`), footer con `shrink-0` al fondo.
+  - CSS `.premium-sidebar` cambió de `overflow-y: auto` a `overflow: hidden`.
+  - Logos más compactos en mobile (`max-w-[140px]`, `w-20 h-20`).
+
+### 5. Botón actualizar en línea con el título ✅
+- **Problema**: En mobile, el timestamp y botón de actualizar se centraban verticalmente con toda la descripción del dashboard.
+- **Fix**: Botón y timestamp movidos dentro de `flex-wrap` junto al `<h1>`, contenedor padre usa `items-start`.
+
+### 6. Sidebar sin transparencia en mobile ✅
+- **Problema**: El sidebar en modo overlay (mobile) tenía `theme.surface` con transparencia, dejando ver el contenido detrás.
+- **Fix**: `sidebarStyle.background` usa `theme.surfaceSolid` en lugar de `theme.surface`.
+
+### 7. Ruleta — winners limitados a 3 por participante ✅
+- **Problema**: La lista de ganadores acumulaba todos los premios sin límite. El límite de 3 por participante solo bloqueaba nuevos premios con "no-ganar".
+- **Fix**: 
+  - `spin/route.ts`: cuando un participante gana y ya tiene 3 premios, se borran los más viejos (delete operations en el batch) antes de insertar el nuevo.
+  - `init/route.ts`: la lista de winners se agrupa por uid y se corta a los últimos 3 por participante, con orden descendente por fecha.
+
+### Archivos modificados (6)
+| Archivo | Cambio |
+|---------|--------|
+| `components/layout/bottom-tabs.tsx` | Fondo `theme.surface` + backdrop-filter |
+| `components/layout/page-theme.ts` | Nuevo campo `surfaceSolid` en cada tema |
+| `components/layout/sidebar.tsx` | `surfaceSolid`, ghost scroll fix, 3-capas layout, logos compactos |
+| `app/styles/premium.css` | `overflow-y: auto` → `overflow: hidden` |
+| `app/dashboard/dashboard-grid.tsx` | Botón refresh en línea con título |
+| `app/api/ruleta/spin/route.ts` | Prune winners viejos al llegar a 3 |
+| `app/api/ruleta/init/route.ts` | Winners filtrados a max 3 por uid |
+
+---
