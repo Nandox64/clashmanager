@@ -8,15 +8,15 @@ import { Gift } from "lucide-react";
 export function TopDonadores() {
   const members = useClanStore((s) => s.members);
   const top = [...members]
-    .sort((a, b) => b.weeklyStats.donationsGiven - a.weeklyStats.donationsGiven)
+    .sort((a, b) => b.donations - a.donations)
     .slice(0, 5);
 
   return (
     <Card className="relative overflow-hidden">
       <CardHeader>
         <div>
-          <CardTitle className="text-metallic-gold bg-clip-text">Top Donadores Semanal</CardTitle>
-          <p className="text-xs text-clash-muted mt-0.5">Jugadores con más donaciones de la semana</p>
+          <CardTitle className="text-metallic-gold bg-clip-text">Top Donadores</CardTitle>
+          <p className="text-xs text-clash-muted mt-0.5">Jugadores con más donaciones totales</p>
         </div>
         <Gift size={16} className="text-metallic-silver animate-icon-shine" />
       </CardHeader>
@@ -41,7 +41,7 @@ export function TopDonadores() {
               </p>
             </div>
             <span className="font-mono text-sm font-semibold text-metallic-silver animate-metallic-shimmer drop-shadow-sm">
-              {member.weeklyStats.donationsGiven}
+              {member.donations}
             </span>
           </div>
         ))}

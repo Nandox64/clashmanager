@@ -11,7 +11,7 @@ export function RendimientoSemanal() {
     0
   );
   const totalDonations = members.reduce(
-    (acc, m) => acc + m.weeklyStats.donationsGiven,
+    (acc, m) => acc + m.donations,
     0
   );
   const activeMembers = members.filter((m) => m.status === "active").length;

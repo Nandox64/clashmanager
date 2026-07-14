@@ -217,7 +217,7 @@ export default function MembersPage() {
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-clash-dimmed flex-wrap">
                     <span>🏆 {member.trophies.toLocaleString()}</span>
-                    <span>🎁 {member.weeklyStats?.donationsGiven ?? 0}</span>
+                    <span>🎁 {member.donations ?? 0}</span>
                     <span>⚔️ {member.weeklyStats?.warParticipation ?? 0}%</span>
                     {memberAchievements.length > 0 && (
                       <span className="text-metallic-gold">{memberAchievements.length} 🏅</span>

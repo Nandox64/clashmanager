@@ -56,7 +56,6 @@ export function transformMembers(
   members: CRClanMember[],
   options?: {
     previousTrophies?: Map<string, number>;
-    previousDonations?: Map<string, number>;
     currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
     warHistory?: Map<string, { totalWars: number; warsParticipated: number }>;
     storedMembersByTag?: Map<string, { lastDonationCheckDay?: number; donationDaysWeek?: number }>;
@@ -77,16 +76,11 @@ export function transformMembers(
       ? Math.max(0, m.trophies - prev)
       : 0;
 
-    const prevDonations = options?.previousDonations?.get(m.tag);
-    const donationsGiven = prevDonations !== undefined
-      ? Math.max(0, m.donations - prevDonations)
-      : 0;
-
     const storedDonationData = options?.storedMembersByTag?.get(m.tag);
     const todayDay = Math.floor(Date.now() / 86400000);
     const lastCheckDay = storedDonationData?.lastDonationCheckDay ?? -1;
     let donationDays = storedDonationData?.donationDaysWeek ?? 0;
-    if (donationsGiven > 0 && lastCheckDay < todayDay) {
+    if (m.donations > 0 && lastCheckDay < todayDay) {
       donationDays += 1;
     }
 
@@ -138,7 +132,7 @@ export function transformMembers(
       donationDaysWeek: donationDays,
       weeklyStats: {
         trophiesGained,
-        donationsGiven,
+        donationsGiven: m.donations,
         donationDays,
         warParticipation,
         activityDays,

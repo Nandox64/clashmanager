@@ -25,9 +25,7 @@ async function readFromFirestore(clanTag: string) {
     }
     const daysSinceActive = (now - m.lastActiveAt) / 86400000;
     m.status = daysSinceActive > 10 ? "inactive" : daysSinceActive > 5 ? "risk" : "active";
-    if (m.weeklyStats.donationsGiven === 0 && m.donations > 0) {
-      m.weeklyStats.donationsGiven = m.donations;
-    }
+    m.weeklyStats.donationsGiven = m.donations;
   }
 
   const achievements = computeAchievements(members, storedAchievements);

@@ -247,11 +247,6 @@ export default function ProfilePage() {
                   <p className="text-sm font-bold text-clash-text">
                     {linkedMember.donations.toLocaleString()}
                   </p>
-                  {linkedMember.weeklyStats.donationsGiven > 0 && (
-                    <p className="text-[10px] text-clash-dimmed">
-                      {linkedMember.weeklyStats.donationsGiven}/sem
-                    </p>
-                  )}
                 </div>
                 <div>
                   <p className="text-xs text-clash-dimmed">Nivel</p>

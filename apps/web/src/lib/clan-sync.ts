@@ -117,21 +117,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
   const transformedClan = transformClan(clan);
 
-  // ── Si los datos en Firestore tienen más de 7 días, reseteamos la línea base ──
-  // Para evitar que donaciones/trofeos acumulados de semanas se muestren como "semanales"
-  const STALE_DATA_MS = 7 * 24 * 60 * 60 * 1000;
-  const syncNow = Date.now();
-  const isStaleData = storedMembers.some((m) => {
-    const updatedAt = (m as { updatedAt?: number })?.updatedAt ?? 0;
-    return updatedAt > 0 && syncNow - updatedAt > STALE_DATA_MS;
-  });
-
-  const prevTrophies = isStaleData
-    ? new Map(clan.memberList.map(m => [m.tag, m.trophies]))
-    : new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
-  const prevDonations = isStaleData
-    ? new Map(clan.memberList.map(m => [m.tag, m.donations]))
-    : new Map(storedMembers.map(m => [m.playerTag, m.donations]));
+  const prevTrophies = new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
   let warHistory = extractWarHistory(storedMembers);
 
   for (const member of clan.memberList) {
@@ -187,7 +173,6 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
   const transformedMembers = transformMembers(clan.memberList, {
     previousTrophies: prevTrophies,
-    previousDonations: prevDonations,
     currentRaceParticipants: currentRiverRace?.participants,
     warHistory,
     storedMembersByTag: storedByTagForTransform,
@@ -216,7 +201,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
   const storedByTag = new Map(storedMembers.map(m => [m.playerTag, m]));
 
   const sortedByDonations = [...transformedMembers].sort(
-    (a, b) => (b.weeklyStats?.donationsGiven ?? 0) - (a.weeklyStats?.donationsGiven ?? 0)
+    (a, b) => (b.donations ?? 0) - (a.donations ?? 0)
   );
 
   const top3Tags = new Set(sortedByDonations.slice(0, 3).map(m => m.playerTag));

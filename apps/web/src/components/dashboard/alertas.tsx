@@ -17,7 +17,7 @@ export function Alertas() {
 
   const donationsValues = members
     .filter((m) => m.status === "active")
-    .map((m) => m.weeklyStats.donationsGiven);
+    .map((m) => m.donations);
   const avgDonations =
     donationsValues.length > 0
       ? donationsValues.reduce((a, b) => a + b, 0) / donationsValues.length
@@ -27,9 +27,9 @@ export function Alertas() {
     .filter(
       (m) =>
         m.status === "active" &&
-        m.weeklyStats.donationsGiven < lowDonationThreshold
+        m.donations < lowDonationThreshold
     )
-    .sort((a, b) => a.weeklyStats.donationsGiven - b.weeklyStats.donationsGiven);
+    .sort((a, b) => a.donations - b.donations);
 
   return (
     <Card>
@@ -94,7 +94,7 @@ export function Alertas() {
                 <div key={m.uid} className="flex items-center gap-1.5 min-w-0">
                   <Avatar name={m.displayName} size="xs" />
                   <span className="text-xs text-clash-text truncate">{m.displayName}</span>
-                  <span className="text-xs text-clash-muted font-mono shrink-0">{m.weeklyStats.donationsGiven}</span>
+                  <span className="text-xs text-clash-muted font-mono shrink-0">{m.donations}</span>
                 </div>
               ))}
             </div>

@@ -87,6 +87,8 @@ export async function getMembersFromFirestore(
           trophiesGained: 0,
           donationsGiven: data.donations ?? 0,
           activityDays: 0,
+          donationDays: 0,
+          warParticipation: 0,
         },
       } as Member;
     });

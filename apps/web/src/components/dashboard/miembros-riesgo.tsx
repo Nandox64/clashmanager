@@ -37,7 +37,7 @@ function classifyMember(m: Member, minDonations: number, now: number): RiskMembe
   if (m.status === "inactive") severity = "inactive";
   else if (m.status === "risk") severity = "risk";
 
-  if (!severity && daysSinceActive >= 3 && (m.weeklyStats?.donationsGiven ?? 0) < minDonations) {
+  if (!severity && daysSinceActive >= 3 && (m.donations ?? 0) < minDonations) {
     return { member: m, primary: "donations", daysSinceActive, severity: null };
   }
   if (!severity && (m.weeklyStats?.warParticipation ?? 0) < MIN_WAR_PCT) {
@@ -108,7 +108,7 @@ export function MiembrosRiesgo() {
                               {member.displayName}
                             </p>
                             <p className="text-xs text-clash-muted drop-shadow-sm">
-                              Don.: {member.weeklyStats?.donationsGiven ?? 0} · Guerra:{" "}
+                              Don.: {member.donations ?? 0} · Guerra:{" "}
                               {member.weeklyStats?.warParticipation ?? 0}%
                               {daysSinceActive > 0 && (
                                 <span className={[

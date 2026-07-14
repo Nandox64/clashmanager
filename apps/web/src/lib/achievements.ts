@@ -20,8 +20,8 @@ const MEDAL_CHECKERS: {
     name: "Corazón del Clan",
     icon: "❤️",
     check: (m, allMembers) => {
-      const maxGiven = Math.max(...allMembers.map((x) => x.weeklyStats?.donationsGiven ?? 0));
-      return maxGiven > 0 && (m.weeklyStats?.donationsGiven ?? 0) === maxGiven;
+      const maxGiven = Math.max(...allMembers.map((x) => x.donations ?? 0));
+      return maxGiven > 0 && (m.donations ?? 0) === maxGiven;
     },
   },
   {
@@ -45,7 +45,7 @@ const MEDAL_CHECKERS: {
     medalId: "on_fire",
     name: "En Llamas",
     icon: "🔥",
-    check: (m) => (m.weeklyStats?.donationsGiven ?? 0) >= 500 && (m.weeklyStats?.trophiesGained ?? 0) >= 100,
+    check: (m) => (m.donations ?? 0) >= 500 && (m.weeklyStats?.trophiesGained ?? 0) >= 100,
   },
   {
     medalId: "diamond",
