@@ -125,7 +125,7 @@ export function transformMembers(
       status,
       trophies: m.trophies,
       bestTrophies: m.trophies,
-      level: 0,
+      level: m.expLevel ?? 0,
       warDayWins: 0,
       cardsCollected: 0,
       donations: m.donations,

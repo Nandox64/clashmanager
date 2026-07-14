@@ -11,6 +11,17 @@ import { ROLE_LABELS } from "@clashmanager/shared";
 import { UserCircle, Camera, Save, Shield, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
+interface PlayerInfo {
+  expLevel: number;
+  name: string;
+  trophies: number;
+  bestTrophies: number;
+  donations: number;
+  donationsReceived: number;
+  warDayWins: number;
+  clan: { tag: string; name: string; badgeId: number } | undefined;
+}
+
 const ROLE_COLORS: Record<string, string> = {
   leader: "bg-yellow-500/20 text-yellow-300 border-2 border-yellow-400/60",
   coleader: "bg-purple-500/20 text-purple-300 border-2 border-purple-400/60",
@@ -30,6 +41,8 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
   const [saving, setSaving] = useState(false);
+  const [playerInfo, setPlayerInfo] = useState<PlayerInfo | null>(null);
+  const [playerLoading, setPlayerLoading] = useState(false);
   const linkedMemberId = profile?.linkedMemberId ?? getCachedLinkedMemberId();
 
   useEffect(() => {
@@ -42,7 +55,22 @@ export default function ProfilePage() {
     }
   }, [profile]);
 
+  useEffect(() => {
+    const linkedMember = members.find((m) => m.uid === linkedMemberId);
+    if (linkedMember) {
+      setPlayerLoading(true);
+      fetch(`/api/player/${encodeURIComponent(linkedMember.playerTag)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.expLevel) setPlayerInfo(data);
+        })
+        .catch(() => {})
+        .finally(() => setPlayerLoading(false));
+    }
+  }, [linkedMemberId, members]);
+
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
+  const displayLevel = playerInfo?.expLevel ?? linkedMember?.level ?? 0;
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,12 +245,19 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-xs text-clash-dimmed">Donaciones</p>
                   <p className="text-sm font-bold text-clash-text">
-                    {linkedMember.weeklyStats.donationsGiven.toLocaleString()}/sem
+                    {linkedMember.donations.toLocaleString()}
                   </p>
+                  {linkedMember.weeklyStats.donationsGiven > 0 && (
+                    <p className="text-[10px] text-clash-dimmed">
+                      {linkedMember.weeklyStats.donationsGiven}/sem
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-clash-dimmed">Nivel</p>
-                  <p className="text-sm font-bold text-clash-text">{linkedMember.level}</p>
+                  <p className="text-sm font-bold text-clash-text">
+                    {playerLoading ? "..." : displayLevel || "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-clash-dimmed">Participación</p>

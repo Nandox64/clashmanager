@@ -1400,3 +1400,73 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 | `app/api/ruleta/init/route.ts` | Winners filtrados a max 3 por uid |
 
 ---
+
+## Sesión 38 — Fix sincronización, mejoras en perfil y dashboard 🚀
+
+### Features implementadas ✅
+
+#### 1. Fix: Sincronización detenida (causa raíz)
+- **Problema**: `syncClanData` nunca se ejecutaba en background. `/api/init` devolvía datos cacheados de Firestore sin refrescarlos, mostrando miembros expulsados, faltantes nuevos y todos como "inactivos".
+- **Fix**: `/api/init` ahora detecta si la data en Firestore tiene >30 min y dispara `syncClanData` en background.
+- **Archivo**: `app/api/init/route.ts`
+
+#### 2. Fix: `.catch(() => {})` silencioso
+- **Problema**: `saveLastRaceKey` tragaba errores sin logging.
+- **Fix**: Reemplazado con `console.error`.
+- **Archivo**: `lib/clan-sync.ts:167`
+
+#### 3. Nuevo endpoint `/api/health`
+- Reporta estado de Firebase Admin, Firestore, CR API, Gemini y Groq.
+- **Archivo**: `app/api/health/route.ts`
+
+#### 4. Fix: Cache del navegador con datos viejos
+- Cache key cambiado de `clash-clan-cache` a `clash-clan-cache-v2` para forzar limpieza.
+- **Archivo**: `lib/clan-cache.ts`
+
+#### 5. Fix: Donaciones semanales mal calculadas tras sync gap
+- **Problema**: `donationsGiven` se calculaba como diferencia con datos de hace 30 días, acumulando semanas enteras como si fueran una.
+- **Fix**: Si los datos almacenados tienen >7 días de antigüedad, se resetea la línea base (`prevDonations`/`prevTrophies` = `undefined`).
+- **Archivo**: `lib/clan-sync.ts`
+
+#### 6. Nuevo endpoint `/api/player/[tag]`
+- Retorna nivel real del jugador desde CR API (el clan member list no incluye `expLevel`).
+- **Archivo**: `app/api/player/[tag]/route.ts`
+
+#### 7. Perfil: nivel real y donaciones totales
+- **Nivel**: Antes hardcodeado a 0, ahora se obtiene desde `/api/player/[tag]` → CR API → muestra nivel real.
+- **Donaciones**: Antes solo semanales, ahora muestra totales + semanales si las hay.
+- **Archivo**: `app/profile/page.tsx`
+
+#### 8. Estadísticas: botón "Más..." en Top Donaciones
+- Muestra primeras 10 posiciones, con botón para expandir a todos los miembros.
+- **Archivo**: `app/analytics/page.tsx`
+
+#### 9. Dashboard: botón actualizar sobre banner
+- Botón 🔄 movido a la esquina inferior derecha de `banner.png`, superpuesto.
+- **Archivo**: `app/dashboard/dashboard-grid.tsx`
+
+#### 10. Fix: favicon 404
+- Agregado `icon` al metadata de `layout.tsx`.
+- **Archivo**: `app/layout.tsx`
+
+#### 11. Fix: `expLevel` en transformación
+- `level: 0` hardcodeado → `level: m.expLevel ?? 0`. El tipo `CRClanMember` ahora incluye `expLevel`.
+- **Archivos**: `lib/cr-transform.ts`, `lib/cr-types.ts`
+
+### Archivos modificados/creados (12)
+| Archivo | Cambio |
+|---------|--------|
+| `lib/clan-sync.ts` | `.catch(() => {})` → `console.error`; stale data reset para prevDonations/prevTrophies |
+| `lib/clan-cache.ts` | Cache key `-v2` |
+| `lib/cr-types.ts` | `expLevel` agregado a `CRClanMember` |
+| `lib/cr-transform.ts` | `level: 0` → `level: m.expLevel ?? 0` |
+| `app/api/init/route.ts` | Background sync si data >30 min stale; try-catch |
+| `app/api/health/route.ts` | **NUEVO** endpoint de diagnóstico |
+| `app/api/player/[tag]/route.ts` | **NUEVO** endpoint de info de jugador |
+| `app/dashboard/dashboard-grid.tsx` | Botón refresh superpuesto sobre banner |
+| `app/analytics/page.tsx` | Botón "Más..." en Top Donaciones |
+| `app/profile/page.tsx` | Nivel real desde API, donaciones totales + semanales |
+| `app/layout.tsx` | `icon` agregado al metadata |
+| `firestore.rules` | Reglas de seguridad (denegar acceso cliente) |
+
+---

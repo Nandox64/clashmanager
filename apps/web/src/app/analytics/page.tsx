@@ -9,11 +9,13 @@ import { useClanData } from "@/hooks/use-clan-data";
 import type { Member } from "@clashmanager/shared";
 import { BarChart3, Radar } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
+import { useState } from "react";
 
 export default function AnalyticsPage() {
   const { loading, error, refetch } = useClanData();
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
+  const [showAllDonors, setShowAllDonors] = useState(false);
 
   const totalDonations = members.reduce((a, m) => a + m.donations, 0);
   const avgWarParticipation = members.length > 0
@@ -210,7 +212,7 @@ export default function AnalyticsPage() {
           <div className="space-y-2">
             {[...members]
               .sort((a, b) => b.donations - a.donations)
-              .slice(0, 10)
+              .slice(0, showAllDonors ? members.length : 10)
               .map((m, i) => (
                 <div key={m.uid} className="flex items-center gap-3 p-2 rounded-lg bg-glass">
                   <span className="text-xs font-mono text-clash-dimmed w-4">#{i + 1}</span>
@@ -219,6 +221,16 @@ export default function AnalyticsPage() {
                 </div>
               ))}
           </div>
+          {!showAllDonors && members.length > 10 && (
+            <div className="flex justify-center pt-3">
+              <button
+                onClick={() => setShowAllDonors(true)}
+                className="px-5 py-1.5 rounded-lg bg-glass border border-white/20 text-sm text-clash-muted hover:text-clash-text hover:border-white/40 transition-colors"
+              >
+                Más... ({members.length} miembros)
+              </button>
+            </div>
+          )}
         </Card>
 
         <ComparativaJugadores />

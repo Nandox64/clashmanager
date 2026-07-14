@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     title: "CLASE⚔️PRO",
   },
   icons: {
+    icon: "/icon-192x192.png",
     apple: "/apple-touch-icon.png",
   },
 };

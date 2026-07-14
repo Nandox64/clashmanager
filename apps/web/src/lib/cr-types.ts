@@ -27,6 +27,7 @@ export interface CRClanMember {
   name: string;
   role: "leader" | "coLeader" | "elder" | "member";
   lastSeen: string;
+  expLevel: number;
   trophies: number;
   arena: CRArena;
   clanRank: number;

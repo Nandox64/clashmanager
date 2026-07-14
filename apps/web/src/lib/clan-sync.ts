@@ -117,8 +117,21 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
   const transformedClan = transformClan(clan);
 
-  const prevTrophies = new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
-  const prevDonations = new Map(storedMembers.map(m => [m.playerTag, m.donations]));
+  // ── Si los datos en Firestore tienen más de 7 días, reseteamos la línea base ──
+  // Para evitar que donaciones/trofeos acumulados de semanas se muestren como "semanales"
+  const STALE_DATA_MS = 7 * 24 * 60 * 60 * 1000;
+  const syncNow = Date.now();
+  const isStaleData = storedMembers.some((m) => {
+    const updatedAt = (m as { updatedAt?: number })?.updatedAt ?? 0;
+    return updatedAt > 0 && syncNow - updatedAt > STALE_DATA_MS;
+  });
+
+  const prevTrophies = isStaleData
+    ? new Map(clan.memberList.map(m => [m.tag, m.trophies]))
+    : new Map(storedMembers.map(m => [m.playerTag, m.trophies]));
+  const prevDonations = isStaleData
+    ? new Map(clan.memberList.map(m => [m.tag, m.donations]))
+    : new Map(storedMembers.map(m => [m.playerTag, m.donations]));
   let warHistory = extractWarHistory(storedMembers);
 
   for (const member of clan.memberList) {
@@ -164,7 +177,7 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
         warFame: latestRace.standings?.[0]?.clan?.fame ?? 0,
       };
       await Promise.all([
-        saveLastRaceKey(clan.tag, raceKey).catch(() => {}),
+        saveLastRaceKey(clan.tag, raceKey).catch((e) => console.error("saveLastRaceKey failed:", e)),
         saveWeeklySnapshot(clanTag, snapshot).catch((e) => console.error("saveWeeklySnapshot failed:", e)),
       ]);
     }

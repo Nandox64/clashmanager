@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // La app usa exclusivamente Admin SDK desde API routes.
+    // El Client SDK solo se usa para Firebase Auth (login/registro).
+    // Por seguridad, denegamos todo acceso directo desde el cliente.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Si en el futuro necesitas acceso cliente a colecciones específicas,
+    // agrégalas arriba de la regla catch-all con condiciones como:
+    //   match /some_collection/{doc} {
+    //     allow read: if request.auth != null;
+    //   }
+  }
+}

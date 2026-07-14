@@ -76,24 +76,6 @@ export function DashboardGrid() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-page-title text-2xl">Bienvenido</h1>
-            <div className="flex items-center gap-2">
-              {lastFetchedAt && (
-                <span className="text-[11px] text-clash-dimmed font-mono whitespace-nowrap">
-                  {formatTimeAgo(lastFetchedAt)}
-                </span>
-              )}
-              <button
-                onClick={refetch}
-                disabled={loading}
-                className="p-2 rounded-lg bg-glass-card border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50"
-                title="Actualizar datos"
-              >
-                <RefreshCw
-                  size={14}
-                  className={loading ? "animate-spin" : ""}
-                />
-              </button>
-            </div>
           </div>
           <p className="text-sm text-clash-text mt-0.5">
             Centro de control • {clan.name}
@@ -104,7 +86,27 @@ export function DashboardGrid() {
         </div>
       </div>
 
-      <img src="/banner.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
+      <div className="relative">
+        <img src="/banner.png" alt="Banner" className="w-full h-auto rounded-xl object-contain max-h-[200px]" />
+        <div className="absolute bottom-2 right-2 flex items-center gap-2">
+          {lastFetchedAt && (
+            <span className="text-[10px] text-clash-dimmed font-mono bg-black/50 px-1.5 py-0.5 rounded">
+              {formatTimeAgo(lastFetchedAt)}
+            </span>
+          )}
+          <button
+            onClick={refetch}
+            disabled={loading}
+            className="p-2 rounded-lg bg-glass-card/80 border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50 backdrop-blur-sm"
+            title="Actualizar datos"
+          >
+            <RefreshCw
+              size={16}
+              className={loading ? "animate-spin" : ""}
+            />
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card className="p-4">
