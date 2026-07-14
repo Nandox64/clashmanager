@@ -32,7 +32,7 @@ function formatTimeAgo(ts: number | null): string {
 }
 
 export function DashboardGrid() {
-  const { loading, error, refetch, lastFetchedAt } = useClanData();
+  const { loading, error, forceSync, lastFetchedAt } = useClanData();
   const clan = useClanStore((s) => s.clan);
   const members = useClanStore((s) => s.members);
   const loaded = useClanStore((s) => s.loaded);
@@ -61,12 +61,12 @@ export function DashboardGrid() {
 
   // Error sin datos previos — pantalla de error completa
   if (error && !loaded) {
-    return <LoadingProgress onRetry={refetch} />;
+    return <LoadingProgress onRetry={forceSync} />;
   }
 
   // Sin datos cargados (ni de caché ni de API) — pantalla de progreso
   if (!loaded) {
-    return <LoadingProgress onRetry={refetch} />;
+    return <LoadingProgress onRetry={forceSync} />;
   }
 
   return (
@@ -95,7 +95,7 @@ export function DashboardGrid() {
             </span>
           )}
           <button
-            onClick={refetch}
+            onClick={forceSync}
             disabled={loading}
             className="p-2 rounded-lg bg-glass-card/80 border border-clash-border text-clash-text hover:text-metallic-gold transition-colors disabled:opacity-50 backdrop-blur-sm"
             title="Actualizar datos"

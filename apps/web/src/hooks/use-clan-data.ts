@@ -117,29 +117,13 @@ async function fetchFromApi(force = false) {
   let timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
   try {
-    const url = force ? "/api/firebase/load?force=1" : "/api/init";
+    const url = force ? "/api/firebase/load?force=1" : "/api/firebase/load";
 
     if (force) {
       useClanStore.setState({ progressPhase: "syncing" });
     }
 
     const res = await fetch(url, { signal: controller.signal });
-
-    if (res.status === 404 && !force) {
-      // No cached data — fall back to full sync
-      useClanStore.setState({ progressPhase: "syncing" });
-      controller = new AbortController();
-      timeout = setTimeout(() => controller.abort(), 120_000);
-      const syncRes = await fetch("/api/firebase/load", { signal: controller.signal });
-      if (!syncRes.ok) {
-        const err = await syncRes.json().catch(() => ({ error: "Error desconocido" }));
-        throw new Error(err.error || `HTTP ${syncRes.status}`);
-      }
-      const syncData = await syncRes.json();
-      applyApiData(syncData);
-      useClanStore.setState({ progressPhase: "ready" });
-      return;
-    }
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: "Error desconocido" }));
