@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { SkeletonCard, SkeletonBlock } from "@/components/ui/loading";
+import { Loading } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { MEDALS, ROLE_LABELS } from "@clashmanager/shared";
@@ -39,17 +39,7 @@ export default function AchievementsPage() {
   }
 
   if (!loaded) {
-    return (
-      <div className="space-y-4 p-4">
-        <SkeletonBlock className="h-8 w-48" />
-        <SkeletonBlock className="h-4 w-64" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      </div>
-    );
+    return <Loading text="Cargando logros..." className="h-64" />;
   }
 
   const sortedByTrophies = [...members].sort((a, b) => b.trophies - a.trophies);

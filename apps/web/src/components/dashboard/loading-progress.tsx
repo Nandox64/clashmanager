@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useClanStore } from "@/lib/store";
 import type { ProgressPhase } from "@/lib/store";
 import { RefreshCw, Wifi, Database, CheckCircle, AlertTriangle, HardDrive } from "lucide-react";
@@ -79,7 +80,13 @@ export function LoadingProgress({ onRetry }: LoadingProgressProps) {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="flex flex-col items-center gap-5 max-w-xs w-full px-4">
         {/* Indicador de carga animado */}
-        <div className="w-28 h-28 rounded-2xl bg-clash-border animate-skeleton" />
+        <Image
+          src="/logo_clase_pro.png"
+          alt="CLASE⚔️PRO"
+          width={112}
+          height={112}
+          className="object-contain animate-logo-pulse"
+        />
 
         {/* Indicador de fase con icono */}
         <div className="flex items-center gap-2.5">

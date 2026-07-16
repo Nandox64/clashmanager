@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
+import { Loading } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -108,14 +108,7 @@ export default function ProfilePage() {
   };
 
   if (loading && !profile) {
-    return (
-      <div className="space-y-4 p-4">
-        <SkeletonBlock className="h-8 w-32" />
-        <SkeletonBlock className="h-4 w-48" />
-        <SkeletonCard />
-        <SkeletonCard />
-      </div>
-    );
+    return <Loading text="Cargando perfil..." className="h-64" />;
   }
 
   if (profileError && !profile) {

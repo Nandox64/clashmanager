@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
+import { Loading } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { daysAgo, getActivityColor } from "@/lib/utils";
@@ -109,17 +109,7 @@ export default function MembersPage() {
   }
 
   if (!loaded) {
-    return (
-      <div className="space-y-4 p-4">
-        <SkeletonBlock className="h-8 w-48" />
-        <SkeletonBlock className="h-4 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      </div>
-    );
+    return <Loading text="Cargando miembros..." className="h-64" />;
   }
 
   const filtered = members

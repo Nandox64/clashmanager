@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
-import { SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
+import { Loading } from "@/components/ui/loading";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { MemberSelector } from "@/components/war-decks/member-selector";
 import { DeckCard } from "@/components/war-decks/deck-card";
@@ -417,17 +417,7 @@ Puedo ayudarte con:
   }
 
   if (!loaded) {
-    return (
-      <div className="space-y-4 p-4">
-        <SkeletonBlock className="h-8 w-48" />
-        <SkeletonBlock className="h-4 w-64" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      </div>
-    );
+    return <Loading text="Cargando miembros..." className="h-64" />;
   }
 
   return (

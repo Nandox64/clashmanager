@@ -316,3 +316,27 @@ body::after {
 @utility animate-skeleton {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
+
+@keyframes logo-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(212, 160, 23, 0.3));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(212, 160, 23, 0.6));
+    transform: scale(1.04);
+  }
+}
+
+@utility animate-logo-pulse {
+  animation: logo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes logo-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@utility animate-logo-glow {
+  animation: logo-glow 2s ease-in-out infinite;
+}

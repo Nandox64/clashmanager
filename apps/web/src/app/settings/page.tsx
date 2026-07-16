@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
+import { Loading } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { useProfile } from "@/hooks/use-profile";
@@ -213,15 +213,7 @@ export default function SettingsPage() {
   }
 
   if (!loaded) {
-    return (
-      <div className="space-y-4 p-4">
-        <SkeletonBlock className="h-8 w-32" />
-        <SkeletonBlock className="h-4 w-48" />
-        <SkeletonCard />
-        <SkeletonCard />
-        <SkeletonCard />
-      </div>
-    );
+    return <Loading text="Cargando ajustes..." className="h-64" />;
   }
 
   return (
@@ -279,10 +271,7 @@ export default function SettingsPage() {
         </Card>
 
         {profileLoading && !profile ? (
-          <div className="space-y-4 py-6">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
+          <Loading text="Vinculando tu perfil..." className="py-12" />
         ) : (
           <>
             {/* War Position Editor (leader/coleader only) */}
