@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { daysAgo, getActivityColor } from "@/lib/utils";
@@ -57,7 +59,7 @@ export default function MembersPage() {
     } else if (loaded && isLeader) {
       fetchRecruits();
     }
-  }, [loaded]);
+  }, [loaded, storeRecruits]);
 
   const updateRecruitStatus = async (id: string, status: "accepted" | "rejected" | "trial") => {
     const updated = recruits.map((r) =>
@@ -108,10 +110,13 @@ export default function MembersPage() {
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando miembros...</p>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-48" />
+        <SkeletonBlock className="h-4 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );
@@ -155,7 +160,7 @@ export default function MembersPage() {
          </p>
         </div>
 
-      <img src="/members.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
+      <Image src="/members.png" alt="Banner" width={800} height={200} className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">

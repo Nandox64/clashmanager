@@ -5,17 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { getCachedLinkedMemberId } from "@/lib/profile-cache";
 import { useProfile } from "@/hooks/use-profile";
+import { LoadingScreen } from "@/components/ui/loading";
 
 const PUBLIC_ROUTES = ["/login", "/verify-email"];
 const LINK_MEMBER_ROUTE = "/link-member";
-
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 animate-loading-delay" />
-    </div>
-  );
-}
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isMock } = useAuth();
@@ -25,45 +18,34 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   const cachedLinkedMemberId = getCachedLinkedMemberId();
   const hasLinkedMember = !!(profile?.linkedMemberId || cachedLinkedMemberId);
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAuthenticated = !!(user || isMock);
 
   useEffect(() => {
     if (isLoading) return;
-    if (PUBLIC_ROUTES.includes(pathname)) return;
-    if (!user && !isMock) {
+
+    if (isPublicRoute) return;
+
+    if (!isAuthenticated) {
       router.push("/login");
       return;
     }
+
     if (user && !user.emailVerified && !isMock) {
       if (pathname === "/dashboard") return;
       router.push("/verify-email");
       return;
     }
+
     if (pathname === LINK_MEMBER_ROUTE) return;
-    if (pathname === "/dashboard") return;
     if (profileLoading || !initialFetchDone) return;
+
     if (!hasLinkedMember && !isMock) {
       router.push(LINK_MEMBER_ROUTE);
     }
-  }, [user, isLoading, isMock, pathname, router, profileLoading, initialFetchDone, hasLinkedMember]);
+  }, [isLoading, isPublicRoute, isAuthenticated, user, isMock, pathname, router, profileLoading, initialFetchDone, hasLinkedMember]);
 
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return <>{children}</>;
-  }
-
-  if (!user && !isMock) {
-    return <LoadingScreen />;
-  }
-
-  // Si ya hay linkedMember en caché (localStorage), render children inmediatamente
-  // sin esperar al fetch del perfil. El fetch se hace en background.
-  const hasCachedLink = !!cachedLinkedMemberId;
-  const needsProfile = !hasCachedLink && pathname !== LINK_MEMBER_ROUTE && pathname !== "/dashboard" && !!user && !isMock && !hasLinkedMember && profileLoading;
-
-  if (needsProfile) {
+  if (isLoading || (isAuthenticated && !isPublicRoute && !cachedLinkedMemberId && !hasLinkedMember && profileLoading && pathname !== LINK_MEMBER_ROUTE && pathname !== "/dashboard")) {
     return <LoadingScreen />;
   }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCachedRole, setCachedRole } from "@/lib/profile-cache";
 import { useProfile } from "@/hooks/use-profile";
 import { useClanStore } from "@/lib/store";
+import { LoadingScreen } from "@/components/ui/loading";
 
 const ALLOWED_ROLES = ["leader", "coleader"];
 
@@ -48,11 +49,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
   }, [profile, profileLoading, members, loaded, router]);
 
   if (isAuthorized === null) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32" />
-      </div>
-    );
+    return <LoadingScreen text="Verificando permisos..." />;
   }
 
   if (!isAuthorized) {

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -79,11 +81,6 @@ export default function ProfilePage() {
       toast.error("La imagen no debe superar 1MB");
       return;
     }
-
-    if (file.size > 1024 * 1024) {
-      toast.error("La imagen no debe superar 1MB");
-      return;
-    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       setPhoto(ev.target?.result as string);
@@ -112,11 +109,11 @@ export default function ProfilePage() {
 
   if (loading && !profile) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando perfil...</p>
-        </div>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-32" />
+        <SkeletonBlock className="h-4 w-48" />
+        <SkeletonCard />
+        <SkeletonCard />
       </div>
     );
   }
@@ -149,7 +146,7 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <img src="/profile.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
+      <Image src="/profile.png" alt="Banner" width={800} height={200} className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
 
       <Card>
         <CardHeader>
@@ -164,9 +161,11 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="relative">
             {photo ? (
-              <img
+              <Image
                 src={photo}
                 alt="Foto de perfil"
+                width={112}
+                height={112}
                 className="w-28 h-28 rounded-full object-cover border-2 border-metallic-gold"
               />
             ) : (

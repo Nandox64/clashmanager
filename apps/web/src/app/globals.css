@@ -307,3 +307,12 @@ body::after {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 0.8; }
 }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@utility animate-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}

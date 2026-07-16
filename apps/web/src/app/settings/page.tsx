@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { LoadingScreen, SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { useProfile } from "@/hooks/use-profile";
@@ -212,11 +214,12 @@ export default function SettingsPage() {
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando ajustes...</p>
-        </div>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-32" />
+        <SkeletonBlock className="h-4 w-48" />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </div>
     );
   }
@@ -244,7 +247,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <img src="/settings.png" alt="Banner" className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
+        <Image src="/settings.png" alt="Banner" width={800} height={200} className="w-auto max-w-full h-auto rounded-xl object-contain max-h-[200px]" />
 
         {/* Clan Info (read-only) */}
         <Card>
@@ -276,11 +279,9 @@ export default function SettingsPage() {
         </Card>
 
         {profileLoading && !profile ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center space-y-3">
-              <img src="/carga4.gif" alt="Cargando..." className="w-24 h-24 mx-auto" />
-              <p className="text-sm text-clash-muted">Vinculando tu perfil...</p>
-            </div>
+          <div className="space-y-4 py-6">
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         ) : (
           <>
@@ -525,38 +526,42 @@ export default function SettingsPage() {
                 <Webhook size={16} className="text-metallic-gold" />
               </CardHeader>
               <div className="space-y-2">
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-start gap-2 p-2 rounded-lg hover:bg-glass transition-colors"
-                  >
-                    <Badge
-                      variant={
-                        log.type === "promotion"
-                          ? "success"
-                          : log.type === "kick"
-                            ? "danger"
-                            : "warning"
-                      }
-                      size="sm"
+                {logs.map((log) => {
+                  const actorName = members.find((m) => m.uid === log.actorId)?.displayName ?? log.actorId;
+                  const targetName = members.find((m) => m.uid === log.targetId)?.displayName ?? log.targetId;
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-start gap-2 p-2 rounded-lg hover:bg-glass transition-colors"
                     >
-                      {log.type === "promotion"
-                        ? "⬆"
-                        : log.type === "kick"
-                          ? "🚫"
-                          : "⚠️"}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-clash-text break-words">
-                        <strong>{log.actorId}</strong> {log.action}{" "}
-                        <strong>{log.targetId}</strong> — {log.details}
-                      </p>
-                      <p className="text-[10px] text-clash-muted mt-0.5">
-                        {new Date(log.timestamp).toLocaleDateString()}
-                      </p>
+                      <Badge
+                        variant={
+                          log.type === "promotion"
+                            ? "success"
+                            : log.type === "kick"
+                              ? "danger"
+                              : "warning"
+                        }
+                        size="sm"
+                      >
+                        {log.type === "promotion"
+                          ? "⬆"
+                          : log.type === "kick"
+                            ? "🚫"
+                            : "⚠️"}
+                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-clash-text break-words">
+                          <strong>{actorName}</strong> {log.action}{" "}
+                          <strong>{targetName}</strong> — {log.details}
+                        </p>
+                        <p className="text-[10px] text-clash-muted mt-0.5">
+                          {new Date(log.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           </>

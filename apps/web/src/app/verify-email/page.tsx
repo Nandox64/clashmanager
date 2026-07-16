@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { LoadingScreen } from "@/components/ui/loading";
 import { Mail, RefreshCw, CheckCircle, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -56,11 +57,7 @@ export default function VerifyEmailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 animate-loading-delay" />
-      </div>
-    );
+    return <LoadingScreen text="Cargando..." />;
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useClanStore } from "@/lib/store";
 import {
   loadClanCache,
@@ -101,12 +101,14 @@ function applyApiData(data: Record<string, unknown>) {
   s.setLastFetchedAt(Date.now());
 }
 
-const fetchingRef = { current: false };
-const lastFetchTimeRef = { current: 0 };
+const POLL_INTERVAL = 5 * 60 * 1000;
 
-async function fetchFromApi(force = false) {
-  if (fetchingRef.current) return;
-  fetchingRef.current = true;
+async function fetchFromApi(
+  isFetching: { current: boolean },
+  force = false
+) {
+  if (isFetching.current) return;
+  isFetching.current = true;
 
   const s = useClanStore.getState();
   useClanStore.setState({ loading: true, error: null });
@@ -141,62 +143,62 @@ async function fetchFromApi(force = false) {
       : err instanceof Error ? err.message : "Error al conectar";
     useClanStore.setState({ error: isAbort && useClanStore.getState().loaded ? null : errorMsg });
 
-    // Si ya teníamos datos (del caché), no borrarlos — seguir mostrándolos
     if (!useClanStore.getState().loaded) {
       useClanStore.setState({ progressPhase: "error" });
     }
-    // Si sí hay datos cargados, dejamos progressPhase como estaba (ready o lo que sea)
   } finally {
     clearTimeout(timeout);
     useClanStore.setState({ loading: false, loaded: true });
-    lastFetchTimeRef.current = Date.now();
-    fetchingRef.current = false;
+    isFetching.current = false;
   }
 }
 
-/** Intervalo de polling: 5 minutos */
-const POLL_INTERVAL = 5 * 60 * 1000;
-
-let pollingInterval: ReturnType<typeof setInterval> | null = null;
-
-function handlePoll() {
+function handlePoll(isFetching: { current: boolean }) {
   if (!document.hidden) {
-    fetchFromApi(false);
+    fetchFromApi(isFetching, false);
   }
 }
 
-let hydratedOnce = false;
+export function useClanDataLoader() {
+  const hydratedOnce = useRef(false);
+  const isFetching = useRef(false);
+  const pollingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-export function loadClanDataOnce() {
-  if (hydratedOnce) return;
-  hydratedOnce = true;
+  useEffect(() => {
+    if (hydratedOnce.current) return;
+    hydratedOnce.current = true;
 
-  const hydrated = hydrateFromCache();
+    const hydrated = hydrateFromCache();
 
-  if (hydrated) {
-    fetchFromApi(false);
-  } else {
-    useClanStore.setState({ progressPhase: "loading-api" });
-    fetchFromApi(false);
-  }
+    if (hydrated) {
+      fetchFromApi(isFetching, false);
+    } else {
+      useClanStore.setState({ progressPhase: "loading-api" });
+      fetchFromApi(isFetching, false);
+    }
+
+    pollingInterval.current = setInterval(() => handlePoll(isFetching), POLL_INTERVAL);
+    document.addEventListener("visibilitychange", () => handlePoll(isFetching));
+
+    return () => {
+      if (pollingInterval.current) {
+        clearInterval(pollingInterval.current);
+        pollingInterval.current = null;
+      }
+      document.removeEventListener("visibilitychange", () => handlePoll(isFetching));
+    };
+  }, []);
 }
 
-export function startControlledPolling() {
-  if (pollingInterval) return;
-  pollingInterval = setInterval(handlePoll, POLL_INTERVAL);
-  document.addEventListener("visibilitychange", handlePoll);
+export function refetchData() {
+  const isFetching = { current: false };
+  fetchFromApi(isFetching, false);
 }
 
-export function stopControlledPolling() {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
-  }
-  document.removeEventListener("visibilitychange", handlePoll);
+export function forceSyncData() {
+  const isFetching = { current: false };
+  fetchFromApi(isFetching, true);
 }
-
-export function refetchData() { fetchFromApi(false); }
-export function forceSyncData() { fetchFromApi(true); }
 
 export function useClanData() {
   const loading = useClanStore((s) => s.loading);
@@ -207,4 +209,6 @@ export function useClanData() {
 
   return { loading, error, progressPhase, fromCache, lastFetchedAt, refetch: refetchData, forceSync: forceSyncData };
 }
+
+export { refetchData as refetchClanData, forceSyncData as forceSyncClanData };
 

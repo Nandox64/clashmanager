@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { SkeletonCard, SkeletonBlock } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { MEDALS, ROLE_LABELS } from "@clashmanager/shared";
@@ -39,10 +40,13 @@ export default function AchievementsPage() {
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando logros...</p>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-48" />
+        <SkeletonBlock className="h-4 w-64" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );

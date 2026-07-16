@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { LoadingScreen } from "@/components/ui/loading";
 import { Mail, Smartphone, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -17,10 +19,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [createdUser, setCreatedUser] = useState<{ email: string; phone: string } | null>(null);
+  const [createdUser, setCreatedUser] = useState<{ email: string } | null>(null);
 
   useEffect(() => {
     if (!isLoading && (user || isMock)) {
@@ -85,7 +86,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await signUpWithEmail(email, password);
-      setCreatedUser({ email, phone });
+      setCreatedUser({ email });
       setMode("verify");
     } catch (err: unknown) {
       const fbErr = err as { code?: string };
@@ -104,11 +105,7 @@ export default function LoginPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 animate-loading-delay" />
-      </div>
-    );
+    return <LoadingScreen text="Cargando..." />;
   }
 
   if (mode === "verify" && createdUser) {
@@ -170,15 +167,19 @@ export default function LoginPage() {
     <div className="min-h-dynamic flex items-center justify-center p-3 sm:p-4">
       <Card className="w-full max-w-sm p-4 sm:p-8 overflow-y-auto max-h-[95dvh]">
         <div className="flex flex-col items-center gap-4 sm:gap-6">
-          <img
+          <Image
             src="/logo_cm.webp"
             alt="Clase Pro"
+            width={192}
+            height={64}
             className="w-36 sm:w-48 h-auto object-contain"
           />
 
-          <img
+          <Image
             src="/logo_clase_pro.png"
             alt="Clase Pro"
+            width={208}
+            height={208}
             className="w-32 h-32 sm:w-52 sm:h-52 object-contain"
           />
 
@@ -269,13 +270,6 @@ export default function LoginPage() {
                 placeholder="Correo electrónico *"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-clash-border bg-glass px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-metallic-gold focus:ring-1 focus:ring-metallic-gold transition-colors"
-              />
-              <input
-                type="tel"
-                placeholder="WhatsApp (opcional)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
                 className="w-full rounded-lg border border-clash-border bg-glass px-3 py-2 text-sm text-clash-text focus:outline-none focus:border-metallic-gold focus:ring-1 focus:ring-metallic-gold transition-colors"
               />
               <input

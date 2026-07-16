@@ -6,6 +6,7 @@ import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/use-profile";
+import { LoadingScreen } from "@/components/ui/loading";
 import {
   getCachedLinkedMemberId,
   setCachedLinkedMemberId,
@@ -70,15 +71,6 @@ export default function LinkMemberPage() {
     setReady(true);
   }, [profileLoading, loaded, serverProfile?.linkedMemberId, router]);
 
-  useEffect(() => {
-    if (ready) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [ready]);
-
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -125,25 +117,21 @@ export default function LinkMemberPage() {
   };
 
   if (!ready) {
-    return (
-      <div className="min-h-dynamic flex items-center justify-center">
-        <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32" />
-      </div>
-    );
+    return <LoadingScreen text="Cargando..." />;
   }
 
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
   return (
-    <div className="min-h-dynamic flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
+    <div className="min-h-screen py-4 px-4">
+      <div className="w-full max-w-lg mx-auto bg-clash-card border border-clash-border rounded-2xl shadow-2xl max-h-[90dvh] overflow-y-auto">
         <div className="p-5 sm:p-6 border-b border-clash-border text-center">
           <div className="w-14 h-14 rounded-full bg-metallic-gold/20 flex items-center justify-center mx-auto mb-3">
             <Shield size={28} className="text-metallic-gold" />
           </div>
-          <h1 className="text-xl font-bold text-metallic-gold">Vincula tu cuenta</h1>
+          <h1 className="text-xl font-bold text-metallic-gold">Selecciona tu Perfil</h1>
           <p className="text-sm text-clash-muted mt-1">
-            Selecciona tu miembro del clan para acceder a la aplicación
+            Elige tu miembro del clan para identificarte
           </p>
         </div>
 

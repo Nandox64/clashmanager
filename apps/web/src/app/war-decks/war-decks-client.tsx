@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
+import { SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { MemberSelector } from "@/components/war-decks/member-selector";
 import { DeckCard } from "@/components/war-decks/deck-card";
@@ -417,10 +418,13 @@ Puedo ayudarte con:
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando miembros...</p>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-48" />
+        <SkeletonBlock className="h-4 w-64" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );
@@ -469,7 +473,7 @@ Puedo ayudarte con:
             </div>
             <div className="mt-auto">
               <Button onClick={handleLoadWarDecks} disabled={!selectedTag || loadingWarDecks} size="lg" className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all">
-                {loadingWarDecks ? <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" /> : <RefreshCw size={20} className="mr-2" />}
+                {loadingWarDecks ? <RefreshCw size={20} className="mr-2 animate-spin" /> : <RefreshCw size={20} className="mr-2" />}
                 {loadingWarDecks ? "Cargando..." : "Cargar Mazos"}
               </Button>
             </div>
@@ -498,7 +502,7 @@ Puedo ayudarte con:
             </select>
             <div className="mt-auto">
               <Button onClick={handleGenerate} disabled={!selectedTag || loading || loadingTrophy || loadingBoat} size="lg" className="w-full bg-metallic-gold text-black hover:brightness-110 transition-all">
-                {loading || loadingTrophy || loadingBoat ? <img src="/carga4.gif" alt="" className="w-5 h-5 mr-2" /> : <Sparkles size={20} className="mr-2" />}
+                {loading || loadingTrophy || loadingBoat ? <Sparkles size={20} className="mr-2 animate-pulse" /> : <Sparkles size={20} className="mr-2" />}
                 {loading || loadingTrophy || loadingBoat ? "Generando..." : "Generar Mazos"}
               </Button>
             </div>
@@ -570,7 +574,7 @@ Puedo ayudarte con:
                 <div className="flex justify-start">
                   <div className="max-w-[85%] p-3 rounded-xl bg-black/30 border border-clash-border">
                     <div className="flex items-center gap-2">
-                      <img src="/carga4.gif" alt="" className="w-4 h-4" />
+                      <div className="w-4 h-4 rounded-full border-2 border-clash-gold border-t-transparent animate-spin" />
                       <span className="text-xs text-clash-dimmed">Pensando...</span>
                     </div>
                   </div>

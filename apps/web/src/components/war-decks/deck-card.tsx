@@ -125,7 +125,7 @@ export function DeckCard({ deck, type = "war", onAskHowToPlay }: DeckCardProps) 
             } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {loadingHowToPlay === deck.name ? (
-            <><img src="/carga4.gif" alt="" className="w-3.5 h-3.5" /> Cargando...</>
+            <><div className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" /> Cargando...</>
           ) : (
             <><BookOpen size={12} /> Cómo jugar</>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -73,49 +74,6 @@ export const Sidebar = memo(function Sidebar() {
 
   const theme = getPageTheme(pathname);
 
-  const getNavActiveVars = (theme: PageTheme) => {
-    if (theme.accent === "#FF8C00") {
-      return {
-        "--nav-active-bg": "hsla(30, 100%, 50%, 0.15)",
-        "--nav-active-color": "#FF8C00",
-        "--nav-active-bar-start": "#FF8C00",
-        "--nav-active-bar-end": "#CC6600",
-      };
-    }
-    if (theme.accent === "#0088FF") {
-      return {
-        "--nav-active-bg": "hsla(216, 100%, 50%, 0.15)",
-        "--nav-active-color": "#0088FF",
-        "--nav-active-bar-start": "#0088FF",
-        "--nav-active-bar-end": "#0055CC",
-      };
-    }
-    if (theme.accent === "#00CCAA") {
-      return {
-        "--nav-active-bg": "hsla(174, 100%, 40%, 0.15)",
-        "--nav-active-color": "#00CCAA",
-        "--nav-active-bar-start": "#00CCAA",
-        "--nav-active-bar-end": "#009988",
-      };
-    }
-    if (theme.accent === "#A855F7") {
-      return {
-        "--nav-active-bg": "hsla(271, 81%, 65%, 0.15)",
-        "--nav-active-color": "#A855F7",
-        "--nav-active-bar-start": "#A855F7",
-        "--nav-active-bar-end": "#8B30CC",
-      };
-    }
-    return {
-      "--nav-active-bg": "hsla(45, 90%, 55%, 0.15)",
-      "--nav-active-color": "#FFD700",
-      "--nav-active-bar-start": "#FFD700",
-      "--nav-active-bar-end": "#B8860B",
-    };
-  };
-
-  const navActiveVars = getNavActiveVars(theme);
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -125,71 +83,69 @@ export const Sidebar = memo(function Sidebar() {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
+  const themeConfigs = {
+    "#FF8C00": {
+      accentClass: "bg-accent-orange animate-accent-shimmer",
+      accentHex: "#FF8C00",
+      accentDark: "#CC6600",
+      accentRgba: "rgba(255, 140, 0, 0.4)",
+      accentRgbaSubtle: "hsla(30, 100%, 50%, 0.06)",
+      navActiveBg: "hsla(30, 100%, 50%, 0.15)",
+      navActiveColor: "#FF8C00",
+    },
+    "#0088FF": {
+      accentClass: "bg-accent-blue animate-accent-shimmer",
+      accentHex: "#0088FF",
+      accentDark: "#0055CC",
+      accentRgba: "rgba(0, 136, 255, 0.4)",
+      accentRgbaSubtle: "hsla(216, 100%, 50%, 0.06)",
+      navActiveBg: "hsla(216, 100%, 50%, 0.15)",
+      navActiveColor: "#0088FF",
+    },
+    "#00CCAA": {
+      accentClass: "bg-accent-teal animate-accent-shimmer",
+      accentHex: "#00CCAA",
+      accentDark: "#009988",
+      accentRgba: "rgba(0, 204, 170, 0.4)",
+      accentRgbaSubtle: "hsla(174, 100%, 40%, 0.06)",
+      navActiveBg: "hsla(174, 100%, 40%, 0.15)",
+      navActiveColor: "#00CCAA",
+    },
+    "#A855F7": {
+      accentClass: "bg-accent-purple animate-accent-shimmer",
+      accentHex: "#A855F7",
+      accentDark: "#8B30CC",
+      accentRgba: "rgba(168, 85, 247, 0.4)",
+      accentRgbaSubtle: "hsla(271, 81%, 65%, 0.06)",
+      navActiveBg: "hsla(271, 81%, 65%, 0.15)",
+      navActiveColor: "#A855F7",
+    },
+  };
+
+  const goldConfig = {
+    accentClass: "bg-metallic-gold animate-metallic-shimmer",
+    accentHex: "#FFD700",
+    accentDark: "#B8860B",
+    accentRgba: "rgba(212, 160, 23, 0.4)",
+    accentRgbaSubtle: "hsla(45, 90%, 55%, 0.06)",
+    navActiveBg: "hsla(45, 90%, 55%, 0.15)",
+    navActiveColor: "#FFD700",
+  };
+
+  const accent = themeConfigs[theme.accent as keyof typeof themeConfigs] ?? goldConfig;
+
   const sidebarStyle = {
     background: theme.surfaceSolid,
     borderRightColor: theme.border,
-    ...navActiveVars,
+    "--nav-active-bg": accent.navActiveBg,
+    "--nav-active-color": accent.navActiveColor,
+    "--nav-active-bar-start": accent.accentHex,
+    "--nav-active-bar-end": accent.accentDark,
   } as React.CSSProperties;
   const mobileBarStyle = {
     background: theme.surfaceSolid,
     borderBottomColor: theme.border,
   } as React.CSSProperties;
-
-  const getAccentClass = (theme: PageTheme): string => {
-    if (theme.accent === "#FF8C00") return "bg-accent-orange animate-accent-shimmer";
-    if (theme.accent === "#0088FF") return "bg-accent-blue animate-accent-shimmer";
-    if (theme.accent === "#00CCAA") return "bg-accent-teal animate-accent-shimmer";
-    if (theme.accent === "#A855F7") return "bg-accent-purple animate-accent-shimmer";
-    return "bg-metallic-gold animate-metallic-shimmer";
-  };
-
-  const getAccentStyles = (theme: PageTheme) => {
-    if (theme.accent === "#FF8C00") {
-      return {
-        accentClass: "bg-accent-orange animate-accent-shimmer",
-        accentHex: "#FF8C00",
-        accentDark: "#CC6600",
-        accentRgba: "rgba(255, 140, 0, 0.4)",
-        accentRgbaSubtle: "hsla(30, 100%, 50%, 0.06)",
-      };
-    }
-    if (theme.accent === "#0088FF") {
-      return {
-        accentClass: "bg-accent-blue animate-accent-shimmer",
-        accentHex: "#0088FF",
-        accentDark: "#0055CC",
-        accentRgba: "rgba(0, 136, 255, 0.4)",
-        accentRgbaSubtle: "hsla(216, 100%, 50%, 0.06)",
-      };
-    }
-    if (theme.accent === "#00CCAA") {
-      return {
-        accentClass: "bg-accent-teal animate-accent-shimmer",
-        accentHex: "#00CCAA",
-        accentDark: "#009988",
-        accentRgba: "rgba(0, 204, 170, 0.4)",
-        accentRgbaSubtle: "hsla(174, 100%, 40%, 0.06)",
-      };
-    }
-    if (theme.accent === "#A855F7") {
-      return {
-        accentClass: "bg-accent-purple animate-accent-shimmer",
-        accentHex: "#A855F7",
-        accentDark: "#8B30CC",
-        accentRgba: "rgba(168, 85, 247, 0.4)",
-        accentRgbaSubtle: "hsla(271, 81%, 65%, 0.06)",
-      };
-    }
-    return {
-      accentClass: "bg-metallic-gold animate-metallic-shimmer",
-      accentHex: "#FFD700",
-      accentDark: "#B8860B",
-      accentRgba: "rgba(212, 160, 23, 0.4)",
-      accentRgbaSubtle: "hsla(45, 90%, 55%, 0.06)",
-    };
-  };
-
-  const accent = getAccentStyles(theme);
 
   return (
     <>
@@ -206,7 +162,7 @@ export const Sidebar = memo(function Sidebar() {
         >
           <Menu size={20} className="text-[#0d1117]" />
         </button>
-        <img src="/logo_cm.webp" alt="Clase Pro" className="h-12 w-auto object-contain" />
+        <Image src="/logo_cm.webp" alt="Clase Pro" width={96} height={48} className="h-12 w-auto object-contain" />
           <div className="ml-auto min-w-0 max-w-32 lg:max-w-24 overflow-hidden">
           <span className="text-[12px] truncate block" style={{ color: "var(--pm-text)" }}>
             {clanName}
@@ -235,10 +191,12 @@ export const Sidebar = memo(function Sidebar() {
       >
         {/* Header / Logo */}
         <div className="flex flex-col items-center gap-1 p-3 pt-4 lg:p-4 lg:pt-5">
-          <img src="/logo_cm.webp" alt="Clase Pro" className="w-full max-w-[140px] lg:max-w-[160px] h-auto object-contain" />
-          <img
+          <Image src="/logo_cm.webp" alt="Clase Pro" width={160} height={60} className="w-full max-w-[140px] lg:max-w-[160px] h-auto object-contain" />
+          <Image
             src="/logo_clase_pro.png"
             alt="Clase Pro"
+            width={112}
+            height={112}
             className="w-20 h-20 lg:w-28 lg:h-28 object-contain"
           />
         </div>
@@ -278,9 +236,11 @@ export const Sidebar = memo(function Sidebar() {
             <div className="flex items-center gap-3 px-2 py-2 rounded-lg"
                  style={{ background: accent.accentRgbaSubtle }}>
               {displayPhoto ? (
-                <img
+                <Image
                   src={displayPhoto}
                   alt={displayName}
+                  width={36}
+                  height={36}
                   className="w-9 h-9 rounded-full object-cover shrink-0"
                   style={{ borderColor: accent.accentHex }}
                 />

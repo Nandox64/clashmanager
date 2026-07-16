@@ -78,12 +78,8 @@ export function LoadingProgress({ onRetry }: LoadingProgressProps) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="flex flex-col items-center gap-5 max-w-xs w-full px-4">
-        {/* GIF de carga (mantener el original para consistencia) */}
-        <img
-          src="/carga4.gif"
-          alt="Cargando..."
-          className="w-28 h-28 animate-loading-delay"
-        />
+        {/* Indicador de carga animado */}
+        <div className="w-28 h-28 rounded-2xl bg-clash-border animate-skeleton" />
 
         {/* Indicador de fase con icono */}
         <div className="flex items-center gap-2.5">

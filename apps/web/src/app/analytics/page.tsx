@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { MetricCard } from "@/components/shared/metric-card";
 import { ComparativaJugadores } from "@/components/dashboard/comparativa-jugadores";
+import { SkeletonBlock, SkeletonCard } from "@/components/ui/loading";
 import { useClanStore } from "@/lib/store";
 import { useClanData } from "@/hooks/use-clan-data";
 import type { Member } from "@clashmanager/shared";
@@ -45,11 +46,14 @@ export default function AnalyticsPage() {
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center space-y-3">
-          <img src="/carga4.gif" alt="Cargando..." className="w-32 h-32 mx-auto" />
-          <p className="text-sm text-clash-muted">Cargando estadísticas...</p>
+      <div className="space-y-4 p-4">
+        <SkeletonBlock className="h-8 w-48" />
+        <SkeletonBlock className="h-4 w-64" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
+        <SkeletonCard />
       </div>
     );
   }

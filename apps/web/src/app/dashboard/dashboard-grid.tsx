@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { MetricCard } from "@/components/shared/metric-card";
 import { TopCopas } from "@/components/dashboard/top-copas";
@@ -87,7 +88,7 @@ export function DashboardGrid() {
       </div>
 
       <div className="relative">
-        <img src="/banner.png" alt="Banner" className="w-full h-auto rounded-xl object-contain max-h-[200px]" />
+        <Image src="/banner.png" alt="Banner" width={1200} height={200} className="w-full h-auto rounded-xl object-contain max-h-[200px]" />
         <div className="absolute bottom-2 right-2 flex items-center gap-2">
           {lastFetchedAt && (
             <span className="text-[10px] text-clash-dimmed font-mono bg-black/50 px-1.5 py-0.5 rounded">

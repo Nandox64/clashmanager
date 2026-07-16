@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Image from "next/image";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/app-shell";
 import { NavigationLoader } from "@/components/layout/navigation-loader";
