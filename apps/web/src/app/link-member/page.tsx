@@ -123,8 +123,8 @@ export default function LinkMemberPage() {
   const linkedMember = members.find((m) => m.uid === linkedMemberId);
 
   return (
-    <div className="min-h-screen py-4 px-4">
-      <div className="w-full max-w-lg mx-auto bg-clash-card border border-clash-border rounded-2xl shadow-2xl max-h-[90dvh] overflow-y-auto">
+    <div className="h-dvh overflow-y-auto px-4 py-4">
+      <div className="w-full max-w-lg mx-auto bg-clash-card border border-clash-border rounded-2xl shadow-2xl">
         <div className="p-5 sm:p-6 border-b border-clash-border text-center">
           <div className="w-14 h-14 rounded-full bg-metallic-gold/20 flex items-center justify-center mx-auto mb-3">
             <Shield size={28} className="text-metallic-gold" />
