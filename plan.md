@@ -1470,3 +1470,131 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 | `firestore.rules` | Reglas de seguridad (denegar acceso cliente) |
 
 ---
+
+## Sesión 39 — Fix donaciones totales, refresh button directo, sync mejorado 🚀
+
+### Features implementadas ✅
+
+#### 1. Mostrar donaciones totales (API) en vez de diff semanal
+- **Problema**: `donationsGiven` calculado como diff semanal desde CR API mostraba 0 si el miembro no donaba en la semana actual.
+- **Fix**: `/api/player/[tag]` devuelve `donationsTotal` real del perfil CR. Profile page lo usa para mostrar donaciones totales además de semanales.
+- **Archivos**: `app/api/player/[tag]/route.ts`, `app/profile/page.tsx`
+
+#### 2. Botón refresh fuerza sync directa desde CR API
+- **Problema**: El botón 🔄 llamaba al store que no forzaba sync completo.
+- **Fix**: `forceSyncData()` ahora llama a `/api/firebase/load?force=1`. `fetchFromApi` usa el endpoint de carga forzada directamente.
+- **Archivos**: `hooks/use-clan-data.ts`, `app/dashboard/dashboard-grid.tsx`
+
+#### 3. Sincronización donaciones con stale data baseline
+- **Problema**: `prevDonations` con datos de hace 30 días acumulaba semanas enteras de donaciones como una sola.
+- **Fix**: Si datos almacenados tienen >7 días, se resetea baseline (`prevDonations`/`prevTrophies` = `undefined`).
+- **Archivos**: `lib/clan-sync.ts`
+
+### Archivos modificados (6)
+| Archivo | Cambio |
+|---------|--------|
+| `app/api/player/[tag]/route.ts` | Devuelve `donationsTotal` real |
+| `app/profile/page.tsx` | Muestra totales + semanales |
+| `hooks/use-clan-data.ts` | `forceSyncData` llama a `/api/firebase/load?force=1` |
+| `app/dashboard/dashboard-grid.tsx` | Botón refresh usa force sync |
+| `lib/clan-sync.ts` | Stale data reset para prevDonations/prevTrophies |
+| `plan.md` | Documentación Sesión 39 |
+
+---
+
+## Sesión 40 — Bugfixes, ESLint flat config, refactor sidebar, loading component 🧹
+
+### Features implementadas ✅
+
+#### 1. Profile: duplicado validación foto
+- **Problema**: Validación de tamaño de foto repetida 2 veces en `profile/page.tsx`.
+- **Fix**: Eliminada validación duplicada.
+
+#### 2. Recruits: useEffect sin storeRecruits
+- **Problema**: `useEffect` en `members/page.tsx` faltaba `storeRecruits` en su array de dependencias.
+- **Fix**: Agregada dependencia faltante.
+
+#### 3. Signup: phone state no utilizado
+- **Problema**: Estado `phone` declarado en `login/page.tsx` pero nunca usado.
+- **Fix**: Eliminado.
+
+#### 4. Settings logs: resolver nombres en vez de UIDs
+- **Problema**: Logs de settings mostraban `actorId`/`targetId` como UIDs.
+- **Fix**: `members.find()` resuelve a `displayName`.
+
+#### 5. use-clan-data: módulo mutable → useRef
+- **Problema**: Estado mutable (`pollingStarted`, `fetching`, `lastFetchTime`) en módulo causaba bugs en React Strict Mode.
+- **Fix**: Reemplazado con `useRef`.
+
+#### 6. AuthGuard: lógica simplificada
+- **Problema**: Redirect anidado con múltiples condiciones difícil de leer.
+- **Fix**: Early returns con variables descriptivas.
+
+#### 7. Sidebar: 3 funciones de acento → 1 config
+- **Problema**: `getNavActiveVars`, `getAccentClass`, `getAccentStyles` duplicaban lógica de tema.
+- **Fix**: Fusionadas en objeto `accentConfig` único.
+
+#### 8. ESLint: FlatCompat → flat config
+- **Problema**: Config legacy con `FlatCompat` deprecated en ESLint 9.
+- **Fix**: Migrado a flat config con `@eslint/js` + `@next/eslint-plugin-next`.
+
+#### 9. Loading: GIFs → componente animado con logo
+- **Problema**: Imágenes GIF (`/carga4.gif`) como loading, pesadas y sin branding.
+- **Fix**: Todos los loading reemplazados por componente `Loading`/`LoadingScreen` con logo `logo_clase_pro.png` + animación gold glow pulse.
+
+#### 10. Imágenes: migración a next/image
+- **Problema**: Banners, logos y fotos de perfil sin lazy loading ni optimización.
+- **Fix**: Migrados a `next/image` con `priority` y `loading="lazy"` según corresponda.
+
+#### 11. Link-member modal: scroll en mobile
+- **Problema**: Botón "Vincular y acceder" no visible en mobile sin scroll.
+- **Fix**: Título cambiado a "Selecciona tu Perfil", eliminado `overflow:hidden` body lock, modal con top-padded y `max-h-[90dvh] overflow-y-auto`.
+
+### Archivos modificados (20+)
+| Archivo | Cambio |
+|---------|--------|
+| `app/profile/page.tsx` | Eliminada validación duplicada; migración next/image |
+| `app/members/page.tsx` | Dependencia `storeRecruits` en useEffect |
+| `app/login/page.tsx` | Eliminado `phone` state |
+| `app/settings/page.tsx` | Logs resuelven nombres via `members.find` |
+| `hooks/use-clan-data.ts` | `useRef` en vez de módulo mutable |
+| `components/auth/auth-guard.tsx` | Simplified redirect logic |
+| `components/layout/sidebar.tsx` | Objeto `accentConfig` unificado |
+| `eslint.config.js` | Flat config con `@eslint/js` + `@next/eslint-plugin-next` |
+| `components/ui/loading.tsx` | Componente `Loading`/`LoadingScreen` con logo animado |
+| `components/dashboard/loading-progress.tsx` | Logo animation en vez de GIF |
+| `app/globals.css` | `@keyframes logo-pulse`, `logo-glow`, `skeleton-pulse` |
+| `app/link-member/page.tsx` | Modal scrollable en mobile |
+| Múltiples páginas | Migración a `next/image` |
+
+---
+
+## Sesión 41 — Loading animado con logo CLASE⚔️PRO + scroll fluido ✨
+
+### Features implementadas ✅
+
+#### 1. Loading: animación de logo en todas las pantallas de carga
+- **Problema**: Los loading components previos aún tenían fallback a skeletons genéricos.
+- **Fix**: 
+  - Nuevas keyframes `logo-pulse` y `logo-glow` en `globals.css`.
+  - Loading básico: logo escala 1→1.05 con opacidad 0.7→1.
+  - LoadingScreen (full page): logo con glow dorado + sombra pulsante.
+  - Reemplazados todos los `LoadingSkeleton`/`Carga4.gif` restantes.
+- **Archivos**: `app/globals.css`, `components/ui/loading.tsx`
+
+#### 2. Link-member modal: scroll fluido sin saltos
+- **Problema**: Doble scroll (body + card `overflow-y-auto`) + bloque `linkedMember` al aparecer causaba salto visual.
+- **Fix**: 
+  - Contenedor exterior `h-dvh overflow-y-auto` (un solo scroll).
+  - Card sin `max-h` ni `overflow` propio.
+  - Scroll nativo, fluido, sin reajustes.
+- **Archivo**: `app/link-member/page.tsx`
+
+### Archivos modificados (3)
+| Archivo | Cambio |
+|---------|--------|
+| `app/globals.css` | `@keyframes logo-pulse`, `@keyframes logo-glow` |
+| `components/ui/loading.tsx` | `Loading` con pulse + `LoadingScreen` con glow |
+| `app/link-member/page.tsx` | `min-h-screen py-4` → `h-dvh overflow-y-auto`, eliminado `max-h-[90dvh] overflow-y-auto` del card |
+
+---
