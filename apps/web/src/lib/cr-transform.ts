@@ -59,6 +59,7 @@ export function transformMembers(
     currentRaceParticipants?: Array<{ tag: string; fame: number; decksUsed: number; decksUsedToday: number }>;
     warHistory?: Map<string, { totalWars: number; warsParticipated: number }>;
     storedMembersByTag?: Map<string, { lastDonationCheckDay?: number; donationDaysWeek?: number }>;
+    playerData?: Map<string, { warDayWins: number }>;
   }
 ): Member[] {
   const now = Date.now();
@@ -120,7 +121,7 @@ export function transformMembers(
       trophies: m.trophies,
       bestTrophies: m.trophies,
       level: m.expLevel ?? 0,
-      warDayWins: 0,
+      warDayWins: options?.playerData?.get(m.tag)?.warDayWins ?? 0,
       cardsCollected: 0,
       donations: m.donations,
       donationsReceived: m.donationsReceived,

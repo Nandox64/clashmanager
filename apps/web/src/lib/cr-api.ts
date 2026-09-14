@@ -94,6 +94,21 @@ export async function getPlayer(playerTag: string): Promise<CRPlayer> {
   return fetchCR<CRPlayer>(`/players/${encodeTag(playerTag)}`);
 }
 
+export async function getPlayers(playerTags: string[]): Promise<Record<string, CRPlayer>> {
+  const results: Record<string, CRPlayer> = {};
+  await Promise.all(
+    playerTags.map(async (tag) => {
+      try {
+        const player = await getPlayer(tag);
+        results[tag] = player;
+      } catch {
+        results[tag] = {} as CRPlayer;
+      }
+    })
+  );
+  return results;
+}
+
 export async function getLocalWarRanking(
   locationId: number,
   limit = 200

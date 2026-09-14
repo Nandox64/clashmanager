@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getClanFull, type CRApiClientError } from "@/lib/cr-api";
+import { getClanFull, getPlayers, type CRApiClientError } from "@/lib/cr-api";
 import {
   transformClan,
   transformMembers,
@@ -171,11 +171,21 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
   const storedByTagForTransform = new Map(storedMembers.map(m => [m.playerTag, { lastDonationCheckDay: m.lastDonationCheckDay, donationDaysWeek: m.donationDaysWeek }]));
 
+  const playerTags = clan.memberList.map(m => m.tag.replace("#", "").toUpperCase());
+  const playerData = await getPlayers(playerTags).catch(() => ({}));
+  const playerDataMap = new Map<string, { warDayWins: number }>();
+  for (const [tag, player] of Object.entries(playerData)) {
+    if (player && player.warDayWins !== undefined) {
+      playerDataMap.set(tag.replace("#", "").toUpperCase(), { warDayWins: player.warDayWins });
+    }
+  }
+
   const transformedMembers = transformMembers(clan.memberList, {
     previousTrophies: prevTrophies,
     currentRaceParticipants: currentRiverRace?.participants,
     warHistory,
     storedMembersByTag: storedByTagForTransform,
+    playerData: playerDataMap,
   });
 
   const [storedRank, storedChange, storedTrophies] = await Promise.all([

@@ -90,6 +90,11 @@ function RiskRow({ member, daysSinceActive, severity, primary }: RiskRowProps) {
               ({member.warsParticipated ?? 0}/{member.totalWars} guerras)
             </span>
           )}
+          {member.warDayWins > 0 && (
+            <span className="text-clash-gold/70 ml-1">
+              🏆 {member.warDayWins} victorias
+            </span>
+          )}
           {daysSinceActive > 0 && (
             <span className={[
               "ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium",
