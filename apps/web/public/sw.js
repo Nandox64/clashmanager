@@ -1,4 +1,4 @@
-const SW_VERSION = 8;
+const SW_VERSION = 9;
 const CACHE = "clashmanager-v" + SW_VERSION;
 
 function isHtmlNav(req) {
