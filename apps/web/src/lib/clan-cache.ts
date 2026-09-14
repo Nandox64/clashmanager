@@ -7,7 +7,7 @@
  * Datos sensibles (tokens, secrets) NUNCA se guardan aquí.
  */
 
-const CACHE_KEY = "clash-clan-cache-v2";
+const CACHE_KEY = "clash-clan-cache-v3";
 
 /** TTL por defecto: 1 hora */
 const DEFAULT_TTL_MS = 60 * 60 * 1000;

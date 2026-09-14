@@ -134,15 +134,15 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
 
     if (raceKey !== lastKeyResolved) {
       const participants = currentRiverRace?.participants ?? [];
-      const participantTags = new Set(participants.map(p => p.tag));
+      const participantTags = new Set(participants.map(p => p.tag.replace("#", "").toUpperCase()));
 
       const updatedHistory = new Map(warHistory);
       for (const member of clan.memberList) {
         const prev = updatedHistory.get(member.tag) ?? { totalWars: 0, warsParticipated: 0 };
-        if (prev.totalWars === 0) continue;
+        const memberTagClean = member.tag.replace("#", "").toUpperCase();
         updatedHistory.set(member.tag, {
           totalWars: prev.totalWars + 1,
-          warsParticipated: prev.warsParticipated + (participantTags.has(member.tag) ? 1 : 0),
+          warsParticipated: prev.warsParticipated + (participantTags.has(memberTagClean) ? 1 : 0),
         });
       }
       warHistory = updatedHistory;
