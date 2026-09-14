@@ -74,6 +74,9 @@ function RiskRow({ member, daysSinceActive, severity, primary }: RiskRowProps) {
   const badgeVariant = getBadgeVariant(severity, primary);
   const badgeLabel = getBadgeLabel(severity, primary);
   const donationsVal = member.donations ?? 0;
+  const warPct = member.weeklyStats?.warParticipation ?? 0;
+  const hasWarHistory = member.totalWars > 0;
+  const warActive = member.warDayWins > 0;
 
   return (
     <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-glass/30 transition-colors">
@@ -84,15 +87,20 @@ function RiskRow({ member, daysSinceActive, severity, primary }: RiskRowProps) {
         </p>
         <p className="text-xs text-clash-muted drop-shadow-sm">
           Don.: {donationsVal} · Guerra:{" "}
-          {member.weeklyStats?.warParticipation ?? 0}%
-          {member.totalWars > 0 && (
+          {hasWarHistory ? `${warPct}%` : warActive ? "En guerra hoy" : "Sin datos"}
+          {hasWarHistory && (
             <span className="text-clash-dimmed ml-1">
               ({member.warsParticipated ?? 0}/{member.totalWars} guerras)
             </span>
           )}
-          {member.warDayWins > 0 && (
+          {warActive && !hasWarHistory && (
             <span className="text-clash-gold/70 ml-1">
-              🏆 {member.warDayWins} victorias
+              🏆 {member.warDayWins} victorias hoy
+            </span>
+          )}
+          {warActive && hasWarHistory && (
+            <span className="text-clash-gold/70 ml-1">
+              🏆 {member.warDayWins} victorias hoy
             </span>
           )}
           {daysSinceActive > 0 && (
