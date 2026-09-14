@@ -1,4 +1,4 @@
-const SW_VERSION = 7;
+const SW_VERSION = 8;
 const CACHE = "clashmanager-v" + SW_VERSION;
 
 function isHtmlNav(req) {
@@ -63,15 +63,13 @@ self.addEventListener("fetch", (event) => {
   // API requests: pasan directamente al servidor (ya tienen cache via Firestore)
   if (url.pathname.startsWith("/api/")) return;
 
-  // HTML navigation: network first, sin cache (RSC streaming no es cacheable)
-  if (isHtmlNav(request)) {
-    event.respondWith(
-      fetch(request).catch(() =>
-        caches.match(request).then((cached) => cached || new Response("Offline", { status: 503 }))
-      )
-    );
-    return;
-  }
+// HTML navigation: network-only, sin cache (evitar 403 cacheado)
+    if (isHtmlNav(request)) {
+      event.respondWith(
+        fetch(request).catch(() => new Response("Offline", { status: 503 }))
+      );
+      return;
+    }
 
   // Assets with hash (immutable): cache first
   if (hasHash(url)) {

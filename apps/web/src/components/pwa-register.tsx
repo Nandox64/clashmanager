@@ -21,6 +21,8 @@ export function PWARegister() {
       .register(`/sw.js?v=${SW_VERSION}`, { scope: "/", updateViaCache: "none" })
       .then((reg) => {
         reg.update().catch(() => {});
+        reg.update().catch(() => {});
+        setTimeout(() => reg.update().catch(() => {}), 5000);
 
         reg.addEventListener("updatefound", () => {
           const sw = reg.installing;
