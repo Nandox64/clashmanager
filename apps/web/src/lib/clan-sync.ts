@@ -133,16 +133,25 @@ export async function syncClanData(input: SyncInput): Promise<SyncResult> {
     const lastKeyResolved = lastKey ?? (await getLastRaceKey(clan.tag).catch(() => null));
 
     if (raceKey !== lastKeyResolved) {
-      const participants = currentRiverRace?.participants ?? [];
-      const participantTags = new Set(participants.map(p => p.tag.replace("#", "").toUpperCase()));
+      const currentParticipants = currentRiverRace?.participants ?? [];
+      const hasActiveParticipants = currentParticipants.length > 0;
+      const participantTags = new Set(currentParticipants.map(p => p.tag.replace("#", "").toUpperCase()));
+      const allClanMemberTags = new Set(clan.memberList.map(m => m.tag.replace("#", "").toUpperCase()));
 
       const updatedHistory = new Map(warHistory);
       for (const member of clan.memberList) {
         const prev = updatedHistory.get(member.tag) ?? { totalWars: 0, warsParticipated: 0 };
         const memberTagClean = member.tag.replace("#", "").toUpperCase();
+
+        // Si la guerra está activa, verificar quién participó.
+        // Si la guerra ya terminó (currentRiverRace vacío), asumir que todos participaron.
+        const participated = hasActiveParticipants
+          ? participantTags.has(memberTagClean)
+          : allClanMemberTags.has(memberTagClean);
+
         updatedHistory.set(member.tag, {
           totalWars: prev.totalWars + 1,
-          warsParticipated: prev.warsParticipated + (participantTags.has(memberTagClean) ? 1 : 0),
+          warsParticipated: prev.warsParticipated + (participated ? 1 : 0),
         });
       }
       warHistory = updatedHistory;
