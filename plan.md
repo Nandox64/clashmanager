@@ -1599,46 +1599,43 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 
 ---
 
-## Sesión 42 — Fix favicon.ico 403 en producción ✅
+## Sesión 42 — Fix favicon.ico 403 en producción (causa REAL: Firewall de Vercel) ✅
 
 ### Problema
-- La consola del navegador en producción mostraba `favicon.ico:1 Failed to load resource: the server responded with a status of 403` (y a veces 404/504).
-- En `http://localhost:3000` **no** fallaba; solo en línea.
+- Consola del navegador: `favicon.ico:1 Failed to load resource: the server responded with a status of 403` (a veces 404/504) y finalmente **`GET https://clashmanager.vercel.app/ 403 Forbidden`** (la página principal tampoco cargaba).
+- En `http://localhost:3000` **no** fallaba; solo en línea, y solo desde cierta red.
 
-### ¿Por qué ocurre si todas las apps usan favicons? 🤔
-Sí, todas las apps usan favicons, pero hay 3 factores que se combinaron solo en este proyecto:
+### ⚠️ Aclaración importante
+Al principio pareció un problema del archivo `.ico` / Service Worker (commit mensaje de 3cb0692 decía *"bypass CDN block"*). Esa teoría era **incorrecta**. La pista ganadora fue una noche: el `curl` al mismo server pasó de dar **200** a dar **403 con `X-Vercel-Mitigated: challenge`** a mitad de sesión, afectando **a todas** las rutas (`/`, `/api/health`, `/manifest.json`, `/favicon.ico`).
 
-1. **El navegador pide `/favicon.ico` automáticamente** aunque el HTML declare `<link rel="icon">`.
-   - Implementación temprana en la página probó `favicon.ico` (2fa4177), pero el CDN de Vercel devolvía 403 para ese path estático (`.ico`).
-   - La solución previa fue **borrarlo** y usar solo PNG (`/icon-192x192.png`) (3cb0692: *"bypass CDN block"*).
+### Diagnóstico final (cómo se confirmó)
+1. Todos los `curl.exe` desde la PC daban `403 Forbidden` con headers:
+   - `X-Vercel-Mitigated: challenge`
+   - `X-Vercel-Challenge-Token: ...`
+2. Dashboard Vercel: **Attack Mode apagado** (botón "Enable Attack Mode" = desactivado) → el 403 **no** era Attack Mode manual.
+3. **Webfetch desde otra red**: la página cargaba normal (`CLASE⚔️PRO Cargando...`) y el `icon-192x192.png` también.
+4. **Usuario desde el celular con datos móviles**: la app cargó perfecto.
 
-2. **El Service Worker lo hizo persistente.** `public/sw.js` trata `/favicon.ico` como asset caché (regex `isStaticAsset` incluye `.ico`) con estrategia *stale-while-revalidate*: una vez que cacheó la respuesta de error (403/404), la **seguía sirviendo indefinidamente** aunque el servidor ya respondiera bien. Por eso `curl` daba 200 y el navegador seguía viendo el 403 cacheado.
+### Causa raíz real
+El **Firewall de Vercel (protección automática anti-DDoS / BotID)** marcó la **IP de la red del usuario** como sospechosa y le exigió el challenge a **todo** el tráfico que venía de ella (HTML, subrecursos, API, favicon). El detonante: la ráfaga de peticiones `curl` repetidas al dominio desde la misma IP en pocos minutos (patrón típico de ataque: muchas requests, cliente no-navegador). La mitigación es **temporal y por IP**. Por eso:
+- El deploy siempre estuvo sano (otras redes/IPs lo cargaban 200).
+- Solo fallaba en la red marcada, navegador incluido.
+- Con otra IP (datos móviles / VPN / reiniciar módem) o esperando, se resolvía solo.
 
-3. **El commit 23ce119 lo re-introdujo**: se volvió a subir un `favicon.ico` (PNG renombrado) que re-creó el path bloqueado → el 403 regresó.
-
-### Diagnóstico (cómo se encontró)
-- `git log` mostró que el fix original (3cb0692: borrar `.ico`) fue revertido por 23ce119 (re-añadir `.ico`).
-- `curl.exe -I` en el server **sí** devolvía 200 → el problema era de caché cliente/SW, no del origen.
-
-### Fix aplicado (commit cd0858e)
-- **Borrado definitivo** de `apps/web/public/favicon.ico` (el path ya no existe → sin 403; el 404 residual es silencioso).
-- **Solo se sirven PNG**: `<link rel="icon" href="/icon-192x192.png">` en `layout.tsx` + `metadata.icons` + `manifest.json` (todo PNG).
-- **El SW nunca intercepta `/favicon.ico`**: early-return en el fetch handler (igual que `/sw.js` y `/api/*`), para que ninguna respuesta del path se cachee.
-- **SW v10** para purgar la caché `clashmanager-v8/v9` (el `activate` borra caches viejos).
-- Eliminados los headers `Cache-Control`/`Content-Type` de `/favicon.ico` que se habían agregado a `next.config.ts` y ambos `vercel.json` (ya no aplican).
-
-### Conclusión / lección
-- **No servir `.ico` si el CDN lo bloquea**: usar un icono PNG vía `<link rel="icon">` es suficiente y es lo que recomienda Next.js (convención `app/icon.png`, sin `.ico`).
-- **El SW nunca debe cachear rutas que puedan devolver errores**: rutas de infraestructura (`/sw.js`, `/favicon.ico`, favicon/iconos) pasan directo a red. El SW sirve principalmente JS/CSS con hash (inmutables) y navegación HTML network-only.
-
-### Archivos modificados (6)
+### Cambios que sí se mantuvieron (mejoras de higiene, no la cura del 403) (commit cd0858e)
 | Archivo | Cambio |
 |---------|--------|
-| `app/public/favicon.ico` | **Borrado** (PNG renombrado a .ico, fuente del 403) |
-| `app/src/app/layout.tsx` | Solo `<link rel="icon" href="/icon-192x192.png">` (sin cambios en esta sesión, ya estaba) |
-| `app/public/sw.js` | `SW_VERSION` 9→10 + early-return para `/favicon.ico` |
+| `app/public/favicon.ico` | **Borrado** (PNG renombrado a .ico). Evita depender del path; se usa solo PNG. |
+| `app/public/sw.js` | `SW_VERSION` 9→10 + **early-return para `/favicon.ico`** (nunca lo cachea) |
 | `components/pwa-register.tsx` | `SW_VERSION` 9→10 |
-| `app/next.config.ts` | Quitado bloque de headers `/favicon.ico` |
-| `app/vercel.json` y `vercel.json` | Quitado bloque de headers `/favicon.ico` |
+| `app/next.config.ts`, `app/vercel.json`, `vercel.json` | Eliminados headers de `/favicon.ico` (innecesarios) |
+
+`layout.tsx` ya usaba exclusivamente `<link rel="icon" href="/icon-192x192.png">` (PNG), con `metadata.icons` y `manifest.json` en PNG.
+
+### Lecciones
+1. **No asumir que es el código**: cuando `curl` da 403 con `X-Vercel-Mitigated: challenge` o `X-Vercel-Challenge-Token`, es el **Firewall de Vercel**, no la app. Verificar primero en el dashboard (Firewall → Attack Mode, System Mitigations, IP Blocks, Custom Rules).
+2. **Probar desde múltiples redes**: si una red da 403 y otra carga la app, es bloqueo por IP (bot protection), temporal.
+3. **No bombardear el dominio con `curl` seguidos** desde la misma IP mientras se depura; parece un ataque y activa la mitigación.
+4. Buenas prácticas que sí valen la pena aunque no causaran el bug: iconos en PNG (recomendación de Next.js, `app/icon.png`), y el SW **nunca** cachea rutas de infraestructura (`/sw.js`, `/favicon.ico`, `/api/*`) ni respuestas de error.
 
 ---
