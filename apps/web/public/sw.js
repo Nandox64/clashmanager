@@ -1,4 +1,4 @@
-const SW_VERSION = 9;
+const SW_VERSION = 10;
 const CACHE = "clashmanager-v" + SW_VERSION;
 
 function isHtmlNav(req) {
@@ -59,6 +59,9 @@ self.addEventListener("fetch", (event) => {
 
   // Never cache the service worker itself — let the browser fetch the latest version
   if (url.pathname === "/sw.js") return;
+
+  // favicon.ico: nunca interceptar (el CDN lo bloquea con 403; usar icon-192x192.png / PNG)
+  if (url.pathname === "/favicon.ico") return;
 
   // API requests: pasan directamente al servidor (ya tienen cache via Firestore)
   if (url.pathname.startsWith("/api/")) return;

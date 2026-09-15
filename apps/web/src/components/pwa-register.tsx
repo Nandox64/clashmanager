@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const SW_VERSION = 9;
+const SW_VERSION = 10;
 
 export function PWARegister() {
   useEffect(() => {
