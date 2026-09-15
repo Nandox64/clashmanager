@@ -1598,3 +1598,47 @@ Campos eliminados de `ClanScaling` (store, Firestore, UI):
 | `app/link-member/page.tsx` | `min-h-screen py-4` → `h-dvh overflow-y-auto`, eliminado `max-h-[90dvh] overflow-y-auto` del card |
 
 ---
+
+## Sesión 42 — Fix favicon.ico 403 en producción ✅
+
+### Problema
+- La consola del navegador en producción mostraba `favicon.ico:1 Failed to load resource: the server responded with a status of 403` (y a veces 404/504).
+- En `http://localhost:3000` **no** fallaba; solo en línea.
+
+### ¿Por qué ocurre si todas las apps usan favicons? 🤔
+Sí, todas las apps usan favicons, pero hay 3 factores que se combinaron solo en este proyecto:
+
+1. **El navegador pide `/favicon.ico` automáticamente** aunque el HTML declare `<link rel="icon">`.
+   - Implementación temprana en la página probó `favicon.ico` (2fa4177), pero el CDN de Vercel devolvía 403 para ese path estático (`.ico`).
+   - La solución previa fue **borrarlo** y usar solo PNG (`/icon-192x192.png`) (3cb0692: *"bypass CDN block"*).
+
+2. **El Service Worker lo hizo persistente.** `public/sw.js` trata `/favicon.ico` como asset caché (regex `isStaticAsset` incluye `.ico`) con estrategia *stale-while-revalidate*: una vez que cacheó la respuesta de error (403/404), la **seguía sirviendo indefinidamente** aunque el servidor ya respondiera bien. Por eso `curl` daba 200 y el navegador seguía viendo el 403 cacheado.
+
+3. **El commit 23ce119 lo re-introdujo**: se volvió a subir un `favicon.ico` (PNG renombrado) que re-creó el path bloqueado → el 403 regresó.
+
+### Diagnóstico (cómo se encontró)
+- `git log` mostró que el fix original (3cb0692: borrar `.ico`) fue revertido por 23ce119 (re-añadir `.ico`).
+- `curl.exe -I` en el server **sí** devolvía 200 → el problema era de caché cliente/SW, no del origen.
+
+### Fix aplicado (commit cd0858e)
+- **Borrado definitivo** de `apps/web/public/favicon.ico` (el path ya no existe → sin 403; el 404 residual es silencioso).
+- **Solo se sirven PNG**: `<link rel="icon" href="/icon-192x192.png">` en `layout.tsx` + `metadata.icons` + `manifest.json` (todo PNG).
+- **El SW nunca intercepta `/favicon.ico`**: early-return en el fetch handler (igual que `/sw.js` y `/api/*`), para que ninguna respuesta del path se cachee.
+- **SW v10** para purgar la caché `clashmanager-v8/v9` (el `activate` borra caches viejos).
+- Eliminados los headers `Cache-Control`/`Content-Type` de `/favicon.ico` que se habían agregado a `next.config.ts` y ambos `vercel.json` (ya no aplican).
+
+### Conclusión / lección
+- **No servir `.ico` si el CDN lo bloquea**: usar un icono PNG vía `<link rel="icon">` es suficiente y es lo que recomienda Next.js (convención `app/icon.png`, sin `.ico`).
+- **El SW nunca debe cachear rutas que puedan devolver errores**: rutas de infraestructura (`/sw.js`, `/favicon.ico`, favicon/iconos) pasan directo a red. El SW sirve principalmente JS/CSS con hash (inmutables) y navegación HTML network-only.
+
+### Archivos modificados (6)
+| Archivo | Cambio |
+|---------|--------|
+| `app/public/favicon.ico` | **Borrado** (PNG renombrado a .ico, fuente del 403) |
+| `app/src/app/layout.tsx` | Solo `<link rel="icon" href="/icon-192x192.png">` (sin cambios en esta sesión, ya estaba) |
+| `app/public/sw.js` | `SW_VERSION` 9→10 + early-return para `/favicon.ico` |
+| `components/pwa-register.tsx` | `SW_VERSION` 9→10 |
+| `app/next.config.ts` | Quitado bloque de headers `/favicon.ico` |
+| `app/vercel.json` y `vercel.json` | Quitado bloque de headers `/favicon.ico` |
+
+---
